@@ -1,0 +1,49 @@
+.top-bar {
+  display: flex;
+  height: 48px;
+  flex-shrink: 0;
+  justify-content: space-between;
+  -webkit-app-region: drag;
+  background-color: cadetblue;
+  user-select: none;
+
+  .left {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    margin-left: 200px;
+    -webkit-app-region: no-drag;
+  }
+
+  .right {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    margin-right: 8px;
+    -webkit-app-region: no-drag;
+    justify-self: flex-end;
+
+    .divider {
+      width: 1px;
+      height: 60%;
+      margin: 0 8px;
+      background-color: aqua;
+    }
+
+    .button-wrapper {
+      display: flex;
+    }
+
+    .icon {
+      display: flex;
+      align-items: center;
+      margin: 0 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .setting {
+      font-size: 22px;
+    }
+  }
+}

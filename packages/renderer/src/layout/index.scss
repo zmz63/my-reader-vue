@@ -1,0 +1,19 @@
+.layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  flex-direction: column;
+
+  .main-container {
+    display: flex;
+    overflow: hidden;
+    width: 100%;
+    flex-grow: 1;
+  }
+
+  .main-view {
+    overflow: hidden;
+    flex-grow: 1;
+  }
+}
