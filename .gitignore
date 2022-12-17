@@ -1,3 +1,4 @@
-node_modules
-release
-pnpm-lock.yaml
+/node_modules
+/release
+/dist
+/pnpm-lock.yaml

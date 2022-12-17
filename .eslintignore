@@ -1,3 +1,4 @@
-node_modules
-release
-packages/renderer/src/epub
+/node_modules
+/release
+/dist
+/packages/renderer/src/epub

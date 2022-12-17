@@ -31,7 +31,7 @@ export function extend<T extends Record<string, unknown>>(
 }
 
 export function parseFileName(path: string, suffix = false) {
-  const matchs = path.match(/[^\\/]+\.[^\\/]+$/)
+  const matchs = path.match(/[^\\/]+$/)
   const name = matchs ? matchs[0] : path
 
   if (suffix) {
@@ -41,8 +41,8 @@ export function parseFileName(path: string, suffix = false) {
     }
   } else {
     return {
-      name: name.replace(/\.(\w+)$/, ''),
-      suffix: name.replace(/.+\./, '')
+      name: name.replace(/\..+$/, ''),
+      suffix: name.replace(/^.+\./, '')
     }
   }
 }

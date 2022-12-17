@@ -1,7 +1,7 @@
 import { defineComponent, ref } from 'vue'
 import './index.scss'
 
-import ePub from '@/epub'
+// import ePub from '@/epub'
 
 const { importBook, renderBook, manageView } = window.electron.bookUtil
 
