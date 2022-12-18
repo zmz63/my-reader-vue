@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { parse } from 'path'
 import { ipcRenderer } from 'electron'
-import { parseFileName } from './common'
 import EPub, { type EPubMeta } from './epub'
 
 function selectBook() {
@@ -73,9 +73,9 @@ async function importBook(open = false, path?: string) {
 
     pathSet.add(path)
 
-    const { name, suffix } = parseFileName(path)
+    const { name, ext } = parse(path)
 
-    if (suffix === 'epub') {
+    if (ext === '.epub') {
       if (open) {
         promise = EPub.import(path, name, true).then(ePub => {
           const { meta } = ePub

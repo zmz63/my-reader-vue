@@ -1,13 +1,8 @@
 import { randomUUID } from 'crypto'
+import { basename } from 'path'
 import { XMLParser } from 'fast-xml-parser'
 import EPubView from './view'
-import {
-  getXmlObjectData,
-  loadZipFile,
-  parseDirectory,
-  readZipFileToBuffer,
-  replaceLink
-} from '../common'
+import { getXmlObjectData, loadZipFile, readZipFileToBuffer, replaceLink } from '../common'
 import type { Entry, ZipFile } from 'yauzl'
 import type { BookMeta } from '../book'
 
@@ -306,7 +301,7 @@ class EPub {
           buffer = await readZipFileToBuffer(zipfile, entrys['META-INF/container.xml'])
           const container = parser.parse(buffer)['container']
           const packagePath = container['rootfiles']['rootfile']['full-path']
-          const directory = parseDirectory(packagePath)
+          const directory = basename(packagePath)
 
           buffer = await readZipFileToBuffer(zipfile, entrys[packagePath])
           const packaging = parser.parse(buffer)['package']

@@ -5,7 +5,7 @@ import IframeView from './iframe'
 
 export type ViewOptions = {
   layout: 'scroll' | 'pagination'
-  axis: ViewOptions['layout'] extends 'pagination' ? 'horizontal' | 'vertical' : 'vertical'
+  axis: 'horizontal' | 'vertical'
   allowScripts: boolean
   allowPopups: boolean
   backgroundColor: string

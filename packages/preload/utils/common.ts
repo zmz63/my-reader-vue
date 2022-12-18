@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { relative } from 'path'
+import { basename, relative } from 'path'
 import yauzl from 'yauzl'
 import type { Entry, ZipFile } from 'yauzl'
 
@@ -28,27 +28,6 @@ export function extend<T extends Record<string, unknown>>(
   }
 
   return target as T
-}
-
-export function parseFileName(path: string, suffix = false) {
-  const matchs = path.match(/[^\\/]+$/)
-  const name = matchs ? matchs[0] : path
-
-  if (suffix) {
-    return {
-      name,
-      suffix: ''
-    }
-  } else {
-    return {
-      name: name.replace(/\..+$/, ''),
-      suffix: name.replace(/^.+\./, '')
-    }
-  }
-}
-
-export function parseDirectory(path: string) {
-  return path.replace(/[^\\/]+\.[^\\/]+$/, '')
 }
 
 export function loadZipFile(
@@ -149,7 +128,7 @@ export function replaceLink(href: string, content: string, urls: string[], blobU
   const replacements: Record<string, string> = {}
 
   for (let i = 0; i < urls.length; i++) {
-    const url = relative(parseDirectory(href), urls[i]).replace(/[\\]/g, '/')
+    const url = relative(basename(href), urls[i]).replace(/[\\]/g, '/')
     matches.push(url)
     replacements[url] = blobUrls[i]
   }
@@ -186,7 +165,7 @@ export function overrideStyles(
 // export function replaceLink(href: string, content: string, urls: string[], blobUrls: string[]) {
 //   return replace(
 //     content,
-//     urls.map(url => relative(parseDirectory(href), url).replace(/[\\]/g, '/')),
+//     urls.map(url => relative(basename(href), url).replace(/[\\]/g, '/')),
 //     blobUrls
 //   )
 // }
