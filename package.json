@@ -8,7 +8,8 @@
     "dev": "node --experimental-json-modules scripts/dev.mjs",
     "build": "node --experimental-json-modules scripts/build.mjs",
     "electron:start": "electron .",
-    "electron:build": "electron-builder"
+    "electron:build": "electron-builder",
+    "lint": "eslint --fix --ext .js,.ts,.tsx ."
   },
   "author": "z63",
   "devDependencies": {
@@ -23,27 +24,28 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^9.7.0",
+    "fast-xml-parser": "^4.0.15",
+    "fs-extra": "^11.1.0",
+    "lodash": "^4.17.21",
     "naive-ui": "^2.34.3",
+    "pinia": "^2.0.29",
     "prettier": "^2.7.1",
     "sass": "^1.56.1",
     "stylelint": "^14.15.0",
     "stylelint-config-idiomatic-order": "^9.0.0",
     "stylelint-config-standard": "^29.0.0",
     "typescript": "^4.9.3",
-    "vite": "^3.2.4"
+    "vite": "^3.2.4",
+    "vue": "^3.2.45",
+    "vue-router": "^4.1.6",
+    "yauzl": "^2.10.0"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.8.6",
     "event-emitter": "^0.3.5",
-    "fast-xml-parser": "^4.0.12",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",
-    "lodash": "^4.17.21",
     "marks-pane": "^1.0.9",
-    "path-webpack": "^0.0.3",
-    "pinia": "^2.0.24",
-    "vue": "^3.2.45",
-    "vue-router": "^4.1.6",
-    "yauzl": "^2.10.0"
+    "path-webpack": "^0.0.3"
   }
 }

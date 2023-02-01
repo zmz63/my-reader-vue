@@ -1,13 +1,16 @@
 import { defineComponent } from 'vue'
 import { RouterView } from 'vue-router'
-import './App.scss'
+import { NConfigProvider, NMessageProvider } from 'naive-ui'
+import { defaultTheme } from '@/themes'
 
 export default defineComponent({
   setup() {
     return () => (
-      <div>
-        <RouterView />
-      </div>
+      <NConfigProvider themeOverrides={defaultTheme}>
+        <NMessageProvider>
+          <RouterView />
+        </NMessageProvider>
+      </NConfigProvider>
     )
   }
 })

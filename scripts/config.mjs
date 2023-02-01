@@ -1,16 +1,26 @@
-import { builtinModules } from 'module'
+import _module from 'module'
+import _path from 'path'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import {
   distRendererPath,
   mainPath,
   packagesPath,
   preloadPath,
+  publicPath,
   rendererPath,
   rendererSrcPath
 } from './paths.mjs'
+import svgLoader from './svg-loader.mjs'
 import packageConfig from '../package.json' assert { type: 'json' }
 
-const { dependencies } = packageConfig
+const { devDependencies } = packageConfig
+
+const alias = {
+  '@packages': packagesPath,
+  '@main': mainPath,
+  '@preload': preloadPath,
+  '@': rendererSrcPath
+}
 
 export function rendererConfigFactory(mode) {
   const isDev = mode === 'development'
@@ -20,22 +30,19 @@ export function rendererConfigFactory(mode) {
     root: rendererPath,
     mode,
     base: './',
-    plugins: [vueJsx()],
+    publicDir: publicPath,
+    plugins: [vueJsx(), svgLoader(_path.join(rendererSrcPath, 'icons'))],
     resolve: {
-      alias: {
-        '@packages': packagesPath,
-        '@main': mainPath,
-        '@preload': preloadPath,
-        '@': rendererSrcPath
-      }
+      alias
     },
     build: {
       outDir: distRendererPath,
       emptyOutDir: true,
-      sourcemap: isDev
+      sourcemap: isDev,
+      target: 'esnext'
     },
     optimizeDeps: {
-      exclude: ['electron', ...builtinModules]
+      exclude: ['electron', ..._module.builtinModules]
     },
     server: isDev
       ? {
@@ -55,12 +62,7 @@ export function configFactory(mode, root, outDir, plugins) {
     mode,
     plugins,
     resolve: {
-      alias: {
-        '@packages': packagesPath,
-        '@main': mainPath,
-        '@preload': preloadPath,
-        '@': rendererSrcPath
-      }
+      alias
     },
     build: {
       target: 'esnext',
@@ -72,7 +74,11 @@ export function configFactory(mode, root, outDir, plugins) {
         fileName: () => '[name].js'
       },
       rollupOptions: {
-        external: ['electron', ...builtinModules, ...(isDev ? Object.keys(dependencies) : [])]
+        external: [
+          'electron',
+          ..._module.builtinModules,
+          ...(isDev ? Object.keys(devDependencies) : [])
+        ]
       },
       minify: isProd,
       watch: isDev ? {} : null

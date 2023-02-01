@@ -1,8 +1,9 @@
-import { spawn } from 'child_process'
-import { build, createServer } from 'vite'
+import _cp from 'child_process'
 import electron from 'electron'
+import { build, createServer } from 'vite'
 import { distMainPath, distPreloadPath, mainPath, preloadPath } from './paths.mjs'
 import { configFactory, rendererConfigFactory } from './config.mjs'
+import wasmLoader from './wasm-loader.mjs'
 
 const env = 'development'
 
@@ -10,7 +11,6 @@ process.env.NODE_ENV = env
 
 const server = await createServer(rendererConfigFactory(env))
 await server.listen()
-// server.printUrls()
 
 await build(
   configFactory(env, preloadPath, distPreloadPath, [
@@ -19,7 +19,8 @@ await build(
       closeBundle() {
         server.ws.send({ type: 'full-reload' })
       }
-    }
+    },
+    wasmLoader()
   ])
 )
 
@@ -32,7 +33,7 @@ await build(
           process.electronApp.removeAllListeners()
           process.electronApp.kill()
         }
-        process.electronApp = spawn(electron, ['.'], { stdio: 'inherit', env })
+        process.electronApp = _cp.spawn(electron, ['.'], { stdio: 'inherit', env })
         process.electronApp.once('exit', process.exit)
       }
     }

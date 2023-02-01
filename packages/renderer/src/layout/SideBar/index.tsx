@@ -1,15 +1,15 @@
 import { defineComponent } from 'vue'
 import { RouterLink } from 'vue-router'
-import { tabValues } from '@/router'
+import menu from '@/router/menu'
 import './index.scss'
 
 export default defineComponent({
   setup() {
     return () => (
       <div class="side-bar">
-        {tabValues.map(({ path, text }) => (
-          <RouterLink to={{ name: path }} class="item" activeClass="active" key={path}>
-            {text}
+        {menu.map(({ name, meta }) => (
+          <RouterLink to={{ name }} class="item" activeClass="active" key={name}>
+            {meta.label}
           </RouterLink>
         ))}
       </div>

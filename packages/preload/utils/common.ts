@@ -3,7 +3,7 @@ import { basename, relative } from 'path'
 import yauzl from 'yauzl'
 import type { Entry, ZipFile } from 'yauzl'
 
-export function swap<T>(array: Readwrite<ArrayLike<T>>, left: number, right: number) {
+export function swap<T>(array: Mutable<ArrayLike<T>>, left: number, right: number) {
   const temp = array[left]
   array[left] = array[right]
   array[right] = temp
