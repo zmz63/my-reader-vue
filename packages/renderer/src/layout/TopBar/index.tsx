@@ -1,14 +1,11 @@
 import { defineComponent, onBeforeMount, onUnmounted, ref } from 'vue'
+import { NButton, NSpace } from 'naive-ui'
 import SearchBar from '@/components/SearchBar'
-import ThemeIcon from '@/icons/Theme'
-import SettingIcon from '@/icons/Setting'
-import MinimizeIcon from '@/icons/Minimize'
-import MaximizeIcon from '@/icons/Maximize'
-import Unmaximize from '@/icons/Unmaximize'
-import CloseIcon from '@/icons/Close'
+import SvgIcon from '@/components/SvgIcon'
+import { WindowOperationType } from '@packages/global'
 import './index.scss'
 
-const { manageWindow, onWindowMaximize } = window.electron.windowUtil
+const { operateWindow, listenWindowMaximize } = window.electron.windowUtil
 
 export default defineComponent({
   setup() {
@@ -17,7 +14,7 @@ export default defineComponent({
     let handler: () => void
 
     onBeforeMount(() => {
-      handler = onWindowMaximize(value => {
+      handler = listenWindowMaximize(value => {
         isMaximized.value = value
       })
     })
@@ -32,26 +29,37 @@ export default defineComponent({
           <SearchBar />
         </div>
         <div class="right">
-          <div class="button-wrapper">
-            <div class="icon setting">
-              <ThemeIcon />
-            </div>
-            <div class="icon setting">
-              <SettingIcon />
-            </div>
-          </div>
           <div class="divider"></div>
-          <div class="button-wrapper">
-            <div class="icon" onClick={() => manageWindow('minimize')}>
-              <MinimizeIcon />
-            </div>
-            <div class="icon" onClick={() => manageWindow('maximize')}>
-              {isMaximized.value ? <Unmaximize /> : <MaximizeIcon />}
-            </div>
-            <div class="icon" onClick={() => manageWindow('close')}>
-              <CloseIcon />
-            </div>
-          </div>
+          <NSpace wrapItem={false} align="center">
+            <NButton
+              quaternary
+              size="tiny"
+              focusable={false}
+              onClick={() => operateWindow(WindowOperationType.MINIMIZE)}
+            >
+              <SvgIcon size={16} name="ic_fluent_subtract_24_regular" />
+            </NButton>
+            <NButton
+              quaternary
+              size="tiny"
+              focusable={false}
+              onClick={() => operateWindow(WindowOperationType.MAXIMIZE)}
+            >
+              {isMaximized.value ? (
+                <SvgIcon size={16} name="ic_fluent_square_multiple_24_regular" />
+              ) : (
+                <SvgIcon size={16} name="ic_fluent_maximize_24_regular" />
+              )}
+            </NButton>
+            <NButton
+              quaternary
+              size="tiny"
+              focusable={false}
+              onClick={() => operateWindow(WindowOperationType.CLOSE)}
+            >
+              <SvgIcon size={16} name="ic_fluent_dismiss_24_regular" />
+            </NButton>
+          </NSpace>
         </div>
       </div>
     )

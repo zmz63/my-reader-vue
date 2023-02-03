@@ -1,15 +1,15 @@
 import { ipcRenderer } from 'electron'
+import type { WindowOperationType } from '@packages/global'
 
-export type WindowOperationType = 'minimize' | 'maximize' | 'close'
-
-function manageWindow(type: WindowOperationType) {
-  ipcRenderer.send('window-manage', type)
+function operateWindow(type: WindowOperationType) {
+  ipcRenderer.send('window-operate', type)
 }
 
-function onWindowMaximize(callback: (isMaximized: boolean) => void) {
+function listenWindowMaximize(callback: (isMaximized: boolean) => void) {
   const listener = (_: Electron.IpcRendererEvent, isMaximized: boolean) => callback(isMaximized)
+
   ipcRenderer.on('window-maximize', listener)
-  ipcRenderer.send('window-is-maximized')
+  ipcRenderer.invoke('window-is-maximized')
 
   return () => {
     ipcRenderer.removeListener('window-maximize', listener)
@@ -17,8 +17,8 @@ function onWindowMaximize(callback: (isMaximized: boolean) => void) {
 }
 
 const windowUtil = {
-  manageWindow,
-  onWindowMaximize
+  operateWindow,
+  listenWindowMaximize
 }
 
 export type WindowUtil = typeof windowUtil

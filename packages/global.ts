@@ -9,3 +9,10 @@ declare global {
     }
   }
 }
+
+export const enum WindowOperationType {
+  ON_TOP,
+  MINIMIZE,
+  MAXIMIZE,
+  CLOSE
+}

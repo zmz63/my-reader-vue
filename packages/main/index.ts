@@ -1,6 +1,6 @@
-import { join, resolve } from 'path'
+import _path from 'path'
 import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron'
-import type { WindowOperationType } from '@preload/utils/window'
+import { WindowOperationType } from '@packages/global'
 
 const gotTheLock = app.requestSingleInstanceLock()
 let mainWindow: BrowserWindow
@@ -13,7 +13,6 @@ if (!gotTheLock) {
       if (mainWindow.isMinimized()) {
         mainWindow.restore()
       }
-
       mainWindow.focus()
     }
   })
@@ -30,7 +29,7 @@ function createMainWindow() {
     minHeight: 600,
     webPreferences: {
       devTools: true,
-      preload: join(__dirname, '../preload/index.js'),
+      preload: _path.join(__dirname, '../preload/index.js'),
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
       // contextIsolation: false,
@@ -47,7 +46,7 @@ function createMainWindow() {
   })
 
   if (app.isPackaged) {
-    mainWindow.loadFile(resolve(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(_path.resolve(__dirname, '../renderer/index.html'))
   } else {
     mainWindow.loadURL('http://localhost:8080')
     mainWindow.webContents.openDevTools({ mode: 'undocked' })
@@ -65,45 +64,6 @@ function createMainWindow() {
     mainWindow.webContents.send('window-maximize', false)
   })
 }
-
-// function createReaderWindow() {
-//   const readerWindow = new BrowserWindow({
-//     show: false,
-//     frame: false,
-//     // transparent: true,
-//     width: 900,
-//     height: 600,
-//     minWidth: 800,
-//     minHeight: 600,
-//     webPreferences: {
-//       devTools: false,
-//       preload: join(__dirname, '../preload/index.js'),
-//       nodeIntegration: true,
-//       nodeIntegrationInWorker: true,
-//       contextIsolation: false,
-//       disableDialogs: true,
-//       enableWebSQL: false,
-//       spellcheck: false,
-//       webgl: false
-//     }
-//   })
-
-//   readerWindow.hookWindowMessage(0x0116, () => {
-//     readerWindow.setEnabled(false)
-//     readerWindow.setEnabled(true)
-//   })
-
-//   if (app.isPackaged) {
-//     readerWindow.loadFile(resolve(__dirname, '../renderer/index.html'))
-//   } else {
-//     readerWindow.loadURL('http://localhost:8080')
-//     // readerWindow.webContents.openDevTools({ mode: 'undocked' })
-//   }
-
-//   readerWindow.once('ready-to-show', () => {
-//     readerWindow.show()
-//   })
-// }
 
 app.whenReady().then(() => {
   createMainWindow()
@@ -134,21 +94,28 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.on('window-manage', (event, type: WindowOperationType) => {
+ipcMain.on('window-operate', (event, type: WindowOperationType) => {
   const window = BrowserWindow.fromWebContents(event.sender)
   if (window) {
     switch (type) {
-      case 'minimize':
+      case WindowOperationType.ON_TOP:
+        // if (window.isAlwaysOnTop()) {
+        //   window.unmaximize()
+        // } else {
+        //   window.maximize()
+        // }
+        break
+      case WindowOperationType.MINIMIZE:
         window.minimize()
         break
-      case 'maximize':
+      case WindowOperationType.MAXIMIZE:
         if (window.isMaximized()) {
           window.unmaximize()
         } else {
           window.maximize()
         }
         break
-      case 'close':
+      case WindowOperationType.CLOSE:
         window.close()
         break
       default:
@@ -157,7 +124,7 @@ ipcMain.on('window-manage', (event, type: WindowOperationType) => {
   }
 })
 
-ipcMain.on('window-is-maximized', event => {
+ipcMain.handle('window-is-maximized', event => {
   const window = BrowserWindow.fromWebContents(event.sender)
   if (window) {
     window.webContents.send('window-maximize', window.isMaximized())
