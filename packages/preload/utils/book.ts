@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parse } from 'path'
 import { ipcRenderer } from 'electron'
-import EPub, { type EPubMeta } from './epub'
+import EPub, { type EPubMeta } from './epub2'
 
 function selectBook() {
   return ipcRenderer.invoke('book-select') as Promise<string[] | undefined>

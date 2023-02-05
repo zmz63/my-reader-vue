@@ -5,22 +5,28 @@ import SvgIcon from '@/components/SvgIcon'
 import { WindowOperationType } from '@packages/global'
 import './index.scss'
 
-const { operateWindow, listenWindowMaximize } = window.electron.windowUtil
+const { operateWindow, listenWindowOnTop, listenWindowMaximize } = window.electron.windowUtil
 
 export default defineComponent({
   setup() {
+    const isOnTop = ref(false)
     const isMaximized = ref(false)
 
-    let handler: () => void
+    let onTopHandler: () => void
+    let maximizeHandler: () => void
 
     onBeforeMount(() => {
-      handler = listenWindowMaximize(value => {
+      onTopHandler = listenWindowOnTop(value => {
+        isOnTop.value = value
+      })
+      maximizeHandler = listenWindowMaximize(value => {
         isMaximized.value = value
       })
     })
 
     onUnmounted(() => {
-      handler()
+      onTopHandler()
+      maximizeHandler()
     })
 
     return () => (
@@ -31,6 +37,18 @@ export default defineComponent({
         <div class="right">
           <div class="divider"></div>
           <NSpace wrapItem={false} align="center">
+            <NButton
+              quaternary
+              size="tiny"
+              focusable={false}
+              onClick={() => operateWindow(WindowOperationType.ON_TOP)}
+            >
+              {isOnTop.value ? (
+                <SvgIcon size={16} name="ic_fluent_pin_off_24_regular" />
+              ) : (
+                <SvgIcon size={16} name="ic_fluent_pin_24_regular" />
+              )}
+            </NButton>
             <NButton
               quaternary
               size="tiny"

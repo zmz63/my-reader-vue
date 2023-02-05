@@ -16,8 +16,20 @@ function listenWindowMaximize(callback: (isMaximized: boolean) => void) {
   }
 }
 
+function listenWindowOnTop(callback: (isOnTop: boolean) => void) {
+  const listener = (_: Electron.IpcRendererEvent, isOnTop: boolean) => callback(isOnTop)
+
+  ipcRenderer.on('window-on-top', listener)
+  ipcRenderer.invoke('window-is-on-top')
+
+  return () => {
+    ipcRenderer.removeListener('window-on-top', listener)
+  }
+}
+
 const windowUtil = {
   operateWindow,
+  listenWindowOnTop,
   listenWindowMaximize
 }
 

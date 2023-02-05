@@ -63,6 +63,10 @@ function createMainWindow() {
   mainWindow.on('unmaximize', () => {
     mainWindow.webContents.send('window-maximize', false)
   })
+
+  mainWindow.on('always-on-top-changed', () => {
+    mainWindow.webContents.send('window-on-top', mainWindow.isAlwaysOnTop())
+  })
 }
 
 app.whenReady().then(() => {
@@ -99,11 +103,7 @@ ipcMain.on('window-operate', (event, type: WindowOperationType) => {
   if (window) {
     switch (type) {
       case WindowOperationType.ON_TOP:
-        // if (window.isAlwaysOnTop()) {
-        //   window.unmaximize()
-        // } else {
-        //   window.maximize()
-        // }
+        window.setAlwaysOnTop(!window.isAlwaysOnTop())
         break
       case WindowOperationType.MINIMIZE:
         window.minimize()
@@ -124,6 +124,13 @@ ipcMain.on('window-operate', (event, type: WindowOperationType) => {
   }
 })
 
+ipcMain.handle('window-is-on-top', event => {
+  const window = BrowserWindow.fromWebContents(event.sender)
+  if (window) {
+    window.webContents.send('window-on-top', window.isAlwaysOnTop())
+  }
+})
+
 ipcMain.handle('window-is-maximized', event => {
   const window = BrowserWindow.fromWebContents(event.sender)
   if (window) {
@@ -131,6 +138,35 @@ ipcMain.handle('window-is-maximized', event => {
   }
 })
 
+ipcMain.handle('show-open-dialog', async (_, options: Electron.OpenDialogOptions) => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(options)
+  if (canceled) {
+    return null
+  } else {
+    return filePaths
+  }
+})
+
+ipcMain.handle('show-save-dialog', async (_, options: Electron.SaveDialogOptions) => {
+  const { canceled, filePath } = await dialog.showSaveDialog(options)
+  if (canceled) {
+    return null
+  } else {
+    return filePath
+  }
+})
+
+ipcMain.handle('get-path', (_, name: Parameters<typeof Electron.app.getPath>[0]) =>
+  app.getPath(name)
+)
+
+ipcMain.handle('get-locale', () => app.getLocale())
+
+ipcMain.on('show-item', (_, path: string) => shell.showItemInFolder(path))
+
+ipcMain.on('open-path', (_, path: string) => shell.openPath(path))
+
+// to do
 ipcMain.handle('book-select', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     filters: [{ name: 'Electronic Book', extensions: ['epub'] }],
