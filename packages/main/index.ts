@@ -1,6 +1,6 @@
 import _path from 'path'
 import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron'
-import { WindowOperationType } from '@packages/global'
+import { WindowControlType } from '@packages/global'
 
 const gotTheLock = app.requestSingleInstanceLock()
 let mainWindow: BrowserWindow
@@ -32,7 +32,7 @@ function createMainWindow() {
       preload: _path.join(__dirname, '../preload/index.js'),
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
-      // contextIsolation: false,
+      contextIsolation: false,
       disableDialogs: true,
       enableWebSQL: false,
       spellcheck: false,
@@ -80,9 +80,9 @@ app.whenReady().then(() => {
 })
 
 app.on('web-contents-created', (_, contents) => {
-  contents.on('will-navigate', (event, url) => {
-    console.log('$$$', url)
-  })
+  // contents.on('will-navigate', (event, url) => {
+  //   console.log('$$$', url)
+  // })
 
   contents.setWindowOpenHandler(({ url }) => {
     console.log('###', url)
@@ -98,43 +98,31 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.on('window-operate', (event, type: WindowOperationType) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ipcMain.on('window-control', (event, type: WindowControlType, ...args: any[]) => {
   const window = BrowserWindow.fromWebContents(event.sender)
+
   if (window) {
     switch (type) {
-      case WindowOperationType.ON_TOP:
-        window.setAlwaysOnTop(!window.isAlwaysOnTop())
+      case WindowControlType.ON_TOP:
+        window.setAlwaysOnTop(args[0])
         break
-      case WindowOperationType.MINIMIZE:
+      case WindowControlType.MINIMIZE:
         window.minimize()
         break
-      case WindowOperationType.MAXIMIZE:
-        if (window.isMaximized()) {
-          window.unmaximize()
-        } else {
+      case WindowControlType.MAXIMIZE:
+        if (args[0]) {
           window.maximize()
+        } else {
+          window.unmaximize()
         }
         break
-      case WindowOperationType.CLOSE:
+      case WindowControlType.CLOSE:
         window.close()
         break
       default:
         break
     }
-  }
-})
-
-ipcMain.handle('window-is-on-top', event => {
-  const window = BrowserWindow.fromWebContents(event.sender)
-  if (window) {
-    window.webContents.send('window-on-top', window.isAlwaysOnTop())
-  }
-})
-
-ipcMain.handle('window-is-maximized', event => {
-  const window = BrowserWindow.fromWebContents(event.sender)
-  if (window) {
-    window.webContents.send('window-maximize', window.isMaximized())
   }
 })
 
@@ -165,17 +153,3 @@ ipcMain.handle('get-locale', () => app.getLocale())
 ipcMain.on('show-item', (_, path: string) => shell.showItemInFolder(path))
 
 ipcMain.on('open-path', (_, path: string) => shell.openPath(path))
-
-// to do
-ipcMain.handle('book-select', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    filters: [{ name: 'Electronic Book', extensions: ['epub'] }],
-    properties: ['multiSelections']
-  })
-
-  if (canceled) {
-    return
-  } else {
-    return filePaths
-  }
-})

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "main": "dist/main/index.js",
-  "description": "Epub Reader",
+  "description": "EPub Reader",
   "scripts": {
     "dev": "node --experimental-json-modules scripts/dev.mjs",
     "build": "node --experimental-json-modules scripts/build.mjs",

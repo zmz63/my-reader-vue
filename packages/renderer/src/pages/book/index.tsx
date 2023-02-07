@@ -1,64 +1,39 @@
 import { defineComponent, ref } from 'vue'
+import { useBookStore } from '@/stores/book'
 import './index.scss'
-
-// import ePub from '@/epub'
-
-const { importBook, renderBook, manageView } = window.electron.bookUtil
 
 export default defineComponent({
   setup() {
-    const containerRef = ref<HTMLElement>()
+    const { books, importBook } = useBookStore()
 
-    let viewId = ''
-    viewId = ''
+    const handleImportBook = async () => {
+      const paths = await appIPC.selectOpenFilePaths({
+        filters: [{ name: 'Electronic Book', extensions: ['epub'] }],
+        properties: ['multiSelections']
+      })
+
+      if (!paths) return
+
+      for (const path of paths) {
+        importBook(path)
+      }
+    }
 
     return () => (
-      <div class="books">
+      <div class="book-page">
         <div class="test">
-          <div
-            class="button"
-            onClick={() => {
-              // const book = ePub('./moby-dick.epub')
-              // const rendition = book.renderTo(containerRef.value, {
-              //   flow: 'scrolled',
-              //   width: '100%'
-              // })
-              // rendition.display(5)
-
-              importBook(true, 'D:\\BaiduNetdiskDownload\\moby-dick.epub')
-                // importBook(true, 'D:\\BaiduNetdiskDownload\\春物01.epub')
-                // div
-                .then(({ result, errors }) => {
-                  console.log(result, errors)
-                  const meta = result[0]
-                  if (containerRef.value && meta) {
-                    renderBook(meta.id, containerRef.value).then(id => {
-                      viewId = id
-                    })
-                  }
-                })
-            }}
-          >
+          <div class="button" onClick={handleImportBook}>
             Import
           </div>
-          <div
-            class="button"
-            onClick={() => {
-              manageView(viewId, 'prev')
-            }}
-          >
-            Prev
-          </div>
-          <div
-            class="button"
-            onClick={() => {
-              manageView(viewId, 'next')
-            }}
-          >
-            Next
-          </div>
         </div>
-        <div class="view-container" ref={containerRef} />
+        <div class="book-container">
+          {books.map(item => (
+            <>
+              <div>{item.data.metadata.title}</div>
+              <img src={item.coverUrl} />
+            </>
+          ))}
+        </div>
       </div>
     )
   }

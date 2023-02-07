@@ -1,18 +1,21 @@
-import type { WindowUtil } from '@preload/utils/window'
-import type { BookUtil } from '@preload/utils/book'
+import type { AppIPC, WindowIPC } from './preload/index'
 
 declare global {
   interface Window {
-    electron: {
-      windowUtil: WindowUtil
-      bookUtil: BookUtil
-    }
+    appIPC: AppIPC
+    windowIPC: WindowIPC
   }
+
+  const appIPC: AppIPC
+
+  const windowIPC: WindowIPC
 }
 
-export const enum WindowOperationType {
+export const enum WindowControlType {
   ON_TOP,
   MINIMIZE,
   MAXIMIZE,
   CLOSE
 }
+
+export type WindowStateEvent = 'maximize' | 'on-top'

@@ -1,39 +1,22 @@
-.books {
+.book-page {
   width: 100%;
   height: 100%;
 
   .test {
     position: fixed;
     z-index: 10;
+    right: 0;
     display: flex;
 
     .button {
       padding: 10px;
-      margin: 0 5px;
       background-color: cornflowerblue;
       cursor: pointer;
     }
   }
 
-  .view-container {
-    width: 100%;
-    height: 100%;
-    overflow-x: hidden;
-    overflow-y: scroll;
-
-    &::-webkit-scrollbar {
-      width: 14px;
-      height: 0;
-    }
-
-    &::-webkit-scrollbar-track {
-      border-radius: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      border-radius: 4px;
-      background-color: rgb(85 85 85 / 50%);
-      box-shadow: inset 0 0 6px rgb(0 0 0 / 30%);
-    }
+  .book-container {
+    display: flex;
+    padding: 16px;
   }
 }

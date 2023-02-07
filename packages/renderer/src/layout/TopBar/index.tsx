@@ -1,11 +1,8 @@
 import { defineComponent, onBeforeMount, onUnmounted, ref } from 'vue'
 import { NButton, NSpace } from 'naive-ui'
-import SearchBar from '@/components/SearchBar'
 import SvgIcon from '@/components/SvgIcon'
-import { WindowOperationType } from '@packages/global'
+import { WindowControlType } from '@packages/global'
 import './index.scss'
-
-const { operateWindow, listenWindowOnTop, listenWindowMaximize } = window.electron.windowUtil
 
 export default defineComponent({
   setup() {
@@ -16,10 +13,10 @@ export default defineComponent({
     let maximizeHandler: () => void
 
     onBeforeMount(() => {
-      onTopHandler = listenWindowOnTop(value => {
+      onTopHandler = windowIPC.addWindowStateListener('on-top', value => {
         isOnTop.value = value
       })
-      maximizeHandler = listenWindowMaximize(value => {
+      maximizeHandler = windowIPC.addWindowStateListener('maximize', value => {
         isMaximized.value = value
       })
     })
@@ -31,17 +28,21 @@ export default defineComponent({
 
     return () => (
       <div class="top-bar">
-        <div class="left">
-          <SearchBar />
-        </div>
+        <div class="left">Hello</div>
         <div class="right">
           <div class="divider"></div>
-          <NSpace wrapItem={false} align="center">
+          <NSpace
+            style={{ width: '160px' }}
+            size={0}
+            wrapItem={false}
+            align="center"
+            justify="space-evenly"
+          >
             <NButton
               quaternary
               size="tiny"
               focusable={false}
-              onClick={() => operateWindow(WindowOperationType.ON_TOP)}
+              onClick={() => windowIPC.controlWindow(WindowControlType.ON_TOP, !isOnTop.value)}
             >
               {isOnTop.value ? (
                 <SvgIcon size={16} name="ic_fluent_pin_off_24_regular" />
@@ -53,7 +54,7 @@ export default defineComponent({
               quaternary
               size="tiny"
               focusable={false}
-              onClick={() => operateWindow(WindowOperationType.MINIMIZE)}
+              onClick={() => windowIPC.controlWindow(WindowControlType.MINIMIZE)}
             >
               <SvgIcon size={16} name="ic_fluent_subtract_24_regular" />
             </NButton>
@@ -61,7 +62,9 @@ export default defineComponent({
               quaternary
               size="tiny"
               focusable={false}
-              onClick={() => operateWindow(WindowOperationType.MAXIMIZE)}
+              onClick={() =>
+                windowIPC.controlWindow(WindowControlType.MAXIMIZE, !isMaximized.value)
+              }
             >
               {isMaximized.value ? (
                 <SvgIcon size={16} name="ic_fluent_square_multiple_24_regular" />
@@ -73,7 +76,7 @@ export default defineComponent({
               quaternary
               size="tiny"
               focusable={false}
-              onClick={() => operateWindow(WindowOperationType.CLOSE)}
+              onClick={() => windowIPC.controlWindow(WindowControlType.CLOSE)}
             >
               <SvgIcon size={16} name="ic_fluent_dismiss_24_regular" />
             </NButton>

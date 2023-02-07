@@ -84,10 +84,12 @@ export function buffersToZipFileBuffer(buffers: DataChunk<Buffer>[]) {
 //   })
 // }
 
-export function openZipFile(path: string) {
-  const entries: Record<string, yauzl.Entry> = {}
+export type ZipEntries = Record<string, yauzl.Entry>
 
-  return new Promise<{ zipFile: yauzl.ZipFile; entries: typeof entries }>((resolve, reject) => {
+export function openZipFile(path: string) {
+  const entries: ZipEntries = {}
+
+  return new Promise<{ zipFile: yauzl.ZipFile; entries: ZipEntries }>((resolve, reject) => {
     yauzl.open(path, { autoClose: false, lazyEntries: false }, (error, zipFile) => {
       if (error) {
         reject(error)

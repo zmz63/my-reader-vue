@@ -1,5 +1,6 @@
 import { defineComponent } from 'vue'
 import { RouterLink } from 'vue-router'
+import SvgIcon from '@/components/SvgIcon'
 import menu from '@/router/menu'
 import './index.scss'
 

@@ -6,7 +6,8 @@ export default [
     name: 'BOOK',
     component: () => import('@/pages/book'),
     meta: {
-      label: '全部书本'
+      label: '啦啦啦1',
+      icon: 'ic_fluent_library_24_filled'
     }
   },
   {
@@ -14,23 +15,8 @@ export default [
     name: 'FAVORITE',
     component: () => import('@/pages/book'),
     meta: {
-      label: '我的收藏'
-    }
-  },
-  {
-    path: 'recent',
-    name: 'RECENT',
-    component: () => import('@/pages/book'),
-    meta: {
-      label: '最近阅读'
-    }
-  },
-  {
-    path: 'note',
-    name: 'NOTE',
-    component: () => import('@/pages/book'),
-    meta: {
-      label: '我的笔记'
+      label: '啦啦啦2',
+      icon: 'ic_fluent_star_line_horizontal_3_24_filled'
     }
   }
 ] as (RouteRecordRaw & {
