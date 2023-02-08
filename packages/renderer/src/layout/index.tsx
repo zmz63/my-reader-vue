@@ -10,9 +10,9 @@ export default defineComponent({
     return () => (
       <div class="layout">
         <TopBar />
-        <div class="main-container">
+        <div class="layout-main-container">
           <SideBar />
-          <div class="main-view">
+          <div class="layout-main-view">
             <RouterView>
               {({ Component }: { Component: DefineComponent }) => (
                 <KeepAlive>

@@ -126,8 +126,14 @@ ipcMain.on('window-control', (event, type: WindowControlType, ...args: any[]) =>
   }
 })
 
-ipcMain.handle('show-open-dialog', async (_, options: Electron.OpenDialogOptions) => {
-  const { canceled, filePaths } = await dialog.showOpenDialog(options)
+ipcMain.handle('show-open-dialog', async (event, options: Electron.OpenDialogOptions) => {
+  const window = BrowserWindow.fromWebContents(event.sender)
+
+  if (window !== mainWindow) {
+    return null
+  }
+
+  const { canceled, filePaths } = await dialog.showOpenDialog(window, options)
   if (canceled) {
     return null
   } else {
@@ -135,8 +141,14 @@ ipcMain.handle('show-open-dialog', async (_, options: Electron.OpenDialogOptions
   }
 })
 
-ipcMain.handle('show-save-dialog', async (_, options: Electron.SaveDialogOptions) => {
-  const { canceled, filePath } = await dialog.showSaveDialog(options)
+ipcMain.handle('show-save-dialog', async (event, options: Electron.SaveDialogOptions) => {
+  const window = BrowserWindow.fromWebContents(event.sender)
+
+  if (window !== mainWindow) {
+    return null
+  }
+
+  const { canceled, filePath } = await dialog.showSaveDialog(window, options)
   if (canceled) {
     return null
   } else {

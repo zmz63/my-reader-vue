@@ -1,10 +1,11 @@
-import { defineComponent, ref } from 'vue'
+import { defineComponent } from 'vue'
 import { useBookStore } from '@/stores/book'
+import CardWrapper from './components/CardWrapper'
 import './index.scss'
 
 export default defineComponent({
   setup() {
-    const { books, importBook } = useBookStore()
+    const { importBook } = useBookStore()
 
     const handleImportBook = async () => {
       const paths = await appIPC.selectOpenFilePaths({
@@ -20,19 +21,14 @@ export default defineComponent({
     }
 
     return () => (
-      <div class="book-page">
+      <div class="books-page">
         <div class="test">
           <div class="button" onClick={handleImportBook}>
             Import
           </div>
         </div>
-        <div class="book-container">
-          {books.map(item => (
-            <>
-              <div>{item.data.metadata.title}</div>
-              <img src={item.coverUrl} />
-            </>
-          ))}
+        <div class="main-container">
+          <CardWrapper />
         </div>
       </div>
     )

@@ -1,10 +1,15 @@
 import type { RouteRecordRaw } from 'vue-router'
 
+type MetaData = {
+  label: string
+  icon: string
+}
+
 export default [
   {
-    path: 'book',
-    name: 'BOOK',
-    component: () => import('@/pages/book'),
+    path: 'books',
+    name: 'BOOKS',
+    component: () => import('@/pages/books'),
     meta: {
       label: '啦啦啦1',
       icon: 'ic_fluent_library_24_filled'
@@ -13,14 +18,10 @@ export default [
   {
     path: 'favorite',
     name: 'FAVORITE',
-    component: () => import('@/pages/book'),
+    component: () => import('@/pages/books'),
     meta: {
       label: '啦啦啦2',
       icon: 'ic_fluent_star_line_horizontal_3_24_filled'
     }
   }
-] as (RouteRecordRaw & {
-  meta: {
-    label: string
-  }
-})[]
+] as (RouteRecordRaw & { meta: MetaData })[]
