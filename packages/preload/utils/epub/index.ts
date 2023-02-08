@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import _path from 'path'
+import _path from 'path/posix'
 import { XMLParser } from 'fast-xml-parser'
 import type yauzl from 'yauzl'
 import { type ZipEntries, openZipFile, zipFileEntryToBuffer } from '../zip'
@@ -13,11 +13,11 @@ async function parseContainer(zipFile: yauzl.ZipFile, entries: ZipEntries, parse
   const buffer = await zipFileEntryToBuffer(zipFile, entries[CONTAINER_PATH])
   const containerNode = parser.parse(buffer)['container']
   const packagePath = containerNode['rootfiles']['rootfile']['full-path']
-  const directory = `${_path.dirname(packagePath)}/`
+  const directory = _path.dirname(packagePath)
 
   return {
     packagePath,
-    directory,
+    directory: directory === '.' ? '' : `${_path.dirname(packagePath)}/`,
     encoding: 'UTF-8'
   } as Container
 }

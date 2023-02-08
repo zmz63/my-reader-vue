@@ -18,7 +18,7 @@ export default [
   {
     path: 'favorite',
     name: 'FAVORITE',
-    component: () => import('@/pages/books'),
+    component: () => import('@/pages/empty'),
     meta: {
       label: '啦啦啦2',
       icon: 'ic_fluent_star_line_horizontal_3_24_filled'

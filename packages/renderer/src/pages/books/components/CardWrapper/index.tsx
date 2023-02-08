@@ -10,13 +10,7 @@ export default defineComponent({
     return () => (
       <div class="card-wrapper">
         {books.map(({ data: { metadata }, coverUrl }) => (
-          <Card
-            title={metadata.title}
-            cover={coverUrl}
-            creator={metadata.creator}
-            description={metadata.description}
-            publisher={metadata.publisher}
-          />
+          <Card metadata={metadata} cover={coverUrl} />
         ))}
       </div>
     )

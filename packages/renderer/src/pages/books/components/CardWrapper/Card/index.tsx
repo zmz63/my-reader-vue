@@ -1,21 +1,14 @@
-import { defineComponent } from 'vue'
+import { type PropType, defineComponent } from 'vue'
 import { NScrollbar } from 'naive-ui'
+import type { Metadata } from '@preload/utils/epub/types'
 import './index.scss'
 
 const bookCardProps = {
-  title: {
-    type: String
+  metadata: {
+    type: Object as PropType<Partial<Metadata>>,
+    required: true
   },
   cover: {
-    type: String
-  },
-  creator: {
-    type: String
-  },
-  description: {
-    type: String
-  },
-  publisher: {
     type: String
   }
 } as const
@@ -23,7 +16,7 @@ const bookCardProps = {
 export default defineComponent({
   props: bookCardProps,
   setup(props) {
-    const metaKeys = [
+    const metaKeys: [keyof Metadata, string][] = [
       ['creator', '作者'],
       ['description', '描述'],
       ['publisher', '出版社']
@@ -32,18 +25,20 @@ export default defineComponent({
     return () => (
       <div class="book-card">
         <div class="cover-wrapper">
-          <img class="cover" src={props.cover} />
+          {props.cover ? <img class="cover" src={props.cover} /> : null}
         </div>
         <div class="metadata-wrapper">
           <NScrollbar class="scrollbar">
             <div class="metadata">
-              <div class="title">{props.title}</div>
-              {metaKeys.map(([key, label]) => (
-                <div class="text-wrapper">
-                  <div class="label">{label}</div>
-                  <div class="value">{props[key as unknown as keyof props]}</div>
-                </div>
-              ))}
+              <div class="title">{props.metadata.title}</div>
+              {metaKeys.map(([key, label]) =>
+                props.metadata[key] ? (
+                  <div class="text-wrapper">
+                    <div class="label">{label}:</div>
+                    <div class="value">{props.metadata[key]}</div>
+                  </div>
+                ) : null
+              )}
             </div>
           </NScrollbar>
         </div>
