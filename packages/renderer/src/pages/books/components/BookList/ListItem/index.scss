@@ -1,11 +1,21 @@
 .list-item {
-  height: 60px;
+  height: 96px;
 
   .cover-wrapper {
-    width: 60px;
+    width: 69px;
+    height: 96px;
+    cursor: pointer;
+    user-select: none;
 
     .cover {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
+      -webkit-user-drag: none;
     }
+  }
+
+  .text {
+    padding-left: 10px;
   }
 }

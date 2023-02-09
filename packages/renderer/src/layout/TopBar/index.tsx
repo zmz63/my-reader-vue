@@ -1,5 +1,5 @@
 import { defineComponent, onBeforeMount, onUnmounted, ref } from 'vue'
-import { NButton, NSpace } from 'naive-ui'
+import { NButton } from 'naive-ui'
 import SvgIcon from '@/components/SvgIcon'
 import { WindowControlType } from '@packages/global'
 import './index.scss'
@@ -30,14 +30,8 @@ export default defineComponent({
       <div class="top-bar">
         <div class="left">Hello</div>
         <div class="right">
-          <div class="divider"></div>
-          <NSpace
-            style={{ width: '160px' }}
-            size={0}
-            wrapItem={false}
-            align="center"
-            justify="space-evenly"
-          >
+          <div class="divider" />
+          <div class="button-wrapper">
             <NButton
               quaternary
               size="tiny"
@@ -80,7 +74,7 @@ export default defineComponent({
             >
               <SvgIcon size={16} name="ic_fluent_dismiss_24_regular" />
             </NButton>
-          </NSpace>
+          </div>
         </div>
       </div>
     )

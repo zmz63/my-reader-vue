@@ -1,5 +1,4 @@
 import { defineComponent } from 'vue'
-import { NTbody } from 'naive-ui'
 import { useBookStore } from '@/stores/book'
 import ListItem from './ListItem'
 import './index.scss'
@@ -9,13 +8,17 @@ export default defineComponent({
     const { books } = useBookStore()
 
     return () => (
-      <div class="book-list">
-        <NTbody>
+      <table class="book-list">
+        <colgroup class="book-list-column">
+          <col class="cover" />
+          <col class="title" />
+        </colgroup>
+        <tbody class="book-list-container">
           {books.map(({ data: { metadata }, coverUrl }) => (
             <ListItem metadata={metadata} cover={coverUrl} />
           ))}
-        </NTbody>
-      </div>
+        </tbody>
+      </table>
     )
   }
 })

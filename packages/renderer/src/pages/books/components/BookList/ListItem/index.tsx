@@ -7,8 +7,15 @@ export default defineComponent({
   setup(props) {
     return () => (
       <tr class="list-item">
-        <td class="cover-wrapper">
-          {props.cover ? <img class="cover" src={props.cover} /> : null}
+        <td>
+          <div class="cover-wrapper">
+            {props.cover ? <img class="cover" src={props.cover} /> : null}
+          </div>
+        </td>
+        <td class="text">{props.metadata.title}</td>
+        <td class="text">{props.metadata.creator}</td>
+        <td>
+          <div>操作</div>
         </td>
       </tr>
     )

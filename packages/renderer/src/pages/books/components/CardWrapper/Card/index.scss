@@ -1,11 +1,10 @@
 .book-card {
   display: flex;
-  height: 192px;
 
   .cover-wrapper {
     overflow: hidden;
     width: 138px;
-    height: 100%;
+    height: 192px;
     flex-shrink: 0;
     border-radius: 4px;
     background-color: rgb(255 0 0);
@@ -23,9 +22,11 @@
 
   .metadata-wrapper {
     display: flex;
+    height: 192px;
     flex-direction: column;
     align-items: flex-start;
     padding: 0 8px;
+    word-break: break-word;
 
     .title {
       margin-bottom: 16px;

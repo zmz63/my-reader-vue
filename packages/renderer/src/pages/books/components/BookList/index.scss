@@ -1,4 +1,19 @@
 .book-list {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  table-layout: auto;
+  word-break: break-word;
+
+  &-column {
+    background-color: aquamarine;
+
+    .cover {
+      width: 69px;
+    }
+
+    .title {
+      width: 30%;
+    }
+  }
 }
