@@ -2,6 +2,7 @@ import { defineComponent } from 'vue'
 import { NScrollbar } from 'naive-ui'
 import { useBookStore } from '@/stores/book'
 import CardWrapper from './components/CardWrapper'
+import BookList from './components/BookList'
 import './index.scss'
 
 export default defineComponent({
@@ -23,14 +24,16 @@ export default defineComponent({
 
     return () => (
       <div class="books-page">
+        <div class="books-header">hello</div>
         <div class="test">
           <div class="button" onClick={handleImportBook}>
             Import
           </div>
         </div>
-        <NScrollbar style={{ height: '100%' }}>
-          <div class="main-container">
-            <CardWrapper />
+        <NScrollbar>
+          <div class="books-main-container">
+            {/* <CardWrapper /> */}
+            <BookList />
           </div>
         </NScrollbar>
       </div>

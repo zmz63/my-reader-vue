@@ -5,14 +5,14 @@
   box-sizing: border-box;
   flex-direction: column;
 
-  .layout-main-container {
+  &-main-container {
     display: flex;
     overflow: hidden;
     width: 100%;
     flex-grow: 1;
   }
 
-  .layout-main-view {
+  &-main-view {
     overflow: hidden;
     flex-grow: 1;
   }

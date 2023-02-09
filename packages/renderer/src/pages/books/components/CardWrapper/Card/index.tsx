@@ -1,33 +1,24 @@
-import { type PropType, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import { NScrollbar } from 'naive-ui'
 import type { Metadata } from '@preload/utils/epub/types'
+import { bookItemProps } from '@/pages/books/types'
 import './index.scss'
 
-const bookCardProps = {
-  metadata: {
-    type: Object as PropType<Partial<Metadata>>,
-    required: true
-  },
-  cover: {
-    type: String
-  }
-} as const
+export const metaKeys: [keyof Metadata, string, string?][] = [
+  ['creator', '作者', '佚名'],
+  ['publisher', '出版', '未知'],
+  ['description', '描述']
+]
 
 export default defineComponent({
-  props: bookCardProps,
+  props: bookItemProps,
   setup(props) {
-    const metaKeys: [keyof Metadata, string, string?][] = [
-      ['creator', '作者', '佚名'],
-      ['publisher', '出版', '未知'],
-      ['description', '描述']
-    ]
-
     return () => (
       <div class="book-card">
         <div class="cover-wrapper">
           {props.cover ? <img class="cover" src={props.cover} /> : null}
         </div>
-        <NScrollbar style={{ height: '100%' }}>
+        <NScrollbar>
           <div class="metadata-wrapper">
             <div class="title">{props.metadata.title}</div>
             {metaKeys.map(([key, label]) =>
