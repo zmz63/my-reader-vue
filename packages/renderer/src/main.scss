@@ -6,24 +6,3 @@ body {
   background-color: rgb(236 236 236);
   color: #333;
 }
-
-a {
-  -webkit-user-drag: none;
-}
-
-input {
-  border: none;
-  background-color: transparent;
-  outline: none;
-
-  &:focus {
-    outline: none;
-  }
-}
-
-iframe {
-  overflow: hidden;
-  width: 0;
-  height: 0;
-  border: none;
-}
