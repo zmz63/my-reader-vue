@@ -7,9 +7,19 @@
   }
 
   &-header {
-    height: 48px;
+    display: flex;
     flex-shrink: 0;
-    background-color: aqua;
+    justify-content: space-between;
+    padding: 16px;
+
+    .left {
+      background-color: bisque;
+    }
+
+    .right {
+      display: flex;
+      gap: 16px;
+    }
   }
 
   &-main-container {
@@ -20,7 +30,7 @@
 .test {
   position: fixed;
   z-index: 10;
-  right: 0;
+  right: 100px;
   display: flex;
 
   .button {

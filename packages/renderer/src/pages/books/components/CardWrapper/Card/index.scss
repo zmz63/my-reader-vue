@@ -1,21 +1,22 @@
 .book-card {
   display: flex;
+  user-select: none;
 
   .cover-wrapper {
     display: flex;
-    overflow: hidden;
-    width: 146px;
+    width: 142px;
     height: 192px;
     flex-shrink: 0;
     justify-content: center;
-    background-color: rgb(255 0 0);
 
     .cover {
+      max-width: 100%;
       height: 100%;
       border-radius: 4px;
+      box-shadow: var(--box-shadow-1);
       cursor: pointer;
+      object-fit: contain;
       -webkit-user-drag: none;
-      user-select: none;
     }
   }
 
@@ -28,36 +29,25 @@
     word-break: break-word;
 
     .title {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       cursor: pointer;
-      font-size: 18px;
-      font-weight: 600;
-
-      &::selection {
-        background-color: aquamarine;
-        color: #eee;
-      }
+      font-size: var(--font-size-huge);
+      font-weight: var(--font-weight-strong);
     }
 
     .text-wrapper {
       display: flex;
       padding-bottom: 8px;
-      font-size: 12px;
+      font-size: var(--font-size-small);
       gap: 4px;
 
       .label {
         flex-shrink: 0;
-        user-select: none;
       }
 
       .value {
-        color: #666;
+        color: var(--text-color-2);
         cursor: pointer;
-
-        &::selection {
-          background-color: aquamarine;
-          color: #eee;
-        }
 
         &:hover {
           text-decoration: underline;

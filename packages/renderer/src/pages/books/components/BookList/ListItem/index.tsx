@@ -13,10 +13,13 @@ export default defineComponent({
           </div>
         </td>
         <td>
-          <div class="text">{props.metadata.title}</div>
+          <div class="title">{props.metadata.title}</div>
         </td>
         <td>
           <div class="text">{props.metadata.creator}</div>
+        </td>
+        <td>
+          <div class="text">{props.metadata.publisher}</div>
         </td>
         <td>
           <div>操作</div>

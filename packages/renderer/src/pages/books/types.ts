@@ -10,3 +10,5 @@ export const bookItemProps = {
     type: String
   }
 } as const
+
+export type DisplayMode = 'list' | 'card'

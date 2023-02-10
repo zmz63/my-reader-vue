@@ -38,11 +38,10 @@ export default defineComponent({
               focusable={false}
               onClick={() => windowIPC.controlWindow(WindowControlType.ON_TOP, !isOnTop.value)}
             >
-              {isOnTop.value ? (
-                <SvgIcon size={16} name="ic_fluent_pin_off_24_regular" />
-              ) : (
-                <SvgIcon size={16} name="ic_fluent_pin_24_regular" />
-              )}
+              <SvgIcon
+                size={16}
+                name={isOnTop.value ? 'ic_fluent_pin_off_24_regular' : 'ic_fluent_pin_24_regular'}
+              />
             </NButton>
             <NButton
               quaternary
@@ -60,11 +59,14 @@ export default defineComponent({
                 windowIPC.controlWindow(WindowControlType.MAXIMIZE, !isMaximized.value)
               }
             >
-              {isMaximized.value ? (
-                <SvgIcon size={16} name="ic_fluent_square_multiple_24_regular" />
-              ) : (
-                <SvgIcon size={16} name="ic_fluent_maximize_24_regular" />
-              )}
+              <SvgIcon
+                size={16}
+                name={
+                  isMaximized.value
+                    ? 'ic_fluent_square_multiple_24_regular'
+                    : 'ic_fluent_maximize_24_regular'
+                }
+              />
             </NButton>
             <NButton
               quaternary

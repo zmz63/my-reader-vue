@@ -1,15 +1,12 @@
 .book-list {
   width: 100%;
-  background-color: brown;
   border-collapse: collapse;
   table-layout: auto;
   word-break: break-word;
 
   &-column {
-    background-color: aquamarine;
-
     .cover {
-      width: 72px;
+      width: 88px;
     }
 
     .action {
