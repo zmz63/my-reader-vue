@@ -11,7 +11,9 @@ export default defineComponent({
       <table class="book-list">
         <colgroup class="book-list-column">
           <col class="cover" />
-          <col class="title" />
+          <col class="text" />
+          <col class="text" />
+          <col class="action" />
         </colgroup>
         <tbody class="book-list-container">
           {books.map(({ data: { metadata }, coverUrl }) => (

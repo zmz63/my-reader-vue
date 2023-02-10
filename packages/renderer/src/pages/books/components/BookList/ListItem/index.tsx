@@ -12,8 +12,12 @@ export default defineComponent({
             {props.cover ? <img class="cover" src={props.cover} /> : null}
           </div>
         </td>
-        <td class="text">{props.metadata.title}</td>
-        <td class="text">{props.metadata.creator}</td>
+        <td>
+          <div class="text">{props.metadata.title}</div>
+        </td>
+        <td>
+          <div class="text">{props.metadata.creator}</div>
+        </td>
         <td>
           <div>操作</div>
         </td>

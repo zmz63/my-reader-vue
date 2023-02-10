@@ -32,8 +32,8 @@ export default defineComponent({
         </div>
         <NScrollbar>
           <div class="books-main-container">
-            {/* <CardWrapper /> */}
-            <BookList />
+            <CardWrapper />
+            {/* <BookList /> */}
           </div>
         </NScrollbar>
       </div>

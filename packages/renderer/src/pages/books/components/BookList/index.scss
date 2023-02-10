@@ -1,7 +1,7 @@
 .book-list {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px;
+  background-color: brown;
+  border-collapse: collapse;
   table-layout: auto;
   word-break: break-word;
 
@@ -9,11 +9,11 @@
     background-color: aquamarine;
 
     .cover {
-      width: 69px;
+      width: 72px;
     }
 
-    .title {
-      width: 30%;
+    .action {
+      width: 200px;
     }
   }
 }
