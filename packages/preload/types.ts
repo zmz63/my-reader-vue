@@ -1,4 +1,9 @@
-import type { AppIPC, WindowIPC } from './preload/index'
+import type * as appIPC from '@preload/ipc/app'
+import type * as windowIPC from '@preload/ipc/window'
+
+export type AppIPC = typeof appIPC
+
+export type WindowIPC = typeof windowIPC
 
 declare global {
   interface Window {
@@ -9,13 +14,6 @@ declare global {
   const appIPC: AppIPC
 
   const windowIPC: WindowIPC
-}
-
-export const enum WindowControlType {
-  ON_TOP,
-  MINIMIZE,
-  MAXIMIZE,
-  CLOSE
 }
 
 export type WindowStateEvent = 'maximize' | 'on-top'

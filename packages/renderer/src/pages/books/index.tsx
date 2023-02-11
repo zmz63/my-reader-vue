@@ -1,15 +1,16 @@
 import { defineComponent, ref } from 'vue'
 import { NButton, NScrollbar } from 'naive-ui'
-import { useBookStore } from '@/stores/book'
+import { useBookStore } from '@/stores/books'
 import SvgIcon from '@/components/SvgIcon'
-import CardWrapper from './components/CardWrapper'
+import BookCardWrapper from './components/BookCardWrapper'
 import BookList from './components/BookList'
-import type { DisplayMode } from './types'
 import './index.scss'
+
+type DisplayMode = 'list' | 'card'
 
 export default defineComponent({
   setup() {
-    const { importBook } = useBookStore()
+    const { books, importBook } = useBookStore()
 
     const handleImportBook = async () => {
       const paths = await appIPC.selectOpenFilePaths({
@@ -37,18 +38,20 @@ export default defineComponent({
     const renderBooks = () => {
       switch (displayMode.value) {
         case 'card':
-          return <CardWrapper />
+          return <BookCardWrapper books={books} />
         case 'list':
-          return <BookList />
+          return <BookList books={books} />
         default:
-          return <CardWrapper />
+          return <BookCardWrapper books={books} />
       }
     }
 
     return () => (
       <div class="books-page">
         <div class="books-header">
-          <div class="left">hello</div>
+          <div class="left">
+            <NButton onClick={handleImportBook}>Import</NButton>
+          </div>
           <div class="right">
             <NButton text focusable={false} onClick={() => handleSwitchDisplayMode('card')}>
               <SvgIcon
@@ -70,11 +73,6 @@ export default defineComponent({
                 }
               />
             </NButton>
-          </div>
-        </div>
-        <div class="test">
-          <div class="button" onClick={handleImportBook}>
-            Import
           </div>
         </div>
         <NScrollbar>

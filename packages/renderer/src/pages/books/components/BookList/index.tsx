@@ -1,12 +1,17 @@
-import { defineComponent } from 'vue'
-import { useBookStore } from '@/stores/book'
-import ListItem from './ListItem'
+import { type PropType, defineComponent } from 'vue'
+import type { Book } from '@/stores/books'
 import './index.scss'
 
-export default defineComponent({
-  setup() {
-    const { books } = useBookStore()
+const bookListProps = {
+  books: {
+    type: Array as PropType<Book[]>,
+    default: []
+  }
+} as const
 
+export default defineComponent({
+  props: bookListProps,
+  setup(props) {
     return () => (
       <table class="book-list">
         <colgroup class="book-list-column">
@@ -17,8 +22,26 @@ export default defineComponent({
           <col class="action" />
         </colgroup>
         <tbody class="book-list-container">
-          {books.map(({ data: { metadata }, coverUrl }) => (
-            <ListItem metadata={metadata} cover={coverUrl} />
+          {props.books.map(({ data: { metadata }, coverUrl }) => (
+            <tr class="book-list-item">
+              <td>
+                <div class="cover-wrapper">
+                  {coverUrl ? <img class="cover" src={coverUrl} /> : null}
+                </div>
+              </td>
+              <td>
+                <div class="title">{metadata.title}</div>
+              </td>
+              <td>
+                <div class="text">{metadata.creator}</div>
+              </td>
+              <td>
+                <div class="text">{metadata.publisher}</div>
+              </td>
+              <td>
+                <div>操作</div>
+              </td>
+            </tr>
           ))}
         </tbody>
       </table>

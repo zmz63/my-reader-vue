@@ -1,6 +1,6 @@
 import _path from 'path'
 import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron'
-import { WindowControlType } from '@packages/global'
+import { WindowControlType } from '@packages/constants'
 
 const gotTheLock = app.requestSingleInstanceLock()
 let mainWindow: BrowserWindow

@@ -1,7 +1,7 @@
 import { type Raw, markRaw, reactive } from 'vue'
 import { defineStore } from 'pinia'
 
-type Book = {
+export type Book = {
   data: Raw<EPub>
   coverUrl: string
 }

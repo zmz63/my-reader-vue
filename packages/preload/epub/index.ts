@@ -2,8 +2,8 @@
 import _path from 'path/posix'
 import { XMLParser } from 'fast-xml-parser'
 import type yauzl from 'yauzl'
-import { type ZipEntries, openZipFile, zipFileEntryToBuffer } from '../zip'
-import { getElementAttribute, getElementText } from '../xml'
+import { type ZipEntries, openZipFile, zipFileEntryToBuffer } from '@preload/utils/zip'
+import { getElementAttribute, getElementText } from '@preload/utils/xml'
 import type { Container, EPubOpenOptions, Manifest, Metadata, Package, Spine } from './types'
 import { Defer } from '@packages/common/defer'
 

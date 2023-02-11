@@ -1,11 +1,7 @@
 // import { contextBridge } from 'electron'
 import * as appIPC from '@preload/ipc/app'
 import * as windowIPC from '@preload/ipc/window'
-import { EPub } from './utils/epub'
-
-export type AppIPC = typeof appIPC
-
-export type WindowIPC = typeof windowIPC
+import { EPub } from './epub'
 
 // contextBridge.exposeInMainWorld('appIPC', appIPC)
 // contextBridge.exposeInMainWorld('windowIPC', windowIPC)

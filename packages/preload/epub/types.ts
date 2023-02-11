@@ -42,6 +42,10 @@ export type EPubOpenOptions = {
 }
 
 declare global {
+  interface Window {
+    EPub: typeof EPub
+  }
+
   class EPub {
     packagePath: string
 

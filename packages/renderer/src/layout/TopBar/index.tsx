@@ -1,7 +1,7 @@
 import { defineComponent, onBeforeMount, onUnmounted, ref } from 'vue'
 import { NButton } from 'naive-ui'
 import SvgIcon from '@/components/SvgIcon'
-import { WindowControlType } from '@packages/global'
+import { WindowControlType } from '@packages/constants'
 import './index.scss'
 
 export default defineComponent({
