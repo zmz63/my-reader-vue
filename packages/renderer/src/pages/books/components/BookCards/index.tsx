@@ -21,7 +21,7 @@ export default defineComponent({
   props: bookCardWrapperProps,
   setup(props) {
     return () => (
-      <div class="book-card-wrapper">
+      <div class="book-card-container">
         {props.books.map(({ data: { metadata }, coverUrl }) => (
           <div class="book-card-item">
             <div class="cover-wrapper">

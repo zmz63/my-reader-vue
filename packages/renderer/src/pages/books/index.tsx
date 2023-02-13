@@ -2,7 +2,7 @@ import { defineComponent, ref } from 'vue'
 import { NButton, NScrollbar } from 'naive-ui'
 import { useBookStore } from '@/stores/books'
 import SvgIcon from '@/components/SvgIcon'
-import BookCardWrapper from './components/BookCardWrapper'
+import BookCards from './components/BookCards'
 import BookList from './components/BookList'
 import './index.scss'
 
@@ -38,11 +38,11 @@ export default defineComponent({
     const renderBooks = () => {
       switch (displayMode.value) {
         case 'card':
-          return <BookCardWrapper books={books} />
+          return <BookCards books={books} />
         case 'list':
           return <BookList books={books} />
         default:
-          return <BookCardWrapper books={books} />
+          return <BookCards books={books} />
       }
     }
 
