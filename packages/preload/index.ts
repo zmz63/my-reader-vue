@@ -6,7 +6,7 @@ import { EPub } from './epub'
 // import Database from 'better-sqlite3'
 
 // console.log('@@@', Database)
-// const db = new Database('foobar.db')
+// const db = new Database('./temp/books.db')
 // console.log('@@@', db)
 
 // contextBridge.exposeInMainWorld('appIPC', appIPC)
