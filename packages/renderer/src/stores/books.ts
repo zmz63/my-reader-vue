@@ -1,9 +1,8 @@
-import { type Raw, markRaw, reactive } from 'vue'
+import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 
 export type Book = {
-  data: Raw<EPub>
-  coverUrl: string
+  data: EPub
 }
 
 export const useBookStore = defineStore('book', () => {
@@ -17,10 +16,10 @@ export const useBookStore = defineStore('book', () => {
 
       console.log(ePub)
 
-      books.push({
-        data: markRaw(ePub),
-        coverUrl: URL.createObjectURL(new Blob([ePub.cover as Buffer]))
-      })
+      // books.push({
+      //   data: markRaw(ePub),
+      //   coverUrl: URL.createObjectURL(new Blob([ePub.cover as Buffer]))
+      // })
     } catch (error) {
       // TODO
       console.log(error)

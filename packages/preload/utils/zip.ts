@@ -1,6 +1,7 @@
 import _fs from 'fs-extra'
 import yauzl from 'yauzl'
 import yazl from 'yazl'
+import { Defer } from '@packages/common/defer'
 
 export function buffersToZipFile(path: string, buffers: DataChunk<Buffer>[]) {
   const zipFile = new yazl.ZipFile()
@@ -55,78 +56,71 @@ export function buffersToZipFileBuffer(buffers: DataChunk<Buffer>[]) {
   })
 }
 
-// export function openZipFile(
-//   path: string,
-//   callback: (
-//     error: Error | null,
-//     zipFile: yauzl.ZipFile,
-//     entries: Record<string, yauzl.Entry> | null
-//   ) => Promise<void>
-// ) {
-//   yauzl.open(path, { autoClose: false, lazyEntries: false }, async (error, zipFile) => {
-//     if (error) {
-//       return callback(error, zipFile, null)
-//     }
-
-//     const entries: Record<string, yauzl.Entry> = {}
-
-//     zipFile.on('entry', entry => {
-//       if (!/\/$/.test(entry.fileName)) {
-//         entries[entry.fileName] = entry
-//       }
-//     })
-
-//     zipFile.on('end', async () => {
-//       callback(null, zipFile, entries).finally(() => {
-//         zipFile.close()
-//       })
-//     })
-//   })
-// }
-
 export type ZipEntries = Record<string, yauzl.Entry>
 
-export function openZipFile(path: string) {
-  const entries: ZipEntries = {}
+export class ZipArchive {
+  file: yauzl.ZipFile | null = null
 
-  return new Promise<{ zipFile: yauzl.ZipFile; entries: ZipEntries }>((resolve, reject) => {
+  entries: ZipEntries = {}
+
+  opened = new Defer<void>()
+
+  constructor(path: string) {
     yauzl.open(path, { autoClose: false, lazyEntries: false }, (error, zipFile) => {
       if (error) {
-        reject(error)
+        this.opened.reject(error)
       }
+
+      this.file = zipFile
 
       zipFile.on('entry', entry => {
         if (!/\/$/.test(entry.fileName)) {
-          entries[entry.fileName] = entry
+          this.entries[entry.fileName] = entry
         }
       })
 
       zipFile.on('end', async () => {
-        resolve({ zipFile, entries })
+        this.opened.resolve()
       })
     })
-  })
-}
+  }
 
-export function zipFileEntryToBuffer(zipFile: yauzl.ZipFile, entry: yauzl.Entry) {
-  const chunks: Buffer[] = []
+  async getBuffer(path: string) {
+    await this.opened.promise
 
-  return new Promise<Buffer>((resolve, reject) => {
-    zipFile.openReadStream(entry, (error, readStream) => {
-      if (error) reject(error)
+    return new Promise<Buffer>((resolve, reject) => {
+      if (!this.file || !this.entries[path]) return reject()
 
-      readStream.on('data', chunk => {
-        chunks.push(chunk)
-      })
+      const chunks: Buffer[] = []
 
-      readStream.on('end', () => {
-        const data = Buffer.concat(chunks)
-        resolve(data)
-      })
+      this.file.openReadStream(this.entries[path], (error, readStream) => {
+        if (error) reject(error)
 
-      readStream.on('error', error => {
-        reject(error)
+        readStream.on('data', chunk => {
+          chunks.push(chunk)
+        })
+
+        readStream.on('end', () => {
+          const data = Buffer.concat(chunks)
+          resolve(data)
+        })
+
+        readStream.on('error', error => {
+          reject(error)
+        })
       })
     })
-  })
+  }
+
+  async getText(path: string) {
+    const buffer = await this.getBuffer(path)
+
+    return buffer.toString('utf8')
+  }
+
+  async close() {
+    await this.opened.promise
+
+    this.file?.close()
+  }
 }

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export class Defer {
-  promise: Promise<void>
+export class Defer<T> {
+  promise: Promise<T>
 
-  resolve: ((value: void | PromiseLike<void>) => void) | null = null
+  resolve!: (value: T | PromiseLike<T>) => void
 
-  reject: ((reason?: any) => void) | null = null
+  reject!: (reason?: any) => void
 
   constructor() {
-    this.promise = new Promise<void>((resolve, reject) => {
+    this.promise = new Promise<T>((resolve, reject) => {
       this.resolve = resolve
       this.reject = reject
     })

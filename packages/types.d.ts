@@ -22,6 +22,11 @@ declare module '*.vue' {
   export default component
 }
 
+type DataChunk<T> = {
+  name: string
+  data: T
+}
+
 type Mutable<T> = {
   -readonly [P in keyof T]: T[P]
 }
@@ -30,16 +35,11 @@ type Simplify<T> = {
   [P in keyof T]: T[P]
 }
 
-type DataChunk<T> = {
-  name: string
-  data: T
-}
-
-type SetPartial<T, U extends keyof T> = Simplify<
+type PartialKey<T, U extends keyof T> = Simplify<
   { [P in U]?: T[P] } & { [P in keyof T as P extends U ? never : P]-?: T[P] }
 >
 
-type SetRequired<T, U extends keyof T> = Simplify<
+type RequiredKey<T, U extends keyof T> = Simplify<
   { [P in U]-?: T[P] } & { [P in keyof T as P extends U ? never : P]?: T[P] }
 >
 

@@ -1,4 +1,4 @@
-export class Rendition {
+export class Spine {
   constructor() {
     //
   }
