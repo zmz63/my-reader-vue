@@ -10,9 +10,9 @@ export class Resources {
 
   assets: Resource[] = []
 
-  async process(manifest: Manifest, zipArchive: ZipArchive, directory: string) {
+  async unpack(manifest: Manifest, zipArchive: ZipArchive, resolve: (path: string) => string) {
     for (const item of Object.values(manifest)) {
-      const resource = { ...item, buffer: zipArchive.getBuffer(directory + item.href) }
+      const resource = { ...item, buffer: zipArchive.getBuffer(resolve(item.href)) }
       if (item.type === 'application/xhtml+xml' || item.type === 'text/html') {
         this.htmlList.push(resource)
       } else if (item.type === 'text/css') {

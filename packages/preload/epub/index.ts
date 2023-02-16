@@ -46,7 +46,7 @@ export class EPub {
       ) as XMLDocument
       await this.package.parse(packageDocument)
 
-      this.resources.process(this.package.manifest, zipArchive, this.container.directory)
+      this.resources.unpack(this.package.manifest, zipArchive, this.resolve)
 
       if (options && options.dump) {
         // TODO
@@ -61,9 +61,7 @@ export class EPub {
     }
   }
 
-  resolve(path: string) {
-    return _path.join(this.container.directory, path)
-  }
+  resolve = (path: string) => _path.join(this.container.directory, path)
 
   dump() {
     // TODO
@@ -90,5 +88,7 @@ declare global {
     constructor(path?: string, options?: Partial<EPubOpenOptions>)
 
     open(path: string, options?: Partial<EPubOpenOptions>): Promise<void>
+
+    resolve(path: string): string
   }
 }
