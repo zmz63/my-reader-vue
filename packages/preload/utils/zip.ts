@@ -118,6 +118,12 @@ export class ZipArchive {
     return buffer.toString('utf8')
   }
 
+  async getBlob(path: string, type?: string) {
+    const buffer = await this.getBuffer(path)
+
+    return new Blob([buffer], { type })
+  }
+
   async close() {
     await this.opened.promise
 

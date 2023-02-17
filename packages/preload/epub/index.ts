@@ -46,7 +46,7 @@ export class EPub {
       ) as XMLDocument
       await this.package.parse(packageDocument)
 
-      this.resources.unpack(this.package.manifest, zipArchive, this.resolve)
+      await this.resources.unpack(this.package.manifest, zipArchive, this.resolve)
 
       if (options && options.dump) {
         // TODO
