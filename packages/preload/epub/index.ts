@@ -12,15 +12,15 @@ export type EPubOpenOptions = {
 }
 
 export class EPub {
+  path = ''
+
+  opened = new Defer<void>()
+
   container = new Container()
 
   package = new Package()
 
   resources = new Resources()
-
-  path = ''
-
-  opened = new Defer<void>()
 
   constructor(path?: string, options?: Partial<EPubOpenOptions>) {
     if (path) {
@@ -46,7 +46,9 @@ export class EPub {
       ) as XMLDocument
       await this.package.parse(packageDocument)
 
-      await this.resources.unpack(this.package.manifest, zipArchive, this.resolve)
+      const resolver = (path: string) => _path.join(this.container.directory, path)
+
+      await this.resources.unpack(this.package.manifest, zipArchive, resolver)
 
       if (options && options.dump) {
         // TODO
@@ -61,14 +63,12 @@ export class EPub {
     }
   }
 
-  resolve = (path: string) => _path.join(this.container.directory, path)
-
   dump() {
     // TODO
   }
 
   destroy() {
-    // TODO
+    this.resources.destroy()
   }
 }
 
@@ -77,13 +77,13 @@ declare global {
     EPub: typeof EPub
   }
   class EPub {
-    container: Container
-
-    package: Package
-
     path: string
 
     opened: Defer<void>
+
+    container: Container
+
+    package: Package
 
     constructor(path?: string, options?: Partial<EPubOpenOptions>)
 
