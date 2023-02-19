@@ -15,18 +15,6 @@ export default defineComponent({
     const { books, importBook } = useBookStore()
 
     const handleImportBook = async () => {
-      // const input = document.createElement('input')
-      // input.type = 'file'
-      // input.accept = '*'
-      // input.onchange = event => {
-      //   const files = (event.target as HTMLInputElement).files
-      //   if (files) {
-      //     const book = ePub(files[0])
-      //     console.log(book)
-      //   }
-      // }
-      // input.click()
-
       const paths = await appIPC.selectOpenFilePaths({
         filters: [{ name: 'Electronic Book', extensions: ['epub'] }],
         properties: ['multiSelections']
@@ -37,6 +25,20 @@ export default defineComponent({
       for (const path of paths) {
         importBook(path)
       }
+    }
+
+    const testEPub = () => {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '*'
+      input.onchange = event => {
+        const files = (event.target as HTMLInputElement).files
+        if (files) {
+          const book = ePub(files[0])
+          console.log(book)
+        }
+      }
+      input.click()
     }
 
     const displayMode = ref<DisplayMode>('card')
@@ -65,6 +67,7 @@ export default defineComponent({
         <div class="books-header">
           <div class="left">
             <NButton onClick={handleImportBook}>Import</NButton>
+            <NButton onClick={testEPub}>Test</NButton>
           </div>
           <div class="right">
             <NButton text focusable={false} onClick={() => handleSwitchDisplayMode('card')}>

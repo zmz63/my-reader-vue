@@ -6,12 +6,13 @@ export type ManifestItem = {
 
 export type Manifest = Record<string, ManifestItem>
 
-export type Spine = {
-  id: string
+export type SpineItem = {
   idref: string
   linear: string
   index: number
-}[]
+}
+
+export type Spine = SpineItem[]
 
 export type Metadata = {
   title: string
@@ -100,15 +101,13 @@ function parseSpine(spineNode: Element) {
   const spine: Spine = []
 
   const nodeList = spineNode.querySelectorAll('itemref')
-  for (let i = 0; i < nodeList.length; i++) {
-    const item = nodeList[i]
+  nodeList.forEach((item, index) => {
     spine.push({
-      id: item.getAttribute('id') || '',
       idref: item.getAttribute('idref') || '',
       linear: item.getAttribute('linear') || 'yes',
-      index: i
+      index
     })
-  }
+  })
 
   return spine
 }

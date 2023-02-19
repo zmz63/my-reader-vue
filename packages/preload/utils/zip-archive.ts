@@ -1,60 +1,5 @@
-import _fs from 'fs-extra'
 import yauzl from 'yauzl'
-import yazl from 'yazl'
 import { Defer } from '@packages/common/defer'
-
-export function buffersToZipFile(path: string, buffers: DataChunk<Buffer>[]) {
-  const zipFile = new yazl.ZipFile()
-
-  for (const { name, data } of buffers) {
-    zipFile.addBuffer(data, name)
-  }
-
-  zipFile.end()
-
-  return new Promise<void>((resolve, reject) => {
-    const outputStream = zipFile.outputStream
-
-    outputStream.pipe(_fs.createWriteStream(path))
-
-    outputStream.on('end', () => {
-      resolve()
-    })
-
-    outputStream.on('error', () => {
-      reject()
-    })
-  })
-}
-
-export function buffersToZipFileBuffer(buffers: DataChunk<Buffer>[]) {
-  const zipFile = new yazl.ZipFile()
-
-  for (const { name, data } of buffers) {
-    zipFile.addBuffer(data, name)
-  }
-
-  zipFile.end()
-
-  const chunks: Buffer[] = []
-
-  return new Promise<Buffer>((resolve, reject) => {
-    const outputStream = zipFile.outputStream
-
-    outputStream.on('data', chunk => {
-      chunks.push(chunk)
-    })
-
-    outputStream.on('end', () => {
-      const data = Buffer.concat(chunks)
-      resolve(data)
-    })
-
-    outputStream.on('error', error => {
-      reject(error)
-    })
-  })
-}
 
 export type ZipEntries = Record<string, yauzl.Entry>
 
@@ -63,9 +8,17 @@ export class ZipArchive {
 
   entries: ZipEntries = {}
 
+  domParser = new DOMParser()
+
   opened = new Defer<void>()
 
-  constructor(path: string) {
+  constructor(path?: string) {
+    if (path) {
+      this.open(path)
+    }
+  }
+
+  open(path: string) {
     yauzl.open(path, { autoClose: false, lazyEntries: false }, (error, zipFile) => {
       if (error) {
         this.opened.reject(error)
@@ -122,6 +75,18 @@ export class ZipArchive {
     const buffer = await this.getBuffer(path)
 
     return new Blob([buffer], { type })
+  }
+
+  async getXMLDocument(path: string) {
+    const text = await this.getText(path)
+
+    return this.domParser.parseFromString(text, 'application/xml') as XMLDocument
+  }
+
+  async getDocument(path: string) {
+    const text = await this.getText(path)
+
+    return this.domParser.parseFromString(text, 'application/xhtml+xml') as Document
   }
 
   async close() {

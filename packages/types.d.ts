@@ -22,11 +22,6 @@ declare module '*.vue' {
   export default component
 }
 
-type DataChunk<T> = {
-  name: string
-  data: T
-}
-
 type Mutable<T> = {
   -readonly [P in keyof T]: T[P]
 }

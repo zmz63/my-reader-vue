@@ -67,21 +67,6 @@ export class BufferCursor {
     return value
   }
 
-  // setString(value: string) {
-  //   for (let i = 0; i < value.length; i++) {
-  //     this.buffer[this.offset++] = value.charCodeAt(i)
-  //   }
-  // }
-
-  // getString(size: number) {
-  //   const result = []
-  //   for (let i = 0; i < size; i++) {
-  //     result.push(String.fromCharCode(this.buffer[this.offset++]))
-  //   }
-
-  //   return result.join('')
-  // }
-
   setFourCC(value: string) {
     this.view.setUint32(
       this.offset,

@@ -1,5 +1,5 @@
 import _path from 'path/posix'
-import type { ZipArchive } from '@preload/utils/zip'
+import type { ZipArchive } from '@preload/utils/zip-archive'
 import type { Manifest, ManifestItem } from './package'
 
 export class Resources {
@@ -12,14 +12,14 @@ export class Resources {
     }
   >[] = []
 
-  async unpack(manifest: Manifest, zipArchive: ZipArchive, resolver: (path: string) => string) {
+  async unpack(manifest: Manifest, archive: ZipArchive, resolver: (path: string) => string) {
     for (const item of Object.values(manifest)) {
       if (item.type !== 'application/xhtml+xml' && item.type !== 'text/html') {
         if (item.type === 'text/css') {
-          const data = await zipArchive.getText(resolver(item.href))
+          const data = await archive.getText(resolver(item.href))
           this.cssList.push({ ...item, data })
         } else {
-          const blob = await zipArchive.getBlob(resolver(item.href), item.type)
+          const blob = await archive.getBlob(resolver(item.href), item.type)
           this.assets.push({ ...item, data: blob, url: URL.createObjectURL(blob) })
         }
       }

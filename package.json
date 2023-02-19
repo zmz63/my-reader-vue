@@ -28,7 +28,6 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^9.7.0",
-    "fast-xml-parser": "^4.0.15",
     "fs-extra": "^11.1.0",
     "lodash": "^4.17.21",
     "naive-ui": "^2.34.3",
@@ -42,8 +41,7 @@
     "vite": "^3.2.4",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6",
-    "yauzl": "^2.10.0",
-    "yazl": "^2.5.1"
+    "yauzl": "^2.10.0"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.8.6",

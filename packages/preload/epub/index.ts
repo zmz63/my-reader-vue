@@ -1,8 +1,9 @@
 import _path from 'path/posix'
-import { ZipArchive } from '@preload/utils/zip'
+import { ZipArchive } from '@preload/utils/zip-archive'
 import { Defer } from '@packages/common/defer'
 import { Container } from './container'
 import { Package } from './package'
+import { Spine } from './spine'
 import { Resources } from './resources'
 
 const CONTAINER_PATH = 'META-INF/container.xml'
@@ -20,6 +21,8 @@ export class EPub {
 
   package = new Package()
 
+  spine = new Spine()
+
   resources = new Resources()
 
   constructor(path?: string, options?: Partial<EPubOpenOptions>) {
@@ -30,25 +33,23 @@ export class EPub {
 
   async open(path: string, options?: Partial<EPubOpenOptions>) {
     try {
-      const zipArchive = new ZipArchive(path)
+      const archive = new ZipArchive(path)
 
-      const domParser = new DOMParser()
-
-      const containerDocument = domParser.parseFromString(
-        await zipArchive.getText(CONTAINER_PATH),
-        'application/xml'
-      ) as XMLDocument
+      const containerDocument = await archive.getXMLDocument(CONTAINER_PATH)
       await this.container.parse(containerDocument)
 
-      const packageDocument = domParser.parseFromString(
-        await zipArchive.getText(this.container.packagePath),
-        'application/xml'
-      ) as XMLDocument
+      const packageDocument = await archive.getXMLDocument(this.container.packagePath)
       await this.package.parse(packageDocument)
 
       const resolver = (path: string) => _path.join(this.container.directory, path)
 
-      await this.resources.unpack(this.package.manifest, zipArchive, resolver)
+      await this.resources.unpack(this.package.manifest, archive, resolver)
+
+      await this.spine.unpack(this.package, archive, resolver)
+
+      this.spine.hooks.serialize.register((content, section) => {
+        section.content = this.resources.replace(content, section.url)
+      })
 
       if (options && options.dump) {
         // TODO
@@ -56,8 +57,7 @@ export class EPub {
 
       this.path = path
       this.opened.resolve()
-
-      zipArchive.close()
+      archive.close()
     } catch (error) {
       this.opened.reject(error)
     }
@@ -68,6 +68,7 @@ export class EPub {
   }
 
   destroy() {
+    this.spine.destroy()
     this.resources.destroy()
   }
 }
