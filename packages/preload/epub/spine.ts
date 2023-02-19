@@ -36,8 +36,8 @@ export class Spine {
   }
 
   async unpack(
-    { spine, manifest }: Package,
     archive: ZipArchive,
+    { spine, manifest }: Package,
     resolver: (path: string) => string
   ) {
     for (const item of spine) {

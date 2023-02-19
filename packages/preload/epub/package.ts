@@ -1,3 +1,5 @@
+import type { ZipArchive } from '@preload/utils/zip-archive'
+
 export type ManifestItem = {
   href: string
   overlay: string
@@ -171,7 +173,8 @@ export class Package {
     rights: ''
   }
 
-  async parse(packageDocument: XMLDocument) {
+  async parse(archive: ZipArchive, packagePath: string) {
+    const packageDocument = await archive.getXMLDocument(packagePath)
     const metadataNode = packageDocument.querySelector('metadata') as Element
     const manifestNode = packageDocument.querySelector('manifest') as Element
     const spineNode = packageDocument.querySelector('spine') as Element

@@ -12,7 +12,7 @@ export class Resources {
     }
   >[] = []
 
-  async unpack(manifest: Manifest, archive: ZipArchive, resolver: (path: string) => string) {
+  async unpack(archive: ZipArchive, manifest: Manifest, resolver: (path: string) => string) {
     for (const item of Object.values(manifest)) {
       if (item.type !== 'application/xhtml+xml' && item.type !== 'text/html') {
         if (item.type === 'text/css') {

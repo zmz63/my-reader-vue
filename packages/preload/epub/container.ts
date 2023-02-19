@@ -1,11 +1,13 @@
 import _path from 'path/posix'
+import type { ZipArchive } from '@preload/utils/zip-archive'
 
 export class Container {
   packagePath = ''
 
   directory = ''
 
-  async parse(containerDocument: XMLDocument) {
+  async parse(archive: ZipArchive, containerPath: string) {
+    const containerDocument = await archive.getXMLDocument(containerPath)
     const rootFile = containerDocument.querySelector('rootfile') as Element
     const packagePath = rootFile.getAttribute('full-path') as string
 

@@ -8,6 +8,8 @@ export class ZipArchive {
 
   entries: ZipEntries = {}
 
+  buffers: Record<string, Buffer> = {}
+
   domParser = new DOMParser()
 
   opened = new Defer<void>()
@@ -39,6 +41,10 @@ export class ZipArchive {
   }
 
   async getBuffer(path: string) {
+    if (this.buffers[path]) {
+      return this.buffers[path]
+    }
+
     await this.opened.promise
 
     return new Promise<Buffer>((resolve, reject) => {
@@ -55,6 +61,7 @@ export class ZipArchive {
 
         readStream.on('end', () => {
           const data = Buffer.concat(chunks)
+          this.buffers[path] = data
           resolve(data)
         })
 
