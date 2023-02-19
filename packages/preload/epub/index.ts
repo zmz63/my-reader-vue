@@ -52,6 +52,7 @@ export class EPub {
       this.opened.resolve()
       archive.close()
     } catch (error) {
+      console.error('error', error)
       this.opened.reject(error)
     }
   }
@@ -64,9 +65,9 @@ export class EPub {
     await this.spine.unpack(archive, this.package, resolver)
 
     if (this.package.ncxPath) {
-      await this.navigation.parseNcx(archive, this.package.ncxPath)
+      await this.navigation.parseNcx(archive, resolver(this.package.ncxPath))
     } else if (this.package.navPath) {
-      await this.navigation.parseNav(archive, this.package.navPath)
+      await this.navigation.parseNav(archive, resolver(this.package.navPath))
     }
 
     this.spine.hooks.serialize.register((content, section) => {
