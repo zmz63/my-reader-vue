@@ -685,7 +685,6 @@ class Book {
 	replacements() {
 		this.spine.hooks.serialize.register((output, section) => {
 			section.output = this.resources.substitute(output, section.url);
-      // console.log('&&&', section.output)
 		});
 
 		return this.resources.replacements().

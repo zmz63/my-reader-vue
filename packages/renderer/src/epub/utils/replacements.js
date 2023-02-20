@@ -98,7 +98,7 @@ export function replaceLinks(contents, fn) {
 		}else{
 			var linkUrl;
 			try {
-				linkUrl = new Url(href, location);
+				linkUrl = new Url(href, location);	
 			} catch(error) {
 				// NOOP
 			}
@@ -126,18 +126,13 @@ export function replaceLinks(contents, fn) {
 }
 
 export function substitute(content, urls, replacements) {
-  // console.log('***', content)
 	urls.forEach(function(url, i){
 		if (url && replacements[i]) {
 			// Account for special characters in the file name.
 			// See https://stackoverflow.com/a/6318729.
-      // console.log('&&&', url)
 			url = url.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-      // console.log('$$$', url)
 			content = content.replace(new RegExp(url, "g"), replacements[i]);
-      // console.log('***', contenst)
 		}
 	});
-  // console.log('^^^', content)
 	return content;
 }

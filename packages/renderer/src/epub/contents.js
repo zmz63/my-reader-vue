@@ -249,8 +249,6 @@ class Contents {
 		* @param {boolean} [priority] set as "important"
 		*/
 	css(property, value, priority) {
-    // console.log('###', property, value)
-    // return
 		var content = this.content || this.document.body;
 
 		if (value) {
@@ -1029,7 +1027,6 @@ class Contents {
 			viewport.width = width;
 			this.css("padding", "0 "+(width/12)+"px");
 		}
-    console.log(this.document.documentElement.offsetHeight)
 
 		if (height >= 0) {
 			this.height(height);
@@ -1037,9 +1034,8 @@ class Contents {
 		}
 
 		this.css("margin", "0");
-    console.log(this.document.documentElement.offsetHeight)
 		this.css("box-sizing", "border-box");
-    console.log(this.document.documentElement.offsetHeight)
+
 
 		this.viewport(viewport);
 	}

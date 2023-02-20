@@ -52,12 +52,11 @@ export class EPub {
       this.opened.resolve()
       archive.close()
     } catch (error) {
-      console.error('error', error)
       this.opened.reject(error)
     }
   }
 
-  async unpack(archive: ZipArchive) {
+  private async unpack(archive: ZipArchive) {
     const resolver = (path: string) => _path.join(this.container.directory, path)
 
     await this.resources.unpack(archive, this.package.manifest, resolver)

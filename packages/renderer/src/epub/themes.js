@@ -84,8 +84,8 @@ class Themes {
 
 	/**
 	 * Register a theme by passing its css as string
-	 * @param {string} name
-	 * @param {string} css
+	 * @param {string} name 
+	 * @param {string} css 
 	 */
 	registerCss (name, css) {
 		this._themes[name] = { "serialized" : css };
@@ -203,7 +203,6 @@ class Themes {
 	 * @param {boolean} priority
 	 */
 	override (name, value, priority) {
-    // console.log('$$$', name, value, priority)
 		var contents = this.rendition.getContents();
 
 		this._overrides[name] = {

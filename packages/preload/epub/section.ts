@@ -57,6 +57,11 @@ export class Section implements SectionData {
     const serializer = new XMLSerializer()
     const content = serializer.serializeToString(this.root)
     await this.hooks.serialize.trigger(content, this)
+
+    if (this.blobUrl) {
+      URL.revokeObjectURL(this.blobUrl)
+    }
+
     this.blobUrl = URL.createObjectURL(new Blob([this.content], { type: this.type }))
   }
 

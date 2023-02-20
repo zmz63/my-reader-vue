@@ -9,7 +9,13 @@ import IframeView from "./managers/views/iframe";
 import DefaultViewManager from "./managers/default";
 import ContinuousViewManager from "./managers/continuous";
 
-
+// /**
+//  * Creates a new Book
+//  * @param {string|ArrayBuffer} url URL, Path or ArrayBuffer
+//  * @param {object} options to pass to the book
+//  * @returns {Book} a new Book object
+//  * @example ePub("/path/to/book.epub", {})
+//  */
 function ePub(url, options) {
 	return new Book(url, options);
 }

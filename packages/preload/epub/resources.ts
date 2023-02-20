@@ -3,7 +3,7 @@ import type { ZipArchive } from '@preload/utils/zip-archive'
 import type { Manifest, ManifestItem } from './package'
 
 export class Resources {
-  cssList: Simplify<ManifestItem & { data: string | Blob }>[] = []
+  private cssList: Simplify<ManifestItem & { data: string | Blob }>[] = []
 
   assets: Simplify<
     ManifestItem & {
@@ -28,7 +28,7 @@ export class Resources {
     this.replaceCss(0)
   }
 
-  replaceCss(index: number) {
+  private replaceCss(index: number) {
     if (index >= this.cssList.length) {
       return
     }

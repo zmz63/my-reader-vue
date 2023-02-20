@@ -2,23 +2,7 @@ import { Hook } from '@packages/common/hook'
 import type { ZipArchive } from '@preload/utils/zip-archive'
 import type { Package } from './package'
 import { Section, type SectionData } from './section'
-
-function replaceBase(document: Document, url: string) {
-  const head = document.querySelector('head')
-
-  if (!head) {
-    return
-  }
-
-  let base = head.querySelector('base')
-
-  if (!base) {
-    base = document.createElement('base')
-    head.insertBefore(base, head.firstChild)
-  }
-
-  base.setAttribute('href', url)
-}
+import { replaceBase } from './utils'
 
 export type SpineHooks = {
   serialize: Hook<[string, Section]>

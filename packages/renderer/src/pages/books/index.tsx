@@ -27,6 +27,8 @@ export default defineComponent({
       }
     }
 
+    const testRef = ref<HTMLDivElement>()
+
     const testEPub = () => {
       const input = document.createElement('input')
       input.type = 'file'
@@ -36,6 +38,12 @@ export default defineComponent({
         if (files) {
           const book = ePub(files[0])
           console.log(book)
+          const rendition = book.renderTo(testRef.value, {
+            width: '100%',
+            height: 600,
+            spread: 'always'
+          })
+          rendition.display(10)
         }
       }
       input.click()
@@ -51,16 +59,16 @@ export default defineComponent({
       displayMode.value = mode
     }
 
-    const renderBooks = () => {
-      switch (displayMode.value) {
-        case 'card':
-          return <BookCards books={books} />
-        case 'list':
-          return <BookList books={books} />
-        default:
-          return <BookCards books={books} />
-      }
-    }
+    // const renderBooks = () => {
+    //   switch (displayMode.value) {
+    //     case 'card':
+    //       return <BookCards books={books} />
+    //     case 'list':
+    //       return <BookList books={books} />
+    //     default:
+    //       return <BookCards books={books} />
+    //   }
+    // }
 
     return () => (
       <div class="books-page">
@@ -92,9 +100,10 @@ export default defineComponent({
             </NButton>
           </div>
         </div>
-        <NScrollbar>
+        <div ref={testRef}></div>
+        {/* <NScrollbar>
           <div class="books-main-container">{renderBooks()}</div>
-        </NScrollbar>
+        </NScrollbar> */}
       </div>
     )
   }

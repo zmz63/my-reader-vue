@@ -98,7 +98,7 @@ class IframeView {
 		if (this.settings.allowPopups) {
 			this.iframe.sandbox += " allow-popups";
 		}
-
+		
 		this.iframe.setAttribute("enable-annotation", "true");
 
 		this.resizing = true;
@@ -181,14 +181,8 @@ class IframeView {
 				this.emit(EVENTS.VIEWS.WRITING_MODE, writingMode);
 
 
-        console.log('$$$')
-        console.log(this.document.documentElement.offsetHeight)
-        console.log('$$$')
 				// apply the layout function to the contents
 				this.layout.format(this.contents, this.section, this.axis);
-        console.log('$$$')
-        console.log(this.document.documentElement.offsetHeight)
-        console.log('$$$')
 
 				// Listen for events that require an expansion of the iframe
 				this.addListeners();
@@ -248,7 +242,6 @@ class IframeView {
 
 	// Lock an axis to element dimensions, taking borders into account
 	lock(what, width, height) {
-    console.log('***', width, height)
 		var elBorders = borders(this.element);
 		var iframeBorders;
 
@@ -324,10 +317,7 @@ class IframeView {
 
 		} // Expand Vertically
 		else if(this.settings.axis === "vertical") {
-			// height = this.contents.textHeight();
-      // &&&
-			height = this.document.documentElement.offsetHeight;
-			// height = this.contents.contentHeight();
+			height = this.contents.textHeight();
 			if (this.settings.flow === "paginated" &&
 				height % this.layout.height > 0) {
 				height = Math.ceil(height / this.layout.height) * this.layout.height;
@@ -337,7 +327,6 @@ class IframeView {
 		// Only Resize if dimensions have changed or
 		// if Frame is still hidden, so needs reframing
 		if(this._needsReframe || width != this._width || height != this._height){
-      console.log('!!!', height)
 			this.reframe(width, height);
 		}
 
@@ -345,7 +334,6 @@ class IframeView {
 	}
 
 	reframe(width, height) {
-    console.log('&&&', width, height)
 		var size;
 
 		if(isNumber(width)){

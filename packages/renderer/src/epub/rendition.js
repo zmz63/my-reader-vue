@@ -294,7 +294,14 @@ class Rendition {
 
 	}
 
-
+	// /**
+	//  * Display a point in the book
+	//  * The request will be added to the rendering Queue,
+	//  * so it will wait until book is opened, rendering started
+	//  * and all other rendering tasks have finished to be called.
+	//  * @param  {string} target Url or EpubCFI
+	//  * @return {Promise}
+	//  */
 	display(target){
 		if (this.displaying) {
 			this.displaying.resolve();

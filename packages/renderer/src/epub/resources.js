@@ -300,7 +300,6 @@ class Resources {
 		} else {
 			relUrls = this.urls;
 		}
-    // console.log(content, relUrls, this.replacementUrls)
 		return substitute(content, relUrls, this.replacementUrls);
 	}
 

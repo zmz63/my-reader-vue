@@ -32,116 +32,13 @@ export type Metadata = {
   relation: string
   coverage: string
   rights: string
+  layout: string
+  orientation: string
+  flow: string
+  viewport: string
+  spread: string
+  direction: string
   [tag: string]: string
-}
-
-function parseManifest(manifestNode: Element) {
-  const manifest: Manifest = {}
-
-  for (const item of manifestNode.querySelectorAll('item')) {
-    manifest[item.getAttribute('id') as string] = {
-      href: item.getAttribute('href') || '',
-      overlay: item.getAttribute('media-overlay') || '',
-      type: item.getAttribute('media-type') || ''
-    }
-  }
-
-  return manifest
-}
-
-function getNavPath(manifestNode: Element) {
-  for (const item of manifestNode.querySelectorAll('item')) {
-    if (item.getAttribute('properties') === 'nav') {
-      return (item.getAttribute('href') as string) || ''
-    }
-  }
-
-  return ''
-}
-
-function getNcxPath(manifestNode: Element, spineNode: Element) {
-  for (const item of manifestNode.querySelectorAll('item')) {
-    if (item.getAttribute('media-type') === 'application/x-dtbncx+xml') {
-      return (item.getAttribute('href') as string) || ''
-    }
-  }
-
-  if (spineNode.getAttribute('ncx')) {
-    for (const item of manifestNode.querySelectorAll('item')) {
-      if (item.getAttribute('id') === 'toc') {
-        return (item.getAttribute('href') as string) || ''
-      }
-    }
-  }
-
-  return ''
-}
-
-function getCoverPath(manifestNode: Element, metadataNode: Element) {
-  for (const item of manifestNode.querySelectorAll('item')) {
-    if (item.getAttribute('properties') === 'cover-image') {
-      return (item.getAttribute('href') as string) || ''
-    }
-  }
-
-  for (const meta of metadataNode.querySelectorAll('meta')) {
-    if (meta.getAttribute('name') === 'cover') {
-      const id = meta.getAttribute('content')
-      if (id) {
-        const item = manifestNode.querySelector(`#${id}`)
-        if (item) {
-          return (item.getAttribute('href') as string) || ''
-        }
-      }
-    }
-  }
-
-  return ''
-}
-
-function parseSpine(spineNode: Element) {
-  const spine: Spine = []
-
-  const nodeList = spineNode.querySelectorAll('itemref')
-  nodeList.forEach((item, index) => {
-    spine.push({
-      idref: item.getAttribute('idref') || '',
-      linear: item.getAttribute('linear') || 'yes',
-      index
-    })
-  })
-
-  return spine
-}
-
-function parseMetadata(metadataNode: Element) {
-  const metadata: Metadata = {
-    title: '',
-    creator: '',
-    subject: '',
-    description: '',
-    date: '',
-    type: '',
-    publisher: '',
-    contributor: '',
-    format: '',
-    identifier: '',
-    source: '',
-    language: '',
-    relation: '',
-    coverage: '',
-    rights: ''
-  }
-
-  for (const tag in metadata) {
-    metadata[tag] =
-      metadataNode.getElementsByTagNameNS(
-        metadataNode.getAttribute('xmlns:dc') || 'http://purl.org/dc/elements/1.1/',
-        tag
-      )[0]?.textContent || ''
-  }
-
-  return metadata
 }
 
 export class Package {
@@ -170,7 +67,13 @@ export class Package {
     language: '',
     relation: '',
     coverage: '',
-    rights: ''
+    rights: '',
+    layout: '',
+    orientation: '',
+    flow: '',
+    viewport: '',
+    spread: '',
+    direction: ''
   }
 
   async parse(archive: ZipArchive, packagePath: string) {
@@ -179,11 +82,119 @@ export class Package {
     const manifestNode = packageDocument.querySelector('manifest') as Element
     const spineNode = packageDocument.querySelector('spine') as Element
 
-    this.manifest = parseManifest(manifestNode)
-    this.navPath = getNavPath(manifestNode)
-    this.ncxPath = getNcxPath(manifestNode, spineNode)
-    this.coverPath = getCoverPath(manifestNode, metadataNode)
-    this.spine = parseSpine(spineNode)
-    this.metadata = parseMetadata(metadataNode)
+    this.parseManifest(manifestNode)
+    this.getNavPath(manifestNode)
+    this.getNcxPath(manifestNode, spineNode)
+    this.getCoverPath(manifestNode, metadataNode)
+    this.parseSpine(spineNode)
+    this.parseMetadata(metadataNode, spineNode)
+  }
+
+  private parseManifest(manifestNode: Element) {
+    for (const item of manifestNode.querySelectorAll('item')) {
+      this.manifest[item.getAttribute('id') as string] = {
+        href: item.getAttribute('href') || '',
+        overlay: item.getAttribute('media-overlay') || '',
+        type: item.getAttribute('media-type') || ''
+      }
+    }
+  }
+
+  private getNavPath(manifestNode: Element) {
+    for (const item of manifestNode.querySelectorAll('item')) {
+      if (item.getAttribute('properties') === 'nav') {
+        this.navPath = (item.getAttribute('href') as string) || ''
+      }
+    }
+  }
+
+  private getNcxPath(manifestNode: Element, spineNode: Element) {
+    for (const item of manifestNode.querySelectorAll('item')) {
+      if (item.getAttribute('media-type') === 'application/x-dtbncx+xml') {
+        this.ncxPath = (item.getAttribute('href') as string) || ''
+      }
+    }
+
+    if (spineNode.getAttribute('ncx')) {
+      for (const item of manifestNode.querySelectorAll('item')) {
+        if (item.getAttribute('id') === 'toc') {
+          this.ncxPath = (item.getAttribute('href') as string) || ''
+        }
+      }
+    }
+  }
+
+  private getCoverPath(manifestNode: Element, metadataNode: Element) {
+    for (const item of manifestNode.querySelectorAll('item')) {
+      if (item.getAttribute('properties') === 'cover-image') {
+        this.coverPath = (item.getAttribute('href') as string) || ''
+      }
+    }
+
+    for (const meta of metadataNode.querySelectorAll('meta')) {
+      if (meta.getAttribute('name') === 'cover') {
+        const id = meta.getAttribute('content')
+        if (id) {
+          const item = manifestNode.querySelector(`#${id}`)
+          if (item) {
+            this.coverPath = (item.getAttribute('href') as string) || ''
+          }
+        }
+      }
+    }
+  }
+
+  private parseSpine(spineNode: Element) {
+    const nodeList = spineNode.querySelectorAll('itemref')
+    nodeList.forEach((item, index) => {
+      this.spine.push({
+        idref: item.getAttribute('idref') || '',
+        linear: item.getAttribute('linear') || 'yes',
+        index
+      })
+    })
+  }
+
+  private parseMetadata(metadataNode: Element, spineNode: Element) {
+    const dcTag = [
+      'title',
+      'creator',
+      'subject',
+      'description',
+      'date',
+      'type',
+      'publisher',
+      'contributor',
+      'format',
+      'identifier',
+      'source',
+      'language',
+      'relation',
+      'coverage',
+      'rights'
+    ]
+    const renditionProps = ['layout', 'orientation', 'flow', 'viewport', 'spread']
+
+    for (const tag of dcTag) {
+      this.metadata[tag] =
+        metadataNode.getElementsByTagNameNS(
+          metadataNode.getAttribute('xmlns:dc') || 'http://purl.org/dc/elements/1.1/',
+          tag
+        )[0]?.textContent || ''
+    }
+
+    const metaNodes = metadataNode.querySelectorAll('meta')
+    for (const prop of renditionProps) {
+      for (const meta of metaNodes) {
+        if (meta.getAttribute('property') === `rendition:${prop}`) {
+          if (meta.textContent) {
+            this.metadata[prop] = meta.textContent
+          }
+          break
+        }
+      }
+    }
+
+    this.metadata.direction = spineNode.getAttribute('page-progression-direction') || ''
   }
 }

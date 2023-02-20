@@ -18,7 +18,7 @@ export default defineComponent({
       <svg
         class="svg-icon"
         style={{
-          fontSize: props.size ? `${props.size}px` : ''
+          fontSize: props.size ? `${props.size}px` : 'inherit'
         }}
       >
         <use xlinkHref={`#icon-${props.name}`} />
