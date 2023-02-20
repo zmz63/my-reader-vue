@@ -1,5 +1,5 @@
 export class ViewManager {
-  render() {
+  render(element: Element) {
     //
   }
 }
