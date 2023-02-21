@@ -1,6 +1,7 @@
 import { Defer } from '@packages/common/defer'
 import { Content } from './content'
 import type { Section } from './section'
+import { calculateBorder } from './utils'
 
 export class View {
   section: Section
@@ -16,6 +17,10 @@ export class View {
   document: Promise<Document>
 
   content: Promise<Content>
+
+  private lockedWidth = 0
+
+  private lockedHeight = 0
 
   private defer = {
     displayed: new Defer<void>(),
@@ -92,8 +97,18 @@ export class View {
     //
   }
 
-  lock() {
-    //
+  lock(type: 'width' | 'height' | 'both', width: number, height: number) {
+    const wrapperBorder = calculateBorder(this.wrapper)
+    const iframeBorder = calculateBorder(this.iframe)
+
+    if (type === 'width') {
+      this.lockedWidth = width - wrapperBorder.width - iframeBorder.width
+    } else if (type === 'height') {
+      this.lockedHeight = height - wrapperBorder.height - iframeBorder.height
+    } else {
+      this.lockedWidth = width - wrapperBorder.width - iframeBorder.width
+      this.lockedHeight = height - wrapperBorder.height - iframeBorder.height
+    }
   }
 
   destroy() {
