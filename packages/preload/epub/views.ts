@@ -1,0 +1,114 @@
+import type { View } from './view'
+import type { Section } from './section'
+
+export class Views {
+  private container: HTMLDivElement
+
+  private views: View[] = []
+
+  constructor(container: HTMLDivElement) {
+    this.container = container
+  }
+
+  get length() {
+    return this.views.length
+  }
+
+  all() {
+    return this.views
+  }
+
+  first() {
+    return this.views[0]
+  }
+
+  last() {
+    return this.views[this.views.length - 1]
+  }
+
+  indexOf(view: View, index: number) {
+    return this.views.indexOf(view, index)
+  }
+
+  slice(start?: number, end?: number) {
+    return this.views.slice(start, end)
+  }
+
+  get(index: number) {
+    return this.views[index]
+  }
+
+  append(view: View) {
+    this.views.push(view)
+    if (this.container) {
+      this.container.appendChild(view.wrapper)
+    }
+
+    return view
+  }
+
+  prepend(view: View) {
+    this.views.unshift(view)
+    if (this.container) {
+      this.container.insertBefore(view.wrapper, this.container.firstChild)
+    }
+
+    return view
+  }
+
+  insert(view: View, index: number) {
+    this.views.splice(index, 0, view)
+
+    if (this.container) {
+      if (index < this.container.children.length) {
+        this.container.insertBefore(view.wrapper, this.container.children[index])
+      } else {
+        this.container.appendChild(view.wrapper)
+      }
+    }
+
+    return view
+  }
+
+  remove(view: View) {
+    const index = this.views.indexOf(view)
+
+    if (index > -1) {
+      this.views.splice(index, 1)
+    }
+
+    this.destroy(view)
+  }
+
+  destroy(view: View) {
+    if (view.displayed) {
+      view.destroy()
+    }
+
+    if (this.container) {
+      this.container.removeChild(view.wrapper)
+    }
+  }
+
+  forEach(callback: (value: View, index: number, array: View[]) => void) {
+    return this.views.forEach(callback)
+  }
+
+  clear() {
+    if (!this.length) return
+
+    for (const view of this.views) {
+      this.destroy(view)
+    }
+
+    this.views = []
+  }
+
+  find(section: Section) {
+    for (const view of this.views) {
+      if (view.displayed && view.section.index === section.index) {
+        return view
+      }
+    }
+  }
+}

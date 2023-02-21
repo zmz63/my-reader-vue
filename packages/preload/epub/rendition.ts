@@ -1,8 +1,8 @@
 import { Queue } from '@packages/common/queue'
-import type { EPub } from '.'
+import type { Book } from './book'
 import { ViewManager } from './manager'
 
-export type EPubRenditionOptions = {
+export type RenditionOptions = {
   width: number | string
   height: number | string
   flow: string
@@ -12,13 +12,13 @@ export type EPubRenditionOptions = {
 }
 
 export class Rendition {
-  ePub: EPub
+  book: Book
+
+  manager: ViewManager
 
   queue = new Queue(this)
 
-  manager = new ViewManager()
-
-  options: EPubRenditionOptions = {
+  options: RenditionOptions = {
     width: '100%',
     height: '100%',
     flow: 'auto',
@@ -27,11 +27,21 @@ export class Rendition {
     direction: 'ltr'
   }
 
-  constructor(ePub: EPub) {
-    this.ePub = ePub
+  constructor(book: Book) {
+    this.book = book
+    this.manager = new ViewManager()
   }
 
   async init() {
-    await this.ePub.opened.promise
+    await this.book.opened
+  }
+
+  async display(target: number | string) {
+    const section = this.book.spine.get(target)
+
+    if (!section) {
+      // TODO
+      throw new Error()
+    }
   }
 }

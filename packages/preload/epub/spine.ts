@@ -1,5 +1,6 @@
 import { Hook } from '@packages/common/hook'
 import type { ZipArchive } from '@preload/utils/zip-archive'
+import { CFI } from './cfi'
 import type { Package } from './package'
 import { Section, type SectionData } from './section'
 import { replaceBase } from './utils'
@@ -15,13 +16,13 @@ export class Spine {
 
   idMap: Record<string, number> = {}
 
-  hooks: SpineHooks = {
+  hooks = {
     serialize: new Hook<[string, Section]>()
   }
 
   async unpack(
     archive: ZipArchive,
-    { spine, manifest }: Package,
+    { spine, manifest, spineNodeIndex }: Package,
     resolver: (path: string) => string
   ) {
     for (const item of spine) {
@@ -36,7 +37,8 @@ export class Spine {
         url,
         prev: null,
         next: null,
-        document: await archive.getDocument(url)
+        document: await archive.getDocument(url),
+        cfiBase: CFI.generateChapterFragment(spineNodeIndex, index, item.id)
       }
 
       replaceBase(sectionData.document, url)
@@ -75,8 +77,17 @@ export class Spine {
     }
   }
 
-  get(index: number) {
-    return this.sections[index]
+  get(target: number | string) {
+    let index = -1
+    if (typeof target === 'number') {
+      index = target
+    } else if (target.indexOf('#') === 0) {
+      index = this.idMap[target.substring(1)] || -1
+    } else {
+      index = this.hrefMap[target] || -1
+    }
+
+    return this.sections[index] || null
   }
 
   first() {

@@ -1,3 +1,20 @@
+export function indexOfNode(node: Node, nodeType: number) {
+  const parent = node.parentNode as ParentNode
+  const children = parent.childNodes
+
+  let index = -1
+  for (const child of children) {
+    if (child.nodeType === nodeType) {
+      index++
+      if (child === node) {
+        return index
+      }
+    }
+  }
+
+  return index
+}
+
 export function replaceBase(document: Document, url: string) {
   const head = document.querySelector('head')
 

@@ -9,6 +9,7 @@ export type SectionData = Simplify<
     prev: (() => Section | null) | null
     next: (() => Section | null) | null
     document: XMLDocument
+    cfiBase: string
   }
 >
 
@@ -18,6 +19,8 @@ export class Section implements SectionData {
   linear: string
 
   index: number
+
+  id: string
 
   type: string
 
@@ -39,11 +42,14 @@ export class Section implements SectionData {
 
   blobUrl = ''
 
+  cfiBase: string
+
   constructor(data: SectionData, hooks: SpineHooks) {
     this.idref = data.idref
     this.linear = data.linear
     this.index = data.index
     this.type = data.type
+    this.id = data.id
     this.href = data.href
     this.url = data.url
     this.document = data.document
@@ -51,6 +57,7 @@ export class Section implements SectionData {
     this.prev = data.prev
     this.next = data.next
     this.hooks = hooks
+    this.cfiBase = data.cfiBase
   }
 
   async serialize() {

@@ -2,17 +2,17 @@ import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 
 export type Book = {
-  data: EPub
+  data: typeof ePub.Book
 }
 
 export const useBookStore = defineStore('book', () => {
   const books = reactive<Book[]>([])
 
   const importBook = async (path: string) => {
-    const ePub = new EPub(path)
+    const book = new ePub.Book(path)
     try {
-      await ePub.opened.promise
-      console.log(ePub)
+      await book.opened
+      console.log(book)
       // books.push({
       //   data: markRaw(ePub),
       //   coverUrl: URL.createObjectURL(new Blob([ePub.cover as Buffer]))

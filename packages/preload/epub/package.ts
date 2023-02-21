@@ -1,4 +1,5 @@
 import type { ZipArchive } from '@preload/utils/zip-archive'
+import { indexOfNode } from './utils'
 
 export type ManifestItem = {
   href: string
@@ -12,6 +13,7 @@ export type SpineItem = {
   idref: string
   linear: string
   index: number
+  id: string
 }
 
 export type Spine = SpineItem[]
@@ -76,18 +78,26 @@ export class Package {
     direction: ''
   }
 
-  async parse(archive: ZipArchive, packagePath: string) {
-    const packageDocument = await archive.getXMLDocument(packagePath)
-    const metadataNode = packageDocument.querySelector('metadata') as Element
-    const manifestNode = packageDocument.querySelector('manifest') as Element
-    const spineNode = packageDocument.querySelector('spine') as Element
+  spineNodeIndex = 0
 
-    this.parseManifest(manifestNode)
-    this.getNavPath(manifestNode)
-    this.getNcxPath(manifestNode, spineNode)
-    this.getCoverPath(manifestNode, metadataNode)
-    this.parseSpine(spineNode)
-    this.parseMetadata(metadataNode, spineNode)
+  async parse(archive: ZipArchive, packagePath: string) {
+    try {
+      const packageDocument = await archive.getXMLDocument(packagePath)
+      const metadataNode = packageDocument.querySelector('metadata') as Element
+      const manifestNode = packageDocument.querySelector('manifest') as Element
+      const spineNode = packageDocument.querySelector('spine') as Element
+
+      this.parseManifest(manifestNode)
+      this.getNavPath(manifestNode)
+      this.getNcxPath(manifestNode, spineNode)
+      this.getCoverPath(manifestNode, metadataNode)
+      this.parseSpine(spineNode)
+      this.parseMetadata(metadataNode, spineNode)
+      this.spineNodeIndex = indexOfNode(spineNode, Node.ELEMENT_NODE)
+    } catch (error) {
+      // TODO
+      throw new Error()
+    }
   }
 
   private parseManifest(manifestNode: Element) {
@@ -150,7 +160,8 @@ export class Package {
       this.spine.push({
         idref: item.getAttribute('idref') || '',
         linear: item.getAttribute('linear') || 'yes',
-        index
+        index,
+        id: item.getAttribute('id') || ''
       })
     })
   }

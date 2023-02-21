@@ -25,10 +25,10 @@ export class Resources {
       }
     }
 
-    this.replaceCss(0)
+    this.replaceCss()
   }
 
-  private replaceCss(index: number) {
+  private replaceCss(index = 0) {
     if (index >= this.cssList.length) {
       return
     }

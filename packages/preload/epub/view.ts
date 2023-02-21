@@ -2,20 +2,23 @@ import { Defer } from '@packages/common/defer'
 import { Content } from './content'
 import type { Section } from './section'
 
-export class IframeView {
+export class View {
   section: Section
 
   wrapper: HTMLDivElement
 
   iframe: HTMLIFrameElement
 
-  document: Promise<Document>
+  displayed: Promise<void>
 
   window: Promise<Window>
 
+  document: Promise<Document>
+
   content: Promise<Content>
 
-  loaded = {
+  private defer = {
+    displayed: new Defer<void>(),
     window: new Defer<Window>(),
     document: new Defer<Document>(),
     content: new Defer<Content>()
@@ -26,9 +29,10 @@ export class IframeView {
     this.wrapper = this.createWrapper()
     this.iframe = this.createIframe()
 
-    this.window = this.loaded.window.promise
-    this.document = this.loaded.document.promise
-    this.content = this.loaded.content.promise
+    this.displayed = this.defer.displayed.promise
+    this.window = this.defer.window.promise
+    this.document = this.defer.document.promise
+    this.content = this.defer.content.promise
   }
 
   createWrapper() {
@@ -78,9 +82,21 @@ export class IframeView {
       const document = this.iframe.contentDocument as Document
       const content = new Content(document)
 
-      this.loaded.window.resolve(window)
-      this.loaded.document.resolve(document)
-      this.loaded.content.resolve(content)
+      this.defer.window.resolve(window)
+      this.defer.document.resolve(document)
+      this.defer.content.resolve(content)
     }
+  }
+
+  resize() {
+    //
+  }
+
+  lock() {
+    //
+  }
+
+  destroy() {
+    // TODO
   }
 }

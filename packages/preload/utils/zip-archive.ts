@@ -48,7 +48,10 @@ export class ZipArchive {
     await this.opened.promise
 
     return new Promise<Buffer>((resolve, reject) => {
-      if (!this.file || !this.entries[path]) return reject()
+      if (!this.file || !this.entries[path]) {
+        // TODO
+        return reject()
+      }
 
       const chunks: Buffer[] = []
 
