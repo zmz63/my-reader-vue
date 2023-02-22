@@ -5,6 +5,7 @@ export type ManifestItem = {
   href: string
   overlay: string
   type: string
+  properties: string[]
 }
 
 export type Manifest = Record<string, ManifestItem>
@@ -14,6 +15,7 @@ export type SpineItem = {
   linear: string
   index: number
   id: string
+  properties: string[]
 }
 
 export type Spine = SpineItem[]
@@ -105,7 +107,8 @@ export class Package {
       this.manifest[item.getAttribute('id') as string] = {
         href: item.getAttribute('href') || '',
         overlay: item.getAttribute('media-overlay') || '',
-        type: item.getAttribute('media-type') || ''
+        type: item.getAttribute('media-type') || '',
+        properties: item.getAttribute('properties')?.split(' ') || []
       }
     }
   }
@@ -161,7 +164,8 @@ export class Package {
         idref: item.getAttribute('idref') || '',
         linear: item.getAttribute('linear') || 'yes',
         index,
-        id: item.getAttribute('id') || ''
+        id: item.getAttribute('id') || '',
+        properties: item.getAttribute('properties')?.split(' ') || []
       })
     })
   }

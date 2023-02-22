@@ -28,11 +28,11 @@ export class ViewManager {
 
   constructor(options: Partial<ViewOptions> = {}) {
     Object.assign(this.options, options)
-    this.container = this.createContainer(this.options)
+    this.container = this.createContainer()
     this.views = new Views(this.container)
   }
 
-  createContainer(options: ViewOptions) {
+  createContainer() {
     const container = document.createElement('div')
 
     container.style.wordSpacing = '0'
@@ -41,21 +41,23 @@ export class ViewManager {
     container.style.position = 'relative'
     container.style.overflow = 'hidden'
 
-    const width = typeof options.width === 'number' ? `${options.width}px` : options.width
-    const height = typeof options.height === 'number' ? `${options.height}px` : options.height
+    const width =
+      typeof this.options.width === 'number' ? `${this.options.width}px` : this.options.width
+    const height =
+      typeof this.options.height === 'number' ? `${this.options.height}px` : this.options.height
 
     container.style.width = width
     container.style.height = height
 
-    if (options.axis === 'horizontal') {
+    if (this.options.axis === 'horizontal') {
       container.style.display = 'flex'
       container.style.flexDirection = 'row'
       container.style.flexWrap = 'nowrap'
     }
 
-    if (options.direction) {
-      container.dir = options.direction
-      container.style.direction = options.direction
+    if (this.options.direction) {
+      container.dir = this.options.direction
+      container.style.direction = this.options.direction
     }
 
     return container

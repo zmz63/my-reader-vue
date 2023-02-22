@@ -81,9 +81,7 @@ export class Views {
   }
 
   destroy(view: View) {
-    if (view.displayed) {
-      view.destroy()
-    }
+    view.destroy()
 
     if (this.container) {
       this.container.removeChild(view.wrapper)
@@ -106,7 +104,7 @@ export class Views {
 
   find(section: Section) {
     for (const view of this.views) {
-      if (view.displayed && view.section.index === section.index) {
+      if (view.section.data.index === section.data.index) {
         return view
       }
     }

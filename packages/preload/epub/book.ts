@@ -76,7 +76,7 @@ export class Book {
     }
 
     this.spine.hooks.serialize.register((content, section) => {
-      section.content = this.resources.replace(content, section.url)
+      section.content = this.resources.replace(content, section.data.url)
     })
   }
 

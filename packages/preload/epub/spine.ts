@@ -10,11 +10,11 @@ export type SpineHooks = {
 }
 
 export class Spine {
-  sections: Section[] = []
+  private sections: Section[] = []
 
-  hrefMap: Record<string, number> = {}
+  private hrefMap: Record<string, number> = {}
 
-  idMap: Record<string, number> = {}
+  private idMap: Record<string, number> = {}
 
   hooks = {
     serialize: new Hook<[string, Section]>()
@@ -30,6 +30,7 @@ export class Spine {
       const manifestItem = manifest[item.idref]
       const url = resolver(manifestItem.href)
 
+      const sectionDocument = await archive.getDocument(url)
       const sectionData: SectionData = {
         ...item,
         type: manifestItem.type,
@@ -37,18 +38,17 @@ export class Spine {
         url,
         prev: null,
         next: null,
-        document: await archive.getDocument(url),
         cfiBase: CFI.generateChapterFragment(spineNodeIndex, index, item.id)
       }
 
-      replaceBase(sectionData.document, url)
+      replaceBase(sectionDocument, url)
 
       if (sectionData.linear === 'yes') {
         sectionData.prev = () => {
           let prevIndex = index - 1
           while (prevIndex >= 0) {
             const prev = this.get(prevIndex)
-            if (prev && prev.linear) {
+            if (prev && prev.data.linear) {
               return prev
             }
             prevIndex -= 1
@@ -59,7 +59,7 @@ export class Spine {
           let nextIndex = index + 1
           while (nextIndex < this.sections.length) {
             const next = this.get(nextIndex)
-            if (next && next.linear) {
+            if (next && next.data.linear) {
               return next
             }
             nextIndex += 1
@@ -68,12 +68,15 @@ export class Spine {
         }
       }
 
-      const section = new Section(sectionData, this.hooks)
+      const section = new Section(sectionData, sectionDocument, this.hooks)
+
       this.sections[index] = section
-      this.hrefMap[decodeURI(section.href)] = index
-      this.hrefMap[encodeURI(section.href)] = index
-      this.hrefMap[section.href] = index
-      this.idMap[section.idref] = index
+
+      this.hrefMap[decodeURI(sectionData.href)] = index
+      this.hrefMap[encodeURI(sectionData.href)] = index
+      this.hrefMap[sectionData.href] = index
+
+      this.idMap[sectionData.idref] = index
     }
   }
 
@@ -93,7 +96,7 @@ export class Spine {
   first() {
     for (let i = 0; i < this.sections.length; i++) {
       const section = this.sections[i]
-      if (section && section.linear) {
+      if (section && section.data.linear) {
         return section
       }
     }
@@ -102,7 +105,7 @@ export class Spine {
   last() {
     for (let i = this.sections.length - 1; i >= 0; i--) {
       const section = this.sections[i]
-      if (section && section.linear) {
+      if (section && section.data.linear) {
         return section
       }
     }

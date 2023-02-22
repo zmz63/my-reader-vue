@@ -8,29 +8,12 @@ export type SectionData = Simplify<
     url: string
     prev: (() => Section | null) | null
     next: (() => Section | null) | null
-    document: XMLDocument
     cfiBase: string
   }
 >
 
-export class Section implements SectionData {
-  idref: string
-
-  linear: string
-
-  index: number
-
-  id: string
-
-  type: string
-
-  href: string
-
-  url: string
-
-  prev: (() => Section | null) | null
-
-  next: (() => Section | null) | null
+export class Section {
+  data: SectionData
 
   hooks: SpineHooks
 
@@ -42,22 +25,11 @@ export class Section implements SectionData {
 
   blobUrl = ''
 
-  cfiBase: string
-
-  constructor(data: SectionData, hooks: SpineHooks) {
-    this.idref = data.idref
-    this.linear = data.linear
-    this.index = data.index
-    this.type = data.type
-    this.id = data.id
-    this.href = data.href
-    this.url = data.url
-    this.document = data.document
-    this.root = data.document.documentElement
-    this.prev = data.prev
-    this.next = data.next
+  constructor(data: SectionData, document: XMLDocument, hooks: SpineHooks) {
+    this.data = data
+    this.document = document
+    this.root = document.documentElement
     this.hooks = hooks
-    this.cfiBase = data.cfiBase
   }
 
   async serialize() {
@@ -69,7 +41,7 @@ export class Section implements SectionData {
       URL.revokeObjectURL(this.blobUrl)
     }
 
-    this.blobUrl = URL.createObjectURL(new Blob([this.content], { type: this.type }))
+    this.blobUrl = URL.createObjectURL(new Blob([this.content], { type: this.data.type }))
   }
 
   destroy() {

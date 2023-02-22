@@ -3,7 +3,25 @@ import { Content } from './content'
 import type { Section } from './section'
 import { calculateBorder } from './utils'
 
+export type ViewOptions = {
+  width: number
+  height: number
+  columnWidth: number
+  layout: 'reflowable' | 'pre-paginated'
+  flow: 'paginated' | 'scrolled-continuous' | 'scrolled-doc'
+  axis: 'vertical' | 'horizontal'
+}
+
 export class View {
+  options: ViewOptions = {
+    width: 0,
+    height: 0,
+    columnWidth: 0,
+    layout: 'reflowable',
+    flow: 'paginated',
+    axis: 'vertical'
+  }
+
   section: Section
 
   wrapper: HTMLDivElement
@@ -18,9 +36,9 @@ export class View {
 
   content: Promise<Content>
 
-  private lockedWidth = 0
+  private lockedWidth: number | null = null
 
-  private lockedHeight = 0
+  private lockedHeight: number | null = null
 
   private defer = {
     displayed: new Defer<void>(),
@@ -29,8 +47,10 @@ export class View {
     content: new Defer<Content>()
   }
 
-  constructor(section: Section) {
+  constructor(section: Section, options: ViewOptions) {
     this.section = section
+    Object.assign(this.options, options)
+
     this.wrapper = this.createWrapper()
     this.iframe = this.createIframe()
 
@@ -46,6 +66,18 @@ export class View {
     }
 
     const wrapper = document.createElement('div')
+
+    wrapper.style.height = '0'
+    wrapper.style.width = '0'
+    wrapper.style.overflow = 'hidden'
+    wrapper.style.position = 'relative'
+    wrapper.style.display = 'block'
+
+    if (this.options.axis && this.options.axis === 'horizontal') {
+      wrapper.style.flex = 'none'
+    } else {
+      wrapper.style.flex = 'initial'
+    }
 
     return wrapper
   }
@@ -63,11 +95,11 @@ export class View {
 
     const iframe = document.createElement('iframe')
 
+    iframe.style.width = '0'
+    iframe.style.height = '0'
     iframe.style.overflow = 'hidden'
     iframe.style.border = 'none'
     iframe.style.visibility = 'hidden'
-    iframe.style.width = '0'
-    iframe.style.height = '0'
 
     iframe.setAttribute('sandbox', 'allow-same-origin')
 
@@ -93,22 +125,41 @@ export class View {
     }
   }
 
-  resize() {
-    //
+  resize(width: number, height: number) {
+    this.options.width = width
+    this.options.height = height
+
+    this.lock()
   }
 
-  lock(type: 'width' | 'height' | 'both', width: number, height: number) {
+  layout(layout: 'reflowable' | 'pre-paginated', axis: 'vertical' | 'horizontal') {
+    this.options.layout = layout
+    this.options.axis = axis
+
+    this.lock()
+  }
+
+  lock() {
     const wrapperBorder = calculateBorder(this.wrapper)
     const iframeBorder = calculateBorder(this.iframe)
 
-    if (type === 'width') {
+    const width = this.options.width
+    const height = this.options.height
+
+    if (this.options.layout === 'pre-paginated') {
       this.lockedWidth = width - wrapperBorder.width - iframeBorder.width
-    } else if (type === 'height') {
+      this.lockedHeight = height - wrapperBorder.height - iframeBorder.height
+    } else if (this.options.axis === 'horizontal') {
+      this.lockedWidth = null
       this.lockedHeight = height - wrapperBorder.height - iframeBorder.height
     } else {
       this.lockedWidth = width - wrapperBorder.width - iframeBorder.width
-      this.lockedHeight = height - wrapperBorder.height - iframeBorder.height
+      this.lockedHeight = null
     }
+  }
+
+  expand() {
+    //
   }
 
   destroy() {
