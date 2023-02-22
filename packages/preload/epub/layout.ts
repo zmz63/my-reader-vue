@@ -29,6 +29,8 @@ export class Layout implements LayoutOptions {
 
   direction: 'ltr' | 'rtl' = 'ltr'
 
+  wrapper: HTMLDivElement
+
   container: HTMLDivElement
 
   element: Element | null = null
@@ -45,10 +47,29 @@ export class Layout implements LayoutOptions {
 
   constructor(options: Partial<LayoutOptions>) {
     Object.assign(this, options)
+    this.wrapper = this.createWrapper()
     this.container = this.createContainer()
     this.observer = new ResizeObserver(() => {
       // TODO
     })
+  }
+
+  createWrapper() {
+    if (this.wrapper) {
+      return this.wrapper
+    }
+
+    const wrapper = document.createElement('div')
+
+    wrapper.style.height = '100%'
+    wrapper.style.width = '100%'
+    wrapper.style.position = 'relative'
+    wrapper.style.overflow = 'hidden'
+    wrapper.style.display = 'flex'
+    wrapper.style.justifyContent = 'center'
+    wrapper.style.alignItems = 'center'
+
+    return wrapper
   }
 
   createContainer() {
@@ -77,11 +98,13 @@ export class Layout implements LayoutOptions {
       container.style.direction = this.direction
     }
 
+    this.wrapper.appendChild(container)
+
     return container
   }
 
   attachTo(element: Element) {
-    element.appendChild(this.container)
+    element.appendChild(this.wrapper)
     this.element = element
 
     return element
@@ -109,6 +132,8 @@ export class Layout implements LayoutOptions {
       return
     }
 
+    this.wrapper.style.minWidth = `${width}px`
+    this.wrapper.style.minHeight = `${height}px`
     this.container.style.width = `${width}px`
     this.container.style.height = `${height}px`
 
@@ -167,14 +192,13 @@ export class Layout implements LayoutOptions {
   }
 
   update() {
-    if (!this.width || !this.height) {
-      return
-    }
+    const width = this.width || this.wrapper.clientWidth
+    const height = this.height || this.wrapper.clientHeight
 
     if (this.type === 'pre-paginated') {
       //
     } else {
-      const divisor = this.spread && this.width > this.minSpreadWidth ? 2 : 1
+      const divisor = this.spread && width > this.minSpreadWidth ? 2 : 1
     }
   }
 

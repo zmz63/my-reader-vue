@@ -41,8 +41,14 @@ export default defineComponent({
           const rendition = book.renderTo(testRef.value, {
             width: '100%',
             height: 600,
-            spread: 'always'
+            spread: 'always',
+            writingMode: 'vertical-lr'
+            // axis: 'horizontal',
+            // flow: 'scrolled'
+            // defaultDirection: 'rtl',
+            // direction: 'rtl'
           })
+          console.log(rendition)
           rendition.display(10)
         }
       }
