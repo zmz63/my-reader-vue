@@ -1,7 +1,9 @@
 import { Hook } from '@packages/common/hook'
 
 export type LayoutOptions = {
-  type: 'reflowable' | 'pre-paginated'
+  layout: 'reflowable' | 'pre-paginated'
+  width: number
+  height: number
   spread: boolean
   minSpreadWidth: number
   gap: number
@@ -10,24 +12,30 @@ export type LayoutOptions = {
   direction: 'ltr' | 'rtl'
 }
 
-export class Layout implements LayoutOptions {
-  type: 'reflowable' | 'pre-paginated' = 'reflowable'
+export type LayoutData = {
+  divisor: number
+  gap: number
+  columnWidth: number
+}
 
-  width = 0
+export class Layout {
+  options: LayoutOptions = {
+    layout: 'reflowable',
+    width: 0,
+    height: 0,
+    spread: false,
+    minSpreadWidth: 800,
+    gap: 0,
+    flow: 'paginated',
+    axis: 'horizontal',
+    direction: 'ltr'
+  }
 
-  height = 0
-
-  spread = false
-
-  minSpreadWidth = 800
-
-  gap = 0
-
-  flow: 'paginated' | 'scrolled-continuous' | 'scrolled-doc' = 'paginated'
-
-  axis: 'vertical' | 'horizontal' = 'vertical'
-
-  direction: 'ltr' | 'rtl' = 'ltr'
+  data: LayoutData = {
+    divisor: 0,
+    gap: 0,
+    columnWidth: 0
+  }
 
   wrapper: HTMLDivElement
 
@@ -37,24 +45,24 @@ export class Layout implements LayoutOptions {
 
   observer: ResizeObserver
 
-  columnWidth = 0
-
-  divisor = 0
-
   hooks = {
-    update: new Hook()
+    update: new Hook<(options: LayoutOptions, data: LayoutData) => void>()
   }
 
   constructor(options: Partial<LayoutOptions>) {
-    Object.assign(this, options)
+    Object.assign(this.options, options)
+
     this.wrapper = this.createWrapper()
     this.container = this.createContainer()
     this.observer = new ResizeObserver(() => {
-      // TODO
+      if (!this.options.width || !this.options.height) {
+        this.update()
+      }
     })
+    this.observer.observe(this.wrapper)
   }
 
-  createWrapper() {
+  private createWrapper() {
     if (this.wrapper) {
       return this.wrapper
     }
@@ -63,6 +71,8 @@ export class Layout implements LayoutOptions {
 
     wrapper.style.height = '100%'
     wrapper.style.width = '100%'
+    wrapper.style.minWidth = '0px'
+    wrapper.style.minHeight = '0px'
     wrapper.style.position = 'relative'
     wrapper.style.overflow = 'hidden'
     wrapper.style.display = 'flex'
@@ -72,30 +82,30 @@ export class Layout implements LayoutOptions {
     return wrapper
   }
 
-  createContainer() {
+  private createContainer() {
     if (this.container) {
       return this.container
     }
 
     const container = document.createElement('div')
 
-    container.style.width = '0'
-    container.style.height = '0'
+    container.style.width = '0px'
+    container.style.height = '0px'
     container.style.wordSpacing = '0'
     container.style.lineHeight = '0'
     container.style.verticalAlign = 'top'
     container.style.position = 'relative'
     container.style.overflow = 'hidden'
 
-    if (this.axis === 'horizontal') {
+    if (this.options.axis === 'horizontal') {
       container.style.display = 'flex'
       container.style.flexDirection = 'row'
       container.style.flexWrap = 'nowrap'
     }
 
-    if (this.direction) {
-      container.dir = this.direction
-      container.style.direction = this.direction
+    if (this.options.direction) {
+      container.dir = this.options.direction
+      container.style.direction = this.options.direction
     }
 
     this.wrapper.appendChild(container)
@@ -110,62 +120,34 @@ export class Layout implements LayoutOptions {
     return element
   }
 
-  setLayout(type: 'reflowable'): void
+  setLayout(layout: LayoutOptions['layout'], width: number, height: number) {
+    this.options.layout = layout
 
-  setLayout(type: 'pre-paginated', width: number, height: number): void
-
-  setLayout(type: LayoutOptions['type'], width?: number, height?: number) {
-    if (this.type === type) {
-      return
-    }
-
-    this.type = type
-    if (type === 'pre-paginated' && width && height) {
-      this.setSize(width, height)
-    } else {
-      this.update()
-    }
+    this.setSize(width, height)
   }
 
   setSize(width: number, height: number) {
-    if (this.width === width && this.height === height) {
-      return
-    }
+    this.options.width = width
+    this.options.height = height
 
-    this.wrapper.style.minWidth = `${width}px`
-    this.wrapper.style.minHeight = `${height}px`
-    this.container.style.width = `${width}px`
-    this.container.style.height = `${height}px`
-
-    this.width = width
-    this.height = height
     this.update()
   }
 
-  setSpread(spread: boolean, minSpreadWidth: number) {
-    if (this.spread === spread && this.minSpreadWidth === minSpreadWidth) {
-      return
-    }
+  setSpread(spread: boolean, minSpreadWidth = 800, gap = 0) {
+    this.options.spread = spread
+    this.options.minSpreadWidth = minSpreadWidth
+    this.options.gap = gap
 
-    this.spread = spread
-    this.minSpreadWidth = minSpreadWidth
     this.update()
   }
 
   setFlow(flow: LayoutOptions['flow']) {
-    if (this.flow === flow) {
-      return
-    }
+    this.options.flow = flow
 
-    this.flow = flow
     this.update()
   }
 
   setAxis(axis: LayoutOptions['axis']) {
-    if (this.axis === axis) {
-      return
-    }
-
     if (axis === 'horizontal') {
       this.container.style.display = 'flex'
       this.container.style.flexDirection = 'row'
@@ -174,35 +156,57 @@ export class Layout implements LayoutOptions {
       this.container.style.display = 'block'
     }
 
-    this.axis = axis
-    this.update()
+    this.options.axis = axis
   }
 
   setDirection(direction: LayoutOptions['direction']) {
-    if (this.direction === direction) {
-      return
-    }
-
     if (this.container) {
       this.container.dir = direction
       this.container.style.direction = direction
     }
 
-    this.direction = direction
+    this.options.direction = direction
   }
 
-  update() {
-    const width = this.width || this.wrapper.clientWidth
-    const height = this.height || this.wrapper.clientHeight
-
-    if (this.type === 'pre-paginated') {
-      //
-    } else {
-      const divisor = this.spread && width > this.minSpreadWidth ? 2 : 1
+  private update() {
+    if (!this.element) {
+      return
     }
+
+    this.wrapper.style.minWidth = `${this.options.width}px`
+    this.wrapper.style.minHeight = `${this.options.height}px`
+
+    let width = this.options.width || this.wrapper.clientWidth
+    const height = this.options.height || this.wrapper.clientHeight
+
+    let divisor = 1
+    let gap = 0
+    let columnWidth = width
+
+    if (this.options.flow === 'paginated' && this.options.spread) {
+      if (this.options.layout === 'pre-paginated') {
+        if (width * 2 <= this.wrapper.clientWidth) {
+          width *= 2
+          divisor = 2
+        }
+      } else {
+        divisor = width >= this.options.minSpreadWidth ? 2 : 1
+        gap = this.options.gap || Math.floor(width / 12)
+        columnWidth = width / divisor - gap
+      }
+    }
+
+    this.data.divisor = divisor
+    this.data.gap = gap
+    this.data.columnWidth = columnWidth
+
+    this.container.style.width = `${width}px`
+    this.container.style.height = `${height}px`
+
+    this.hooks.update.trigger(this.options, this.data)
   }
 
   destroy() {
-    //
+    // TODO
   }
 }

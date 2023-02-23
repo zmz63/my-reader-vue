@@ -1,39 +1,30 @@
 import { Queue } from '@packages/common/queue'
+import { Layout } from './layout'
 import type { Book } from './book'
 import { ViewManager } from './manager'
 
-export type RenditionOptions = {
-  width: number | string
-  height: number | string
-  flow: string
-  layout: string
-  spread: string
-  direction: string
-}
-
 export class Rendition {
   book: Book
+
+  layout: Layout
 
   manager: ViewManager
 
   queue = new Queue(this)
 
-  options: RenditionOptions = {
-    width: '100%',
-    height: '100%',
-    flow: 'auto',
-    layout: 'reflowable',
-    spread: 'auto',
-    direction: 'ltr'
-  }
-
-  constructor(book: Book) {
+  constructor(book: Book, element: Element) {
     this.book = book
-    this.manager = new ViewManager()
+    // TODO
+    this.layout = new Layout({})
+    this.manager = new ViewManager(this.layout)
+
+    this.queue.enqueue(this.init, true, element)
   }
 
-  async init() {
+  async init(element: Element) {
     await this.book.opened
+
+    this.layout.attachTo(element)
   }
 
   async display(target: number | string) {
@@ -43,5 +34,7 @@ export class Rendition {
       // TODO
       throw new Error()
     }
+
+    this.manager.display(section)
   }
 }

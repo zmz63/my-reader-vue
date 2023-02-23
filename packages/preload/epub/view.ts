@@ -1,5 +1,6 @@
 import { Defer } from '@packages/common/defer'
 import { Content } from './content'
+import type { Layout } from './layout'
 import type { Section } from './section'
 import { calculateBorder } from './utils'
 
@@ -19,7 +20,7 @@ export class View {
     columnWidth: 0,
     layout: 'reflowable',
     flow: 'paginated',
-    axis: 'vertical'
+    axis: 'horizontal'
   }
 
   section: Section
@@ -47,9 +48,8 @@ export class View {
     content: new Defer<Content>()
   }
 
-  constructor(section: Section, options: ViewOptions) {
+  constructor(section: Section, layout: Layout) {
     this.section = section
-    Object.assign(this.options, options)
 
     this.wrapper = this.createWrapper()
     this.iframe = this.createIframe()
@@ -67,8 +67,8 @@ export class View {
 
     const wrapper = document.createElement('div')
 
-    wrapper.style.height = '0'
-    wrapper.style.width = '0'
+    wrapper.style.height = '0px'
+    wrapper.style.width = '0px'
     wrapper.style.overflow = 'hidden'
     wrapper.style.position = 'relative'
     wrapper.style.display = 'block'
@@ -95,8 +95,8 @@ export class View {
 
     const iframe = document.createElement('iframe')
 
-    iframe.style.width = '0'
-    iframe.style.height = '0'
+    iframe.style.width = '0px'
+    iframe.style.height = '0px'
     iframe.style.overflow = 'hidden'
     iframe.style.border = 'none'
     iframe.style.visibility = 'hidden'

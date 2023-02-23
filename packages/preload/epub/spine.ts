@@ -6,7 +6,7 @@ import { Section, type SectionData } from './section'
 import { replaceBase } from './utils'
 
 export type SpineHooks = {
-  serialize: Hook<[string, Section]>
+  serialize: Hook<(content: string, section: Section) => void>
 }
 
 export class Spine {
@@ -16,8 +16,8 @@ export class Spine {
 
   private idMap: Record<string, number> = {}
 
-  hooks = {
-    serialize: new Hook<[string, Section]>()
+  hooks: SpineHooks = {
+    serialize: new Hook()
   }
 
   async unpack(

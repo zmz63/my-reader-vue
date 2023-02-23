@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Defer } from './defer'
 
 export class Queue {
@@ -18,21 +19,18 @@ export class Queue {
 
   enqueue<T>(task: Promise<T>, necessary?: boolean): Promise<T>
 
-  enqueue<T extends (...args: unknown[]) => unknown>(
+  enqueue<T extends (...args: any) => any>(
     task: T,
     necessary?: boolean,
     ...args: Parameters<T>
   ): Promise<ReturnType<T>>
 
-  enqueue(
-    task: Promise<unknown> | ((...args: unknown[]) => unknown),
-    necessary = false,
-    ...args: unknown[]
-  ) {
-    let promise: Promise<unknown>
+  enqueue(task: Promise<any> | ((...args: any) => any), necessary = false, ...args: any) {
+    let promise: Promise<any>
     if (typeof task === 'function') {
-      const defer = new Defer<unknown>()
+      const defer = new Defer<any>()
       promise = defer.promise
+
       this.queue.push({
         task: () => {
           try {
@@ -47,6 +45,7 @@ export class Queue {
       })
     } else {
       promise = task
+
       this.queue.push({ task, necessary })
     }
 
@@ -74,7 +73,7 @@ export class Queue {
     requestAnimationFrame(() => {
       if (this.queue.length) {
         const item = this.dequeue() as typeof this.queue[0]
-        let promise: Promise<unknown>
+        let promise: Promise<any>
         if (typeof item.task === 'function') {
           promise = item.task()
         } else {
@@ -83,7 +82,7 @@ export class Queue {
 
         promise
           .then(() => this.run())
-          .catch((reason: unknown) => {
+          .catch((reason: any) => {
             if (item.necessary) {
               this.defer.reject(reason)
               this.running = false

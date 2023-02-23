@@ -1,0 +1,29 @@
+{
+  'reflowable'
+  'paginated'
+  'horizontal'
+}
+
+{
+  'reflowable'
+  'scrolled-continuous' | 'scrolled-doc'
+  'vertical'
+}
+
+{
+  'reflowable'
+  'scrolled-continuous' | 'scrolled-doc'
+  'horizontal'
+}
+
+{
+  'pre-paginated'
+  'paginated'
+  'horizontal'
+}
+
+{
+  'pre-paginated'
+  'scrolled-continuous' | 'scrolled-doc'
+  'vertical'
+}

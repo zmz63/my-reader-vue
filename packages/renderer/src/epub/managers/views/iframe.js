@@ -98,7 +98,7 @@ class IframeView {
 		if (this.settings.allowPopups) {
 			this.iframe.sandbox += " allow-popups";
 		}
-		
+
 		this.iframe.setAttribute("enable-annotation", "true");
 
 		this.resizing = true;

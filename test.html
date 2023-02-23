@@ -36,7 +36,7 @@
 <body style="direction: rtl; writing-mode: vertical-lr;">
   <div class="a">
     <div class="b">
-      <div class="c">1234</div>
+      <div class="c"></div>
     </div>
   </div>
   <script>
@@ -46,6 +46,15 @@
     console.log('a', a.clientWidth, a.scrollWidth)
     console.log('b', b.clientWidth, b.scrollWidth)
     console.log('c', c.clientWidth, c.scrollWidth)
+
+    const d = document.createElement('div')
+    // d.style.width = '100%'
+    c.appendChild(d)
+    d.style.width = '1000px'
+    console.log(d.clientWidth)
+    setTimeout(() => {
+    console.log(d.clientWidth)
+    });
   </script>
 </body>
 </html>
