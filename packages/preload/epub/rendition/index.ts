@@ -15,6 +15,17 @@ export type RenditionOptions = {
 }
 
 export class Rendition {
+  options: RenditionOptions = {
+    layout: 'reflowable',
+    width: 0,
+    height: 0,
+    spread: false,
+    minSpreadWidth: 800,
+    gap: 0,
+    flow: 'paginated',
+    direction: 'ltr'
+  }
+
   book: Book
 
   layout: Layout
@@ -23,22 +34,25 @@ export class Rendition {
 
   queue = new Queue(this)
 
-  constructor(book: Book, element: Element) {
+  constructor(book: Book, element: Element, options?: Partial<RenditionOptions>) {
+    Object.assign(this.options, options)
     this.book = book
     // TODO
     this.layout = new Layout({})
     this.manager = new ViewManager(this.layout)
 
-    this.queue.enqueue(this.init, true, element)
+    this.init(element)
   }
 
-  async init(element: Element) {
+  private async init(element: Element) {
     await this.book.opened
+
+    this.manager.render
 
     this.layout.attachTo(element)
   }
 
-  async display(target: number | string) {
+  display(target: number | string) {
     const section = this.book.spine.get(target)
 
     if (!section) {
@@ -46,6 +60,14 @@ export class Rendition {
       throw new Error()
     }
 
-    this.manager.display(section)
+    return this.queue.enqueue(this.manager.display.bind(this.manager), section)
+  }
+
+  prev() {
+    //
+  }
+
+  next() {
+    //
   }
 }

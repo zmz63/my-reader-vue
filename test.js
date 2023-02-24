@@ -1,7 +1,7 @@
-// const path1 = require('path/posix')
+const path1 = require('path/posix')
 // const path2 = require('path/win32')
 
-// console.log(path1.relative('c', 'c/d'))
+console.log(path1.relative('c/e', 'c/d'))
 
 // const a = 'asd,zxc,vbn'
 // const aa = a.match(/(asd)|(zxc)/g)
@@ -31,9 +31,13 @@
 // const a = '123'
 // console.log(a instanceof Promise)
 
-const b = new ArrayBuffer(4)
+// const b = new ArrayBuffer(4)
 // const c =
 
-let a = 1
+// let a = 1
 
-console.log((a -= 1) === 0)
+// console.log((a -= 1) === 0)
+
+// const a = { a: 1 }
+// Object.assign(a, undefined)
+// console.log(a)

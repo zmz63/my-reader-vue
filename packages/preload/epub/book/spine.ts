@@ -1,7 +1,6 @@
 import { Hook } from '@packages/common/hook'
 import type { ZipArchive } from '../zip-archive'
 import { CFI } from '../cfi'
-import { replaceBase } from '../utils'
 import type { Package } from './package'
 import { Section, type SectionData } from './section'
 
@@ -40,8 +39,6 @@ export class Spine {
         next: null,
         cfiBase: CFI.generateChapterFragment(spineNodeIndex, index, item.id)
       }
-
-      replaceBase(sectionDocument, url)
 
       if (sectionData.linear === 'yes') {
         sectionData.prev = () => {

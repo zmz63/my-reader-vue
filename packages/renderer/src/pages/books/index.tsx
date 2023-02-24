@@ -6,7 +6,7 @@ import BookCards from './components/BookCards'
 import BookList from './components/BookList'
 import './index.scss'
 
-import ePub from '@/epub'
+import epub from '@/epub'
 
 type DisplayMode = 'list' | 'card'
 
@@ -23,7 +23,18 @@ export default defineComponent({
       if (!paths) return
 
       for (const path of paths) {
-        importBook(path)
+        // importBook(path)
+        if (!testRef.value) {
+          return
+        }
+        const book = new ePub.Book(path)
+        // const rendition = new ePub.Rendition(book, testRef.value)
+        try {
+          await book.opened
+          console.log(book)
+        } catch (error) {
+          console.log(error)
+        }
       }
     }
 
@@ -36,11 +47,11 @@ export default defineComponent({
       input.onchange = event => {
         const files = (event.target as HTMLInputElement).files
         if (files) {
-          const book = ePub(files[0])
+          const book = epub(files[0])
           console.log(book)
           const rendition = book.renderTo(testRef.value, {
             width: '100%',
-            height: 600,
+            height: '100%',
             spread: 'always'
             // writingMode: 'vertical-lr'
             // axis: 'horizontal',
@@ -106,7 +117,7 @@ export default defineComponent({
             </NButton>
           </div>
         </div>
-        <div ref={testRef}></div>
+        <div class="test" ref={testRef}></div>
         {/* <NScrollbar>
           <div class="books-main-container">{renderBooks()}</div>
         </NScrollbar> */}

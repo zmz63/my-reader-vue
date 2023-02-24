@@ -14,6 +14,14 @@ export class ViewManager {
     this.views = new Views(this.layout.container)
   }
 
+  render() {
+    //
+  }
+
+  updateLayout() {
+    //
+  }
+
   display(section: Section) {
     const view = new View(section, this.layout)
   }
