@@ -1,7 +1,18 @@
 import { Queue } from '@packages/common/queue'
+import type { Book } from '../book'
 import { Layout } from './layout'
-import type { Book } from './book'
 import { ViewManager } from './manager'
+
+export type RenditionOptions = {
+  layout: 'reflowable' | 'pre-paginated'
+  width: number
+  height: number
+  spread: boolean
+  minSpreadWidth: number
+  gap: number
+  flow: 'paginated' | 'scrolled-continuous' | 'scrolled-doc'
+  direction: 'ltr' | 'rtl'
+}
 
 export class Rendition {
   book: Book

@@ -1,9 +1,9 @@
 import { Hook } from '@packages/common/hook'
-import type { ZipArchive } from '@preload/utils/zip-archive'
-import { CFI } from './cfi'
+import type { ZipArchive } from '../zip-archive'
+import { CFI } from '../cfi'
+import { replaceBase } from '../utils'
 import type { Package } from './package'
 import { Section, type SectionData } from './section'
-import { replaceBase } from './utils'
 
 export type SpineHooks = {
   serialize: Hook<(content: string, section: Section) => void>

@@ -22,12 +22,33 @@ export class Hook<T extends (...args: any) => any> {
   }
 
   trigger(...args: Parameters<T>) {
-    const promises: ReturnType<T>[] = []
+    return new Promise(resolve => {
+      const result: unknown[] = []
+      for (let i = 0; i < this.hooks.length; i++) {
+        const hook = this.hooks[i]
+        try {
+          result[i] = hook.apply(this.context, args)
+        } catch (error) {
+          result[i] = error
+        }
+      }
 
-    for (const hook of this.hooks) {
-      promises.push(hook.apply(this.context, args))
-    }
+      let n = result.length
+      for (let i = 0; i < result.length; i++) {
+        const item = result[i]
+        if (item instanceof Promise) {
+          item
+            .then(value => (result[i] = value))
+            .catch(error => (result[i] = error))
+            .finally(() => (n -= 1) === 0 && resolve(result))
+        } else {
+          n -= 1
+        }
+      }
 
-    return Promise.all(promises)
+      if (n === 0) {
+        resolve(result)
+      }
+    })
   }
 }

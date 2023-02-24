@@ -8,14 +8,17 @@ export type LayoutOptions = {
   minSpreadWidth: number
   gap: number
   flow: 'paginated' | 'scrolled-continuous' | 'scrolled-doc'
-  axis: 'vertical' | 'horizontal'
   direction: 'ltr' | 'rtl'
 }
 
 export type LayoutData = {
+  width: number
+  height: number
   divisor: number
   gap: number
   columnWidth: number
+  axis: 'vertical' | 'horizontal'
+  [key: string]: unknown
 }
 
 export class Layout {
@@ -27,14 +30,16 @@ export class Layout {
     minSpreadWidth: 800,
     gap: 0,
     flow: 'paginated',
-    axis: 'horizontal',
     direction: 'ltr'
   }
 
   data: LayoutData = {
+    width: 0,
+    height: 0,
     divisor: 0,
     gap: 0,
-    columnWidth: 0
+    columnWidth: 0,
+    axis: 'horizontal'
   }
 
   wrapper: HTMLDivElement
@@ -97,7 +102,7 @@ export class Layout {
     container.style.position = 'relative'
     container.style.overflow = 'hidden'
 
-    if (this.options.axis === 'horizontal') {
+    if (this.data.axis === 'horizontal') {
       container.style.display = 'flex'
       container.style.flexDirection = 'row'
       container.style.flexWrap = 'nowrap'
@@ -147,18 +152,6 @@ export class Layout {
     this.update()
   }
 
-  setAxis(axis: LayoutOptions['axis']) {
-    if (axis === 'horizontal') {
-      this.container.style.display = 'flex'
-      this.container.style.flexDirection = 'row'
-      this.container.style.flexWrap = 'nowrap'
-    } else {
-      this.container.style.display = 'block'
-    }
-
-    this.options.axis = axis
-  }
-
   setDirection(direction: LayoutOptions['direction']) {
     if (this.container) {
       this.container.dir = direction
@@ -173,37 +166,54 @@ export class Layout {
       return
     }
 
-    this.wrapper.style.minWidth = `${this.options.width}px`
-    this.wrapper.style.minHeight = `${this.options.height}px`
-
-    let width = this.options.width || this.wrapper.clientWidth
-    const height = this.options.height || this.wrapper.clientHeight
-
-    let divisor = 1
-    let gap = 0
-    let columnWidth = width
+    const data: LayoutData = {
+      width: this.options.width || this.wrapper.clientWidth,
+      height: this.options.height || this.wrapper.clientHeight,
+      divisor: 1,
+      gap: 0,
+      columnWidth: this.options.width || this.wrapper.clientWidth,
+      axis: this.data.axis
+    }
 
     if (this.options.flow === 'paginated' && this.options.spread) {
       if (this.options.layout === 'pre-paginated') {
-        if (width * 2 <= this.wrapper.clientWidth) {
-          width *= 2
-          divisor = 2
+        if (data.width * 2 <= this.wrapper.clientWidth) {
+          data.width *= 2
+          data.divisor = 2
         }
+        data.axis = 'horizontal'
       } else {
-        divisor = width >= this.options.minSpreadWidth ? 2 : 1
-        gap = this.options.gap || Math.floor(width / 12)
-        columnWidth = width / divisor - gap
+        data.divisor = data.width >= this.options.minSpreadWidth ? 2 : 1
+        data.gap = this.options.gap || Math.floor(data.width / 12)
+        data.columnWidth = data.width / data.divisor - data.gap
       }
     }
 
-    this.data.divisor = divisor
-    this.data.gap = gap
-    this.data.columnWidth = columnWidth
+    let changed = false
+    for (const key in this.data) {
+      if (this.data[key] !== data[key]) {
+        changed = true
+        this.data[key] = data[key]
+      }
+    }
 
-    this.container.style.width = `${width}px`
-    this.container.style.height = `${height}px`
+    if (changed) {
+      if (data.axis === 'horizontal') {
+        this.container.style.display = 'flex'
+        this.container.style.flexDirection = 'row'
+        this.container.style.flexWrap = 'nowrap'
+      } else {
+        this.container.style.display = 'block'
+      }
 
-    this.hooks.update.trigger(this.options, this.data)
+      this.wrapper.style.minWidth = `${this.options.width}px`
+      this.wrapper.style.minHeight = `${this.options.height}px`
+
+      this.container.style.width = `${data.width}px`
+      this.container.style.height = `${data.height}px`
+
+      this.hooks.update.trigger(this.options, this.data)
+    }
   }
 
   destroy() {

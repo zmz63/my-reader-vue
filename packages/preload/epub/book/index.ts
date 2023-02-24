@@ -1,6 +1,6 @@
 import _path from 'path/posix'
-import { ZipArchive } from '@preload/utils/zip-archive'
 import { Defer } from '@packages/common/defer'
+import { ZipArchive } from '../zip-archive'
 import { Container } from './container'
 import { Package } from './package'
 import { Spine } from './spine'
@@ -56,6 +56,7 @@ export class Book {
 
       this.path = path
       this.defer.opened.resolve()
+
       archive.close()
     } catch (error) {
       this.defer.opened.reject(error)

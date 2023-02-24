@@ -1,5 +1,5 @@
 import _path from 'path/posix'
-import type { ZipArchive } from '@preload/utils/zip-archive'
+import type { ZipArchive } from '../zip-archive'
 
 export class Container {
   packagePath = ''

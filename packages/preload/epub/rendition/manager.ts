@@ -1,7 +1,8 @@
+import type { Section } from '../book/section'
 import type { Layout } from './layout'
-import type { Section } from './section'
 import { View } from './view'
 import { Views } from './views'
+
 export class ViewManager {
   layout: Layout
 

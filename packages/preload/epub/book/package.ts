@@ -1,5 +1,5 @@
-import type { ZipArchive } from '@preload/utils/zip-archive'
-import { indexOfNode } from './utils'
+import type { ZipArchive } from '../zip-archive'
+import { indexOfNode } from '../utils'
 
 export type ManifestItem = {
   href: string
@@ -171,7 +171,7 @@ export class Package {
   }
 
   private parseMetadata(metadataNode: Element, spineNode: Element) {
-    const dcTag = [
+    const dcTags = [
       'title',
       'creator',
       'subject',
@@ -190,7 +190,7 @@ export class Package {
     ]
     const renditionProps = ['layout', 'orientation', 'flow', 'viewport', 'spread']
 
-    for (const tag of dcTag) {
+    for (const tag of dcTags) {
       this.metadata[tag] =
         metadataNode.getElementsByTagNameNS(
           metadataNode.getAttribute('xmlns:dc') || 'http://purl.org/dc/elements/1.1/',

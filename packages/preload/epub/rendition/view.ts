@@ -1,29 +1,12 @@
 import { Defer } from '@packages/common/defer'
+import type { Section } from '../book/section'
 import { Content } from './content'
 import type { Layout } from './layout'
-import type { Section } from './section'
-import { calculateBorder } from './utils'
-
-export type ViewOptions = {
-  width: number
-  height: number
-  columnWidth: number
-  layout: 'reflowable' | 'pre-paginated'
-  flow: 'paginated' | 'scrolled-continuous' | 'scrolled-doc'
-  axis: 'vertical' | 'horizontal'
-}
 
 export class View {
-  options: ViewOptions = {
-    width: 0,
-    height: 0,
-    columnWidth: 0,
-    layout: 'reflowable',
-    flow: 'paginated',
-    axis: 'horizontal'
-  }
-
   section: Section
+
+  layout: Layout
 
   wrapper: HTMLDivElement
 
@@ -37,10 +20,6 @@ export class View {
 
   content: Promise<Content>
 
-  private lockedWidth: number | null = null
-
-  private lockedHeight: number | null = null
-
   private defer = {
     displayed: new Defer<void>(),
     window: new Defer<Window>(),
@@ -50,6 +29,7 @@ export class View {
 
   constructor(section: Section, layout: Layout) {
     this.section = section
+    this.layout = layout
 
     this.wrapper = this.createWrapper()
     this.iframe = this.createIframe()
@@ -73,7 +53,7 @@ export class View {
     wrapper.style.position = 'relative'
     wrapper.style.display = 'block'
 
-    if (this.options.axis && this.options.axis === 'horizontal') {
+    if (this.layout.data.axis && this.layout.data.axis === 'horizontal') {
       wrapper.style.flex = 'none'
     } else {
       wrapper.style.flex = 'initial'
@@ -123,44 +103,13 @@ export class View {
       this.defer.document.resolve(document)
       this.defer.content.resolve(content)
     }
+
+    const content = await this.content
   }
 
-  resize(width: number, height: number) {
-    this.options.width = width
-    this.options.height = height
-
-    this.lock()
-  }
-
-  layout(layout: 'reflowable' | 'pre-paginated', axis: 'vertical' | 'horizontal') {
-    this.options.layout = layout
-    this.options.axis = axis
-
-    this.lock()
-  }
-
-  lock() {
-    const wrapperBorder = calculateBorder(this.wrapper)
-    const iframeBorder = calculateBorder(this.iframe)
-
-    const width = this.options.width
-    const height = this.options.height
-
-    if (this.options.layout === 'pre-paginated') {
-      this.lockedWidth = width - wrapperBorder.width - iframeBorder.width
-      this.lockedHeight = height - wrapperBorder.height - iframeBorder.height
-    } else if (this.options.axis === 'horizontal') {
-      this.lockedWidth = null
-      this.lockedHeight = height - wrapperBorder.height - iframeBorder.height
-    } else {
-      this.lockedWidth = width - wrapperBorder.width - iframeBorder.width
-      this.lockedHeight = null
-    }
-  }
-
-  expand() {
-    //
-  }
+  // layout() {
+  //   //
+  // }
 
   destroy() {
     // TODO

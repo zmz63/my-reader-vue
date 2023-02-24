@@ -12,9 +12,15 @@ export class ZipArchive {
 
   domParser = new DOMParser()
 
-  opened = new Defer<void>()
+  opened: Promise<void>
+
+  private defer = {
+    opened: new Defer<void>()
+  }
 
   constructor(path?: string) {
+    this.opened = this.defer.opened.promise
+
     if (path) {
       this.open(path)
     }
@@ -23,7 +29,7 @@ export class ZipArchive {
   open(path: string) {
     yauzl.open(path, { autoClose: false, lazyEntries: false }, (error, zipFile) => {
       if (error) {
-        this.opened.reject(error)
+        this.defer.opened.reject(error)
       }
 
       this.file = zipFile
@@ -35,7 +41,7 @@ export class ZipArchive {
       })
 
       zipFile.on('end', async () => {
-        this.opened.resolve()
+        this.defer.opened.resolve()
       })
     })
   }
@@ -45,7 +51,7 @@ export class ZipArchive {
       return this.buffers[path]
     }
 
-    await this.opened.promise
+    await this.opened
 
     return new Promise<Buffer>((resolve, reject) => {
       if (!this.file || !this.entries[path]) {
@@ -100,7 +106,7 @@ export class ZipArchive {
   }
 
   async close() {
-    await this.opened.promise
+    await this.opened
 
     this.file?.close()
   }

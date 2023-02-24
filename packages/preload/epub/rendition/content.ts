@@ -1,4 +1,4 @@
-import { calculateBorder } from './utils'
+import { calculateBorder } from '../utils'
 
 export class Content {
   document: Document
@@ -59,15 +59,15 @@ export class Content {
     return height
   }
 
-  overrideStyles(element: HTMLElement, styles: Record<string, string>, important = true) {
-    const values: string[] = []
-
-    for (const key in styles) {
-      values.push(`${key}: ${styles[key]}`)
+  setStyle(property: string, value: string, priority = true) {
+    if (value) {
+      this.body.style.setProperty(property, value, priority ? 'important' : '')
+    } else {
+      this.body.style.removeProperty(property)
     }
+  }
 
-    values.push('')
-
-    element.setAttribute('style', values.join(important ? ' !important;' : ';'))
+  lock(width?: number, height?: number) {
+    //
   }
 }

@@ -1,5 +1,5 @@
+import type { Section } from '../book/section'
 import type { View } from './view'
-import type { Section } from './section'
 
 export class Views {
   private container: HTMLDivElement

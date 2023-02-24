@@ -22,8 +22,18 @@
 //   })
 // }, 1000)
 
-const a1 = { a: 1, b: 1, c: 1, d: 1, e: 1 }
-const a2 = { a: undefined, b: null, c: '', d: 0, e: false }
+// const a1 = { a: 1, b: 1, c: 1, d: 1, e: 1 }
+// const a2 = { a: undefined, b: null, c: '', d: 0, e: false }
 
-console.log({ ...a1, ...a2 })
-console.log(Object.assign(a1, a2))
+// console.log({ ...a1, ...a2 })
+// console.log(Object.assign(a1, a2))
+
+// const a = '123'
+// console.log(a instanceof Promise)
+
+const b = new ArrayBuffer(4)
+// const c =
+
+let a = 1
+
+console.log((a -= 1) === 0)
