@@ -67,7 +67,35 @@ export class Content {
     }
   }
 
-  lock(width?: number, height?: number) {
-    //
+  setColumns(
+    width: number,
+    height: number,
+    columnWidth: number,
+    gap: number,
+    direction: 'ltr' | 'rtl'
+  ) {
+    this.setSize(width, height)
+    this.setDirection(direction)
+
+    this.setStyle('overflow', 'hidden')
+    this.setStyle('margin', '0px', true)
+    this.setStyle('padding-top', '20px')
+    this.setStyle('padding-bottom', '20px')
+    this.setStyle('padding-left', `${gap / 2}px`, true)
+    this.setStyle('padding-right', `${gap / 2}px`, true)
+    this.setStyle('box-sizing', 'border-box')
+    this.setStyle('max-width', 'inherit')
+    this.setStyle('column-fill', 'auto')
+    this.setStyle('column-gap', `${gap}px`)
+    this.setStyle('column-width', `${columnWidth}px`)
+  }
+
+  setSize(width: number, height: number) {
+    this.body.style.width = `${width}px`
+    this.body.style.height = `${height}px`
+  }
+
+  setDirection(direction: 'ltr' | 'rtl') {
+    this.root.style.direction = direction
   }
 }

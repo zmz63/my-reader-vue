@@ -1,21 +1,18 @@
 import type { SpineItem } from './package'
-import type { SpineHooks } from './spine'
-
-export type SectionData = Simplify<
-  SpineItem & {
-    type: string
-    href: string
-    url: string
-    prev: (() => Section | null) | null
-    next: (() => Section | null) | null
-    cfiBase: string
-  }
->
+import type { Spine } from './spine'
 
 export class Section {
-  data: SectionData
+  data: Simplify<
+    SpineItem & {
+      type: string
+      href: string
+      prev: (() => Section | null) | null
+      next: (() => Section | null) | null
+      cfiBase: string
+    }
+  >
 
-  hooks: SpineHooks
+  readonly hooks: Spine['hooks']
 
   document: XMLDocument
 
@@ -25,7 +22,7 @@ export class Section {
 
   blobUrl = ''
 
-  constructor(data: SectionData, document: XMLDocument, hooks: SpineHooks) {
+  constructor(data: Section['data'], document: XMLDocument, hooks: Spine['hooks']) {
     this.data = data
     this.document = document
     this.root = document.documentElement

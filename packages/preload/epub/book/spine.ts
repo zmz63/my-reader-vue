@@ -2,20 +2,18 @@ import { Hook } from '@packages/common/hook'
 import type { ZipArchive } from '../zip-archive'
 import { CFI } from '../cfi'
 import type { Package } from './package'
-import { Section, type SectionData } from './section'
-
-export type SpineHooks = {
-  serialize: Hook<(content: string, section: Section) => void>
-}
+import { Section } from './section'
 
 export class Spine {
-  private sections: Section[] = []
+  sections: Section[] = []
 
-  private hrefMap: Record<string, number> = {}
+  hrefMap: Record<string, number> = {}
 
-  private idMap: Record<string, number> = {}
+  idMap: Record<string, number> = {}
 
-  hooks: SpineHooks = {
+  readonly hooks: Readonly<{
+    serialize: Hook<(content: string, section: Section) => void>
+  }> = {
     serialize: new Hook()
   }
 
@@ -27,14 +25,12 @@ export class Spine {
     for (const item of spine) {
       const index = item.index
       const manifestItem = manifest[item.idref]
-      const url = resolver(manifestItem.href)
 
-      const sectionDocument = await archive.getDocument(url)
-      const sectionData: SectionData = {
+      const sectionDocument = await archive.getDocument(resolver(manifestItem.href))
+      const sectionData: Section['data'] = {
         ...item,
         type: manifestItem.type,
         href: manifestItem.href,
-        url,
         prev: null,
         next: null,
         cfiBase: CFI.generateChapterFragment(spineNodeIndex, index, item.id)

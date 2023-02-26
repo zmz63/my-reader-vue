@@ -1,85 +1,64 @@
 import { Defer } from '@packages/common/defer'
 import type { Section } from '../book/section'
 import { Content } from './content'
-import type { Layout } from './layout'
 
 export class View {
   section: Section
-
-  layout: Layout
 
   wrapper: HTMLDivElement
 
   iframe: HTMLIFrameElement
 
+  width = 0
+
+  height = 0
+
+  writingMode: string | null = null
+
+  window: Window | null = null
+
+  document: Document | null = null
+
+  content: Content | null = null
+
   displayed: Promise<void>
 
-  window: Promise<Window>
-
-  document: Promise<Document>
-
-  content: Promise<Content>
-
   private defer = {
-    displayed: new Defer<void>(),
-    window: new Defer<Window>(),
-    document: new Defer<Document>(),
-    content: new Defer<Content>()
+    displayed: new Defer<void>()
   }
 
-  constructor(section: Section, layout: Layout) {
+  constructor(section: Section) {
     this.section = section
-    this.layout = layout
 
     this.wrapper = this.createWrapper()
     this.iframe = this.createIframe()
 
     this.displayed = this.defer.displayed.promise
-    this.window = this.defer.window.promise
-    this.document = this.defer.document.promise
-    this.content = this.defer.content.promise
   }
 
-  createWrapper() {
-    if (this.wrapper) {
-      return this.wrapper
-    }
-
+  private createWrapper() {
     const wrapper = document.createElement('div')
 
-    wrapper.style.height = '0px'
+    wrapper.classList.add('epub-view-wrapper')
+
     wrapper.style.width = '0px'
+    wrapper.style.height = '0px'
     wrapper.style.overflow = 'hidden'
     wrapper.style.position = 'relative'
     wrapper.style.display = 'block'
 
-    if (this.layout.data.axis && this.layout.data.axis === 'horizontal') {
-      wrapper.style.flex = 'none'
-    } else {
-      wrapper.style.flex = 'initial'
-    }
-
     return wrapper
   }
 
-  createIframe() {
-    if (this.iframe) {
-      return this.iframe
-    }
-
-    if (!this.wrapper) {
-      this.wrapper = this.createWrapper()
-    }
-
-    this.wrapper.style.visibility = 'hidden'
-
+  private createIframe() {
     const iframe = document.createElement('iframe')
+
+    iframe.classList.add('epub-view')
 
     iframe.style.width = '0px'
     iframe.style.height = '0px'
     iframe.style.overflow = 'hidden'
     iframe.style.border = 'none'
-    iframe.style.visibility = 'hidden'
 
     iframe.setAttribute('sandbox', 'allow-same-origin')
 
@@ -99,17 +78,41 @@ export class View {
       const document = this.iframe.contentDocument as Document
       const content = new Content(document)
 
-      this.defer.window.resolve(window)
-      this.defer.document.resolve(document)
-      this.defer.content.resolve(content)
+      this.window = window
+      this.document = document
+      this.content = content
+
+      this.defer.displayed.resolve()
     }
 
-    const content = await this.content
+    await this.displayed
   }
 
-  // layout() {
-  //   //
-  // }
+  setSize(width: number, height: number) {
+    const delta = {
+      width: width - this.width,
+      height: height - this.height
+    }
+
+    this.width = width
+    this.height = height
+
+    this.wrapper.style.width = `${width}px`
+    this.wrapper.style.height = `${height}px`
+
+    this.iframe.style.width = `${width}px`
+    this.iframe.style.height = `${height}px`
+
+    return delta
+  }
+
+  setAxis(axis: 'vertical' | 'horizontal') {
+    if (axis === 'horizontal') {
+      this.wrapper.style.flex = 'none'
+    } else {
+      this.wrapper.style.flex = 'initial'
+    }
+  }
 
   destroy() {
     // TODO

@@ -14,7 +14,7 @@ export type OpenOptions = {
 }
 
 export class Book {
-  path = ''
+  path: string
 
   container = new Container()
 
@@ -32,15 +32,14 @@ export class Book {
     opened: new Defer<void>()
   }
 
-  constructor(path?: string, options?: Partial<OpenOptions>) {
+  constructor(path: string, options?: Partial<OpenOptions>) {
+    this.path = path
     this.opened = this.defer.opened.promise
 
-    if (path) {
-      this.open(path, options)
-    }
+    this.open(path, options)
   }
 
-  async open(path: string, options?: Partial<OpenOptions>) {
+  private async open(path: string, options?: Partial<OpenOptions>) {
     try {
       const archive = new ZipArchive(path)
 
@@ -54,7 +53,6 @@ export class Book {
         // TODO
       }
 
-      this.path = path
       this.defer.opened.resolve()
 
       archive.close()
@@ -77,7 +75,7 @@ export class Book {
     }
 
     this.spine.hooks.serialize.register((content, section) => {
-      section.content = this.resources.replace(content, section.data.url)
+      section.content = this.resources.replace(content, section.data.href)
     })
   }
 

@@ -1,0 +1,34 @@
+.empty {
+  width: 100%;
+  height: 100%;
+
+  .button {
+    position: absolute;
+    cursor: pointer;
+  }
+}
+
+.epub-container {
+  position: relative;
+  min-width: 320px;
+  margin: 0 auto;
+}
+
+.epub-container .epub-view > iframe {
+  background: white;
+  box-shadow: 0 0 4px #ccc;
+
+  /* margin: 10px;
+    padding: 20px; */
+}
+
+body {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  min-height: 800px;
+  margin: 0;
+  background: #fafafa;
+  color: #333;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}

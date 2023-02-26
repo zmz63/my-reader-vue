@@ -1,6 +1,6 @@
 import { Queue } from '@packages/common/queue'
 import type { Book } from '../book'
-import { Layout } from './layout'
+import type { Metadata } from '../book/package'
 import { ViewManager } from './manager'
 
 export type RenditionOptions = {
@@ -14,32 +14,34 @@ export type RenditionOptions = {
   direction: 'ltr' | 'rtl'
 }
 
+export type CustomOptions = Partial<
+  Pick<RenditionOptions, 'width' | 'height' | 'spread' | 'minSpreadWidth' | 'gap' | 'flow'>
+>
+
 export class Rendition {
   options: RenditionOptions = {
     layout: 'reflowable',
     width: 0,
     height: 0,
-    spread: false,
-    minSpreadWidth: 800,
+    spread: true,
+    minSpreadWidth: 1000,
     gap: 0,
     flow: 'paginated',
-    direction: 'ltr'
+    direction: 'rtl'
   }
 
   book: Book
-
-  layout: Layout
 
   manager: ViewManager
 
   queue = new Queue(this)
 
-  constructor(book: Book, element: Element, options?: Partial<RenditionOptions>) {
-    Object.assign(this.options, options)
+  constructor(book: Book, element: Element, options?: CustomOptions) {
     this.book = book
     // TODO
-    this.layout = new Layout({})
-    this.manager = new ViewManager(this.layout)
+    this.manager = new ViewManager(this.options)
+
+    this.determineOptions(this.book.package.metadata, options)
 
     this.init(element)
   }
@@ -47,12 +49,16 @@ export class Rendition {
   private async init(element: Element) {
     await this.book.opened
 
-    this.manager.render
-
-    this.layout.attachTo(element)
+    this.manager.render(element)
   }
 
-  display(target: number | string) {
+  determineOptions(metadata: Metadata, options?: CustomOptions) {
+    // TODO
+  }
+
+  async display(target: number | string) {
+    await this.book.opened
+
     const section = this.book.spine.get(target)
 
     if (!section) {
@@ -60,7 +66,7 @@ export class Rendition {
       throw new Error()
     }
 
-    return this.queue.enqueue(this.manager.display.bind(this.manager), section)
+    return this.queue.enqueue(() => this.manager.display(section))
   }
 
   prev() {

@@ -8,8 +8,6 @@ export type ManifestItem = {
   properties: string[]
 }
 
-export type Manifest = Record<string, ManifestItem>
-
 export type SpineItem = {
   idref: string
   linear: string
@@ -17,8 +15,6 @@ export type SpineItem = {
   id: string
   properties: string[]
 }
-
-export type Spine = SpineItem[]
 
 export type Metadata = {
   title: string
@@ -52,9 +48,9 @@ export class Package {
 
   coverPath = ''
 
-  manifest: Manifest = {}
+  manifest: Record<string, ManifestItem> = {}
 
-  spine: Spine = []
+  spine: SpineItem[] = []
 
   metadata: Metadata = {
     title: '',

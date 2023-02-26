@@ -28,7 +28,8 @@ export default defineComponent({
           return
         }
         const book = new ePub.Book(path)
-        // const rendition = new ePub.Rendition(book, testRef.value)
+        const rendition = new ePub.Rendition(book, testRef.value)
+        rendition.display(7)
         try {
           await book.opened
           console.log(book)
@@ -52,7 +53,9 @@ export default defineComponent({
           const rendition = book.renderTo(testRef.value, {
             width: '100%',
             height: '100%',
-            spread: 'always'
+            method: 'default'
+            // method: 'continuous',
+            // flow: 'scrolled'
             // writingMode: 'vertical-lr'
             // axis: 'horizontal',
             // flow: 'scrolled'
@@ -60,7 +63,7 @@ export default defineComponent({
             // direction: 'rtl'
           })
           console.log(rendition)
-          rendition.display(10)
+          rendition.display(7)
         }
       }
       input.click()
