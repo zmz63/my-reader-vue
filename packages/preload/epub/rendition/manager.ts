@@ -12,8 +12,6 @@ export type ViewOptions = {
   gap: number
   columnWidth: number
   axis: 'vertical' | 'horizontal'
-  direction: 'ltr' | 'rtl'
-  [key: string]: unknown
 }
 
 export class ViewManager {
@@ -25,8 +23,7 @@ export class ViewManager {
     divisor: 0,
     gap: 0,
     columnWidth: 0,
-    axis: 'horizontal',
-    direction: 'ltr'
+    axis: 'horizontal'
   }
 
   stage = new Stage()
@@ -50,89 +47,89 @@ export class ViewManager {
 
     await view.render()
 
-    this.updateViewLayout(view)
+    this.updateStageLayout()
   }
 
   updateStageLayout() {
-    const wrapperSize = this.stage.getWrapperSize()
-
     const options: ViewOptions = {
-      width: this.options.width || wrapperSize.width,
-      height: this.options.height || wrapperSize.height,
+      width: this.stage.width,
+      height: this.stage.height,
       divisor: 1,
       gap: 0,
-      columnWidth: this.options.width || wrapperSize.width,
-      axis: this.viewOptions.axis,
-      direction: this.options.direction
+      columnWidth: this.stage.width,
+      axis: this.viewOptions.axis
     }
 
     if (this.options.flow === 'paginated') {
-      if (this.options.layout === 'pre-paginated') {
-        options.divisor = this.options.spread && options.width * 2 <= wrapperSize.width ? 2 : 1
-        options.width *= options.divisor
-      } else {
+      if (this.options.layout === 'reflowable') {
         options.divisor =
           this.options.spread && options.width >= this.options.minSpreadWidth ? 2 : 1
         options.gap = this.options.gap || Math.floor(options.width / 12)
         options.columnWidth = options.width / options.divisor - options.gap
+      } else if (this.options.layout === 'pre-paginated') {
+        // TODO
       }
       options.axis = 'horizontal'
     } else {
       options.axis = 'vertical'
     }
 
-    let changed = false
-    for (const key in this.viewOptions) {
-      if (this.viewOptions[key] !== options[key]) {
-        changed = true
-        break
+    this.viewOptions = options
+
+    this.stage.setAxis(options.axis)
+
+    const sizeList: ReturnType<typeof this.updateViewLayout>[] = []
+    this.views.forEach(view => {
+      if (view.content) {
+        const size = this.updateViewLayout(view, view.content)
+        sizeList.push(size)
       }
-    }
+    })
 
-    if (changed) {
-      this.viewOptions = options
-
-      this.stage.setSize(options.width, options.height, this.options.width, this.options.height)
-      this.stage.setAxis(options.axis)
-      this.stage.setDirection(options.direction)
-
-      this.views.forEach(view => {
-        this.updateViewLayout(view)
-      })
+    if (this.options.layout === 'pre-paginated') {
+      // TODO
+    } else if (this.options.flow === 'paginated') {
+      const width = sizeList.reduce((prev, item) => prev + item.width, 0)
+      this.stage.setSize(width, options.height)
+    } else {
+      const height = sizeList.reduce((prev, item) => prev + item.height, 0)
+      this.stage.setSize(options.width, height, options.width, height)
     }
   }
 
-  updateViewLayout(view: View) {
+  updateViewLayout(view: View, content: Content) {
     let width: number
     let height: number
 
     if (this.options.layout === 'pre-paginated') {
-      //
-      width = this.options.width
-      height = this.options.height
+      // TODO
+      width = this.viewOptions.width
+      height = this.viewOptions.height
     } else if (this.options.flow === 'paginated') {
-      void (view.content as Content).setColumns(
+      const size = content.setColumns(
         this.viewOptions.width,
         this.viewOptions.height,
         this.viewOptions.columnWidth,
-        this.viewOptions.gap,
-        this.viewOptions.direction
+        this.viewOptions.gap
       )
-      width = this.viewOptions.width
-      height = this.viewOptions.height
+
+      width = size.width
+      height = size.height
     } else {
-      width = this.viewOptions.width
-      height = this.viewOptions.height
+      const size = content.lockWidth(this.viewOptions.width)
+
+      width = size.width
+      height = size.height
     }
 
-    view.setSize(width, height)
-  }
+    const delta = view.setSize(width, height)
 
-  setSize(width: number, height: number) {
-    this.options.width = width
-    this.options.height = height
-
-    this.updateStageLayout()
+    return {
+      width,
+      height,
+      deltaWidth: delta.width,
+      deltaHeight: delta.height
+    }
   }
 
   setSpread(spread: boolean, minSpreadWidth = 800, gap = 0) {
@@ -145,12 +142,6 @@ export class ViewManager {
 
   setFlow(flow: 'paginated' | 'scrolled-continuous' | 'scrolled-doc') {
     this.options.flow = flow
-
-    this.updateStageLayout()
-  }
-
-  setDirection(direction: 'ltr' | 'rtl') {
-    this.options.direction = direction
 
     this.updateStageLayout()
   }

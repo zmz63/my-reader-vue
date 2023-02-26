@@ -43,7 +43,6 @@ export class View {
 
     wrapper.style.width = '0px'
     wrapper.style.height = '0px'
-    wrapper.style.overflow = 'hidden'
     wrapper.style.position = 'relative'
     wrapper.style.display = 'block'
 

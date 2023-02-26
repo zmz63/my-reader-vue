@@ -47,19 +47,23 @@ export class Content {
     return Math.round(height)
   }
 
-  scrollWidth() {
-    const width = this.root.scrollWidth
+  clientWidth() {
+    return this.root.clientWidth
+  }
 
-    return width
+  clientHeight() {
+    return this.root.clientHeight
+  }
+
+  scrollWidth() {
+    return this.root.scrollWidth
   }
 
   scrollHeight() {
-    const height = this.root.scrollHeight
-
-    return height
+    return this.root.scrollHeight
   }
 
-  setStyle(property: string, value: string, priority = true) {
+  setStyle(property: string, value?: string, priority = true) {
     if (value) {
       this.body.style.setProperty(property, value, priority ? 'important' : '')
     } else {
@@ -67,18 +71,12 @@ export class Content {
     }
   }
 
-  setColumns(
-    width: number,
-    height: number,
-    columnWidth: number,
-    gap: number,
-    direction: 'ltr' | 'rtl'
-  ) {
-    this.setSize(width, height)
-    this.setDirection(direction)
-
+  setColumns(width: number, height: number, columnWidth: number, gap: number) {
+    this.setStyle('width', `${width}px`)
+    this.setStyle('height', `${height}px`)
     this.setStyle('overflow', 'hidden')
     this.setStyle('margin', '0px', true)
+    this.setStyle('border', 'none', true)
     this.setStyle('padding-top', '20px')
     this.setStyle('padding-bottom', '20px')
     this.setStyle('padding-left', `${gap / 2}px`, true)
@@ -88,14 +86,32 @@ export class Content {
     this.setStyle('column-fill', 'auto')
     this.setStyle('column-gap', `${gap}px`)
     this.setStyle('column-width', `${columnWidth}px`)
+
+    return {
+      width: this.scrollWidth(),
+      height
+    }
   }
 
-  setSize(width: number, height: number) {
-    this.body.style.width = `${width}px`
-    this.body.style.height = `${height}px`
-  }
+  lockWidth(width: number) {
+    this.setStyle('width', `${width}px`)
+    this.setStyle('height')
+    this.setStyle('overflow', 'hidden')
+    this.setStyle('margin', '0px', true)
+    this.setStyle('border', 'none', true)
+    this.setStyle('padding-top')
+    this.setStyle('padding-bottom')
+    this.setStyle('padding-left', `${width / 12}px`, true)
+    this.setStyle('padding-right', `${width / 12}px`, true)
+    this.setStyle('box-sizing', 'border-box')
+    this.setStyle('max-width')
+    this.setStyle('column-fill')
+    this.setStyle('column-gap')
+    this.setStyle('column-width')
 
-  setDirection(direction: 'ltr' | 'rtl') {
-    this.root.style.direction = direction
+    return {
+      width,
+      height: this.scrollHeight()
+    }
   }
 }

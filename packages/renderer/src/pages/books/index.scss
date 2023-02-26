@@ -6,8 +6,10 @@
     flex-direction: column;
 
     .test {
+      width: 100%;
       height: calc(100% - 66px);
       background-color: bisque;
+      overflow-y: auto;
     }
   }
 

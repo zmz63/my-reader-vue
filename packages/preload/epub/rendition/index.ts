@@ -5,29 +5,23 @@ import { ViewManager } from './manager'
 
 export type RenditionOptions = {
   layout: 'reflowable' | 'pre-paginated'
-  width: number
-  height: number
   spread: boolean
   minSpreadWidth: number
   gap: number
   flow: 'paginated' | 'scrolled-continuous' | 'scrolled-doc'
-  direction: 'ltr' | 'rtl'
 }
 
 export type CustomOptions = Partial<
-  Pick<RenditionOptions, 'width' | 'height' | 'spread' | 'minSpreadWidth' | 'gap' | 'flow'>
+  Pick<RenditionOptions, 'spread' | 'minSpreadWidth' | 'gap' | 'flow'>
 >
 
 export class Rendition {
   options: RenditionOptions = {
     layout: 'reflowable',
-    width: 0,
-    height: 0,
     spread: true,
     minSpreadWidth: 1000,
     gap: 0,
-    flow: 'paginated',
-    direction: 'rtl'
+    flow: 'paginated'
   }
 
   book: Book

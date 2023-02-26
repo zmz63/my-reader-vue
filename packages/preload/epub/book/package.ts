@@ -38,7 +38,6 @@ export type Metadata = {
   viewport: string
   spread: string
   direction: string
-  [tag: string]: string
 }
 
 export class Package {
@@ -186,7 +185,7 @@ export class Package {
     ]
     const renditionProps = ['layout', 'orientation', 'flow', 'viewport', 'spread']
 
-    for (const tag of dcTags) {
+    for (const tag of dcTags as (keyof Metadata)[]) {
       this.metadata[tag] =
         metadataNode.getElementsByTagNameNS(
           metadataNode.getAttribute('xmlns:dc') || 'http://purl.org/dc/elements/1.1/',
@@ -195,7 +194,7 @@ export class Package {
     }
 
     const metaNodes = metadataNode.querySelectorAll('meta')
-    for (const prop of renditionProps) {
+    for (const prop of renditionProps as (keyof Metadata)[]) {
       for (const meta of metaNodes) {
         if (meta.getAttribute('property') === `rendition:${prop}`) {
           if (meta.textContent) {

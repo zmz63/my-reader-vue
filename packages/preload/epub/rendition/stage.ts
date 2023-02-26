@@ -9,6 +9,10 @@ export class Stage {
 
   observer: ResizeObserver
 
+  width = 0
+
+  height = 0
+
   readonly hooks: Readonly<{
     resize: Hook<() => void>
   }> = {
@@ -18,10 +22,14 @@ export class Stage {
   constructor() {
     this.wrapper = this.createWrapper()
     this.container = this.createContainer()
-    this.observer = new ResizeObserver(() => {
-      this.hooks.resize.trigger()
+    this.observer = new ResizeObserver(entries => {
+      if (entries[0]) {
+        const { width, height } = entries[0].contentRect
+        this.width = width
+        this.height = height
+        this.hooks.resize.trigger()
+      }
     })
-    this.observer.observe(this.wrapper)
   }
 
   private createWrapper() {
@@ -64,14 +72,9 @@ export class Stage {
     element.appendChild(this.wrapper)
     this.element = element
 
-    return element
-  }
+    this.observer.observe(element)
 
-  getWrapperSize() {
-    return {
-      width: this.wrapper.clientWidth,
-      height: this.wrapper.clientHeight
-    }
+    return element
   }
 
   setSize(width: number, height: number, minWidth = 0, minHeight = 0) {
@@ -90,11 +93,6 @@ export class Stage {
     } else {
       this.container.style.display = 'block'
     }
-  }
-
-  setDirection(direction: 'ltr' | 'rtl') {
-    this.container.dir = direction
-    this.container.style.direction = direction
   }
 
   destroy() {
