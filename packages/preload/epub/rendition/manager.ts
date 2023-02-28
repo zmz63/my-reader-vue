@@ -50,6 +50,20 @@ export class ViewManager {
     this.updateStageLayout()
   }
 
+  prev() {
+    if (!this.views.length) {
+      return
+    }
+
+    if (this.options.flow === 'paginated') {
+      //
+    }
+  }
+
+  next() {
+    //
+  }
+
   updateStageLayout() {
     const options: ViewOptions = {
       width: this.stage.width,
@@ -80,7 +94,7 @@ export class ViewManager {
 
     const sizeList: ReturnType<typeof this.updateViewLayout>[] = []
     this.views.forEach(view => {
-      if (view.content) {
+      if (view.content && !view.hidden) {
         const size = this.updateViewLayout(view, view.content)
         sizeList.push(size)
       }
@@ -122,13 +136,11 @@ export class ViewManager {
       height = size.height
     }
 
-    const delta = view.setSize(width, height)
+    view.setSize(width, height)
 
     return {
       width,
-      height,
-      deltaWidth: delta.width,
-      deltaHeight: delta.height
+      height
     }
   }
 

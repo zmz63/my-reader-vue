@@ -13,6 +13,8 @@ export class View {
 
   height = 0
 
+  hidden = true
+
   writingMode: string | null = null
 
   window: Window | null = null
@@ -21,10 +23,10 @@ export class View {
 
   content: Content | null = null
 
-  displayed: Promise<void>
+  loaded: Promise<void>
 
   private defer = {
-    displayed: new Defer<void>()
+    loaded: new Defer<void>()
   }
 
   constructor(section: Section) {
@@ -33,7 +35,7 @@ export class View {
     this.wrapper = this.createWrapper()
     this.iframe = this.createIframe()
 
-    this.displayed = this.defer.displayed.promise
+    this.loaded = this.defer.loaded.promise
   }
 
   private createWrapper() {
@@ -81,16 +83,32 @@ export class View {
       this.document = document
       this.content = content
 
-      this.defer.displayed.resolve()
+      this.defer.loaded.resolve()
     }
 
-    await this.displayed
+    return this.loaded
+  }
+
+  hide() {
+    this.hidden = true
+
+    this.width = 0
+    this.height = 0
+
+    this.wrapper.style.width = '0px'
+    this.wrapper.style.height = '0px'
+
+    this.iframe.style.width = '0px'
+    this.iframe.style.height = '0px'
+  }
+
+  show() {
+    this.hidden = false
   }
 
   setSize(width: number, height: number) {
-    const delta = {
-      width: width - this.width,
-      height: height - this.height
+    if (this.hidden) {
+      return
     }
 
     this.width = width
@@ -101,8 +119,6 @@ export class View {
 
     this.iframe.style.width = `${width}px`
     this.iframe.style.height = `${height}px`
-
-    return delta
   }
 
   setAxis(axis: 'vertical' | 'horizontal') {

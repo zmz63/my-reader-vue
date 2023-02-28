@@ -4,7 +4,7 @@ import App from './App'
 import router from './router'
 import './main.scss'
 
-console.log(import.meta.env)
+// console.log(import.meta.env)
 
 const app = createApp(App)
 
