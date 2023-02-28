@@ -30,6 +30,7 @@ export function rendererConfigFactory(mode) {
     root: rendererPath,
     mode,
     base: './',
+    envDir: './',
     publicDir: publicPath,
     plugins: [vueJsx(), svgLoader(_path.join(rendererSrcPath, 'icons'))],
     resolve: {
