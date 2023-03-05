@@ -13,7 +13,7 @@ export class View {
 
   height = 0
 
-  hidden = true
+  hidden = false
 
   writingMode: string | null = null
 
@@ -46,7 +46,6 @@ export class View {
     wrapper.style.width = '0px'
     wrapper.style.height = '0px'
     wrapper.style.position = 'relative'
-    wrapper.style.display = 'block'
 
     return wrapper
   }
@@ -92,18 +91,15 @@ export class View {
   hide() {
     this.hidden = true
 
-    this.width = 0
-    this.height = 0
-
     this.wrapper.style.width = '0px'
     this.wrapper.style.height = '0px'
-
-    this.iframe.style.width = '0px'
-    this.iframe.style.height = '0px'
   }
 
   show() {
     this.hidden = false
+
+    this.wrapper.style.width = `${this.width}px`
+    this.wrapper.style.height = `${this.height}px`
   }
 
   setSize(width: number, height: number) {

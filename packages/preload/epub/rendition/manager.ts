@@ -107,7 +107,7 @@ export class ViewManager {
       this.stage.setSize(width, options.height)
     } else {
       const height = sizeList.reduce((prev, item) => prev + item.height, 0)
-      this.stage.setSize(options.width, height, options.width, height)
+      this.stage.setSize(options.width, height)
     }
   }
 

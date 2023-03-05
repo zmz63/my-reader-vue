@@ -28,8 +28,10 @@ export default defineComponent({
           return
         }
         const book = new ePub.Book(path)
-        const rendition = new ePub.Rendition(book, testRef.value)
-        rendition.display(7)
+        // const rendition = new ePub.Rendition(book, testRef.value)
+        // rendition.display(7)
+        const controller = new ePub.PaginationController(book, testRef.value)
+        controller.display(7)
         try {
           await book.opened
           console.log(book)

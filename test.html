@@ -3,42 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=50, initial-scale=5.0, user-scalable=no">
   <title>Document</title>
   <style>
+    :root {
+      background-color: aquamarine;
+    }
     .a {
-      width: 200px;
-      height: 200px;
-      margin: 30px;
-      border: 20px solid red;
-      padding: 10px;
-      background-color: aqua;
-    }
-    .b {
-      display: flex;
-      align-items: center;
-      /* align-content: center; */
-      justify-content: center;
-      /* justify-items: center; */
-      width: 100%;
-      height: 100%;
-      background-color: beige;
-      overflow: auto;
-    }
-    .c {
-      /* flex-shrink: 0; */
       width: 50px;
       height: 50px;
-      background-color: brown;
+      background-color: aqua;
+      padding-left: 5px;
+      overflow: hidden;
+      transform: scale(100%, 100%) translate(50%,0);
+    }
+    .b {
+      width: 100px;
+      height: 50px;
+      padding-left: 10px;
+      margin-left: 1px;
+      background-color: antiquewhite;
+      overflow: hidden;
+    }
+    .c {
+      width: 200px;
+      height: 50px;
+      padding-left: 20px;
+      background-color: blueviolet;
+      overflow: hidden;
     }
   </style>
 </head>
-<body style="direction: rtl; writing-mode: vertical-lr;">
+<body>
+  <div class="c"></div>
   <div class="a">
     <div class="b">
       <div class="c"></div>
     </div>
   </div>
+  <div class="c"></div>
   <script>
     const a = document.querySelector('.a')
     const b = document.querySelector('.b')
@@ -47,14 +50,14 @@
     console.log('b', b.clientWidth, b.scrollWidth)
     console.log('c', c.clientWidth, c.scrollWidth)
 
-    const d = document.createElement('div')
-    // d.style.width = '100%'
-    c.appendChild(d)
-    d.style.width = '1000px'
-    console.log(d.clientWidth)
-    setTimeout(() => {
-    console.log(d.clientWidth)
-    });
+    // const d = document.createElement('div')
+    // // d.style.width = '100%'
+    // c.appendChild(d)
+    // d.style.width = '1000px'
+    // console.log(d.clientWidth)
+    // setTimeout(() => {
+    // console.log(d.clientWidth)
+    // });
   </script>
 </body>
 </html>

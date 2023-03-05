@@ -43,9 +43,6 @@ export class Stage {
     wrapper.style.minHeight = '0px'
     wrapper.style.position = 'relative'
     wrapper.style.overflow = 'hidden'
-    wrapper.style.display = 'flex'
-    wrapper.style.justifyContent = 'center'
-    wrapper.style.alignItems = 'center'
 
     return wrapper
   }

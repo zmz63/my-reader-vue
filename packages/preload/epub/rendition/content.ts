@@ -1,5 +1,3 @@
-import { calculateBorder } from '../utils'
-
 export class Content {
   document: Document
 
@@ -15,36 +13,22 @@ export class Content {
 
   textWidth() {
     const range = this.document.createRange()
-    const border = calculateBorder(this.body)
 
     range.selectNodeContents(this.body)
 
     const rect = range.getBoundingClientRect()
 
-    let width = rect.width
-
-    if (border.width) {
-      width += border.width
-    }
-
-    return Math.round(width)
+    return Math.round(rect.width)
   }
 
   textHeight() {
     const range = this.document.createRange()
-    const border = calculateBorder(this.body)
 
     range.selectNodeContents(this.body)
 
     const rect = range.getBoundingClientRect()
 
-    let height = rect.height
-
-    if (border.height) {
-      height += border.height
-    }
-
-    return Math.round(height)
+    return Math.round(rect.height)
   }
 
   clientWidth() {
