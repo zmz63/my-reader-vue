@@ -61,43 +61,91 @@ export class PaginationController {
     await this.book.opened
 
     this.stage.attachTo(element)
+
+    this.updateViewData()
   }
 
-  async display(target: number | string) {
+  async display(target?: number | string) {
     await this.book.opened
 
-    const section = this.book.spine.get(target)
+    const section = target === undefined ? this.book.spine.first() : this.book.spine.get(target)
 
     if (!section) {
       // TODO
       throw new Error()
     }
 
-    let view = this.views.find(section)
+    const view = this.views.find(section)
 
     if (view) {
       //
     } else {
-      view = new View(section)
-
-      this.views.append(view)
-
-      await view.render()
-
-      this.initContentLayout(view)
-      this.updateStageLayout()
+      await this.append(section)
     }
   }
 
-  prev() {
-    //
+  async prev() {
+    if (this.stage.x > -this.viewData.pageWidth * 0.5) {
+      const prev = this.views.first().section.prev()
+      if (prev) {
+        this.views.clear()
+
+        const view = await this.prepend(prev)
+
+        this.stage.setTranslate(-view.width + this.viewData.width, 0)
+      }
+    } else {
+      this.stage.setTranslateOffset(this.viewData.width, 0)
+    }
   }
 
-  next() {
-    //
+  async next() {
+    if (
+      this.stage.containerWidth + this.stage.x <
+      this.viewData.pageWidth * (this.viewData.divisor + 0.5)
+    ) {
+      const next = this.views.last().section.next()
+      if (next) {
+        this.views.clear()
+
+        await this.append(next)
+
+        this.stage.setTranslate(0, 0)
+      }
+    } else {
+      this.stage.setTranslateOffset(-this.viewData.width, 0)
+    }
   }
 
-  initContentLayout(view: View) {
+  async append(section: Section) {
+    const view = new View(section)
+
+    this.views.append(view)
+
+    await view.render()
+
+    this.initViewLayout(view)
+
+    this.stage.setSize(view.width, this.stage.height)
+
+    return view
+  }
+
+  async prepend(section: Section) {
+    const view = new View(section)
+
+    this.views.prepend(view)
+
+    await view.render()
+
+    this.initViewLayout(view)
+
+    this.stage.setSize(view.width, this.stage.height)
+
+    return view
+  }
+
+  initViewLayout(view: View) {
     if (!view.content) {
       return
     }
@@ -112,9 +160,11 @@ export class PaginationController {
     content.setStyle('box-sizing', 'border-box', true)
     content.setStyle('max-width', 'inherit', true)
     content.setStyle('column-fill', 'auto', true)
+
+    this.updateViewLayout(view)
   }
 
-  updateStageLayout() {
+  updateViewData() {
     const data: PaginationViewData = {
       width: this.stage.width,
       height: this.stage.height,
@@ -130,19 +180,27 @@ export class PaginationController {
     data.columnWidth = data.pageWidth - data.gap
 
     this.viewData = data
+  }
+
+  updateStageLayout() {
+    this.updateViewData()
 
     let width = 0
 
     this.views.forEach(view => {
-      width += data.pageWidth * this.updateViewLayout(view)
+      this.updateViewLayout(view)
+      width += view.width
     })
 
     this.stage.setSize(width, this.stage.height)
   }
 
-  updateViewLayout(view: View) {
+  updateViewLayout(view: View, fill = true) {
     if (view.hidden || !view.content) {
-      return 0
+      return {
+        pages: 0,
+        width: 0
+      }
     }
 
     const content = view.content
@@ -156,9 +214,23 @@ export class PaginationController {
     content.setStyle('column-gap', `${gap}px`, true)
     content.setStyle('column-width', `${columnWidth}px`, true)
 
-    view.setSize(content.textWidth() + gap, height)
+    // NOTE
+    // view.setSize(content.textWidth(), height)
 
-    return Math.round(view.width / pageWidth)
+    let width = content.textWidth() + gap
+    let pages = Math.round(width / pageWidth)
+
+    if (fill && this.viewData.divisor > 1 && pages % 2 !== 0) {
+      pages += 1
+      width += pageWidth
+    }
+
+    view.setSize(width, height)
+
+    return {
+      pages,
+      width
+    }
   }
 
   setSpread(spread: boolean, minSpreadWidth = 800, gap = 0) {

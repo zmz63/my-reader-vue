@@ -46,6 +46,7 @@ export class View {
     wrapper.style.width = '0px'
     wrapper.style.height = '0px'
     wrapper.style.position = 'relative'
+    wrapper.style.overflow = 'hidden'
 
     return wrapper
   }
@@ -55,8 +56,6 @@ export class View {
 
     iframe.classList.add('epub-view')
 
-    iframe.style.width = '0px'
-    iframe.style.height = '0px'
     iframe.style.overflow = 'hidden'
     iframe.style.border = 'none'
 

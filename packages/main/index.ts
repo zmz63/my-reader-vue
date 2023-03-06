@@ -40,6 +40,8 @@ function createMainWindow() {
     }
   })
 
+  const webContents = mainWindow.webContents
+
   mainWindow.hookWindowMessage(0x0116, () => {
     mainWindow.setEnabled(false)
     mainWindow.setEnabled(true)
@@ -49,7 +51,7 @@ function createMainWindow() {
     mainWindow.loadFile(_path.resolve(__dirname, '../renderer/index.html'))
   } else {
     mainWindow.loadURL('http://localhost:8080')
-    mainWindow.webContents.openDevTools({ mode: 'undocked' })
+    webContents.openDevTools({ mode: 'undocked' })
   }
 
   mainWindow.once('ready-to-show', () => {
@@ -57,15 +59,15 @@ function createMainWindow() {
   })
 
   mainWindow.on('maximize', () => {
-    mainWindow.webContents.send('window-maximize', true)
+    webContents.send('window-maximize', true)
   })
 
   mainWindow.on('unmaximize', () => {
-    mainWindow.webContents.send('window-maximize', false)
+    webContents.send('window-maximize', false)
   })
 
   mainWindow.on('always-on-top-changed', () => {
-    mainWindow.webContents.send('window-on-top', mainWindow.isAlwaysOnTop())
+    webContents.send('window-on-top', mainWindow.isAlwaysOnTop())
   })
 }
 

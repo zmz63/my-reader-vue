@@ -13,6 +13,14 @@ export class Stage {
 
   height = 0
 
+  containerWidth = 0
+
+  containerHeight = 0
+
+  x = 0
+
+  y = 0
+
   readonly hooks: Readonly<{
     resize: Hook<() => void>
   }> = {
@@ -75,6 +83,9 @@ export class Stage {
   }
 
   setSize(width: number, height: number, minWidth = 0, minHeight = 0) {
+    this.containerWidth = width
+    this.containerHeight = height
+
     this.container.style.width = `${width}px`
     this.container.style.height = `${height}px`
 
@@ -92,7 +103,23 @@ export class Stage {
     }
   }
 
+  setTranslate(x: number, y: number) {
+    this.x = x
+    this.y = y
+
+    this.container.style.translate = `${x}px ${y}px`
+  }
+
+  setTranslateOffset(x: number, y: number) {
+    this.x += x
+    this.y += y
+
+    this.container.style.translate = `${this.x}px ${this.y}px`
+  }
+
   destroy() {
+    this.observer.disconnect()
+
     if (this.element) {
       this.element.removeChild(this.wrapper)
     }

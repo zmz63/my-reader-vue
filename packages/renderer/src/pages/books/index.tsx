@@ -7,12 +7,15 @@ import BookList from './components/BookList'
 import './index.scss'
 
 import epub from '@/epub'
+import type { PaginationController } from '@packages/preload/epub'
 
 type DisplayMode = 'list' | 'card'
 
 export default defineComponent({
   setup() {
     const { books, importBook } = useBookStore()
+
+    let controller: PaginationController
 
     const handleImportBook = async () => {
       const paths = await appIPC.selectOpenFilePaths({
@@ -30,8 +33,8 @@ export default defineComponent({
         const book = new ePub.Book(path)
         // const rendition = new ePub.Rendition(book, testRef.value)
         // rendition.display(7)
-        const controller = new ePub.PaginationController(book, testRef.value)
-        controller.display(7)
+        controller = new ePub.PaginationController(book, testRef.value)
+        controller.display(59)
         try {
           await book.opened
           console.log(book)
@@ -98,6 +101,20 @@ export default defineComponent({
           <div class="left">
             <NButton onClick={handleImportBook}>Import</NButton>
             <NButton onClick={testEPub}>Test</NButton>
+            <NButton
+              onClick={() => {
+                controller.prev()
+              }}
+            >
+              prev
+            </NButton>
+            <NButton
+              onClick={() => {
+                controller.next()
+              }}
+            >
+              next
+            </NButton>
           </div>
           <div class="right">
             <NButton text focusable={false} onClick={() => handleSwitchDisplayMode('card')}>

@@ -27,49 +27,25 @@ export class Spine {
       const manifestItem = manifest[item.idref]
 
       const sectionDocument = await archive.getDocument(resolver(manifestItem.href))
-      const sectionData: Section['data'] = {
-        ...item,
-        type: manifestItem.type,
-        href: manifestItem.href,
-        prev: null,
-        next: null,
-        cfiBase: CFI.generateChapterFragment(spineNodeIndex, index, item.id)
-      }
 
-      if (sectionData.linear === 'yes') {
-        sectionData.prev = () => {
-          let prevIndex = index - 1
-          while (prevIndex >= 0) {
-            const prev = this.get(prevIndex)
-            if (prev && prev.data.linear) {
-              return prev
-            }
-            prevIndex -= 1
-          }
-          return null
-        }
-        sectionData.next = () => {
-          let nextIndex = index + 1
-          while (nextIndex < this.sections.length) {
-            const next = this.get(nextIndex)
-            if (next && next.data.linear) {
-              return next
-            }
-            nextIndex += 1
-          }
-          return null
-        }
-      }
-
-      const section = new Section(sectionData, sectionDocument, this.hooks)
+      const section = new Section(
+        this,
+        index,
+        item.linear === 'yes',
+        manifestItem.href,
+        manifestItem.type,
+        item.properties,
+        CFI.generateChapterFragment(spineNodeIndex, index, item.id),
+        sectionDocument
+      )
 
       this.sections[index] = section
 
-      this.hrefMap[decodeURI(sectionData.href)] = index
-      this.hrefMap[encodeURI(sectionData.href)] = index
-      this.hrefMap[sectionData.href] = index
+      this.hrefMap[decodeURI(manifestItem.href)] = index
+      this.hrefMap[encodeURI(manifestItem.href)] = index
+      this.hrefMap[manifestItem.href] = index
 
-      this.idMap[sectionData.idref] = index
+      this.idMap[item.idref] = index
     }
   }
 
@@ -89,7 +65,7 @@ export class Spine {
   first() {
     for (let i = 0; i < this.sections.length; i++) {
       const section = this.sections[i]
-      if (section && section.data.linear) {
+      if (section && section.linear) {
         return section
       }
     }
@@ -98,7 +74,7 @@ export class Spine {
   last() {
     for (let i = this.sections.length - 1; i >= 0; i--) {
       const section = this.sections[i]
-      if (section && section.data.linear) {
+      if (section && section.linear) {
         return section
       }
     }

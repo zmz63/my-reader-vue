@@ -77,15 +77,7 @@ export class Views {
       this.views.splice(index, 1)
     }
 
-    this.destroy(view)
-  }
-
-  destroy(view: View) {
-    view.destroy()
-
-    if (this.container) {
-      this.container.removeChild(view.wrapper)
-    }
+    this.destroyView(view)
   }
 
   forEach(callback: (value: View, index: number, array: View[]) => void) {
@@ -96,7 +88,7 @@ export class Views {
     if (!this.length) return
 
     for (const view of this.views) {
-      this.destroy(view)
+      this.destroyView(view)
     }
 
     this.views = []
@@ -104,9 +96,17 @@ export class Views {
 
   find(section: Section) {
     for (const view of this.views) {
-      if (view.section.data.index === section.data.index) {
+      if (view.section.index === section.index) {
         return view
       }
+    }
+  }
+
+  destroyView(view: View) {
+    view.destroy()
+
+    if (this.container) {
+      this.container.removeChild(view.wrapper)
     }
   }
 }
