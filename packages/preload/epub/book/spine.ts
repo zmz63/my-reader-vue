@@ -1,5 +1,5 @@
 import { Hook } from '@packages/common/hook'
-import type { ZipArchive } from '../zip-archive'
+import type { ZipArchive } from '@preload/utils/zip-archive'
 import { CFI } from '../cfi'
 import type { Package } from './package'
 import { Section } from './section'

@@ -1,3 +1,4 @@
+import { Queue } from '@packages/common/queue'
 import type { Book } from '../..'
 import type { Section } from '../../book/section'
 import { RenditionLayout } from '../constants'
@@ -20,14 +21,27 @@ export type PaginationViewData = {
   gap: number
   pageWidth: number
   columnWidth: number
+  verticalPadding: number
+}
+
+export type Location = {
+  index: number
+  totalPages: number
+  currentPage: number
+  cfiMap: {
+    start: string
+    end: string
+  }
 }
 
 export class PaginationController {
+  stage = new Stage()
+
   book: Book
 
-  stage: Stage
-
   views: Views
+
+  queue: Queue
 
   options: PaginationOptions = {
     layout: RenditionLayout.Relowable,
@@ -42,27 +56,42 @@ export class PaginationController {
     divisor: 1,
     gap: 0,
     pageWidth: 0,
-    columnWidth: 0
+    columnWidth: 0,
+    verticalPadding: 0
+  }
+
+  location: Location = {
+    index: 0,
+    totalPages: 0,
+    currentPage: 0,
+    cfiMap: {
+      start: '',
+      end: ''
+    }
   }
 
   constructor(book: Book, element: Element, options?: Partial<PaginationOptions>) {
     this.book = book
-    this.stage = new Stage()
     this.views = new Views(this.stage.container)
+    this.queue = new Queue(this)
 
     Object.assign(this.options, options)
 
+    // this.queue.enqueue(this.init, element)
     this.init(element)
-
-    this.stage.hooks.resize.register(() => this.updateStageLayout())
   }
 
   async init(element: Element) {
     await this.book.opened
 
+    this.stage.hooks.resize.register(() => this.updateStageLayout())
     this.stage.attachTo(element)
 
     this.updateViewData()
+  }
+
+  determineOptions() {
+    // TODO
   }
 
   async display(target?: number | string) {
@@ -80,69 +109,96 @@ export class PaginationController {
     if (view) {
       //
     } else {
-      await this.append(section)
+      await this.add(section)
     }
   }
 
   async prev() {
+    if (!this.location) {
+      return
+    }
+
+    const view = this.views.last()
+
     if (this.stage.x > -this.viewData.pageWidth * 0.5) {
-      const prev = this.views.first().section.prev()
+      const prev = view.section.prev()
       if (prev) {
         this.views.clear()
 
-        const view = await this.prepend(prev)
-
-        this.stage.setTranslate(-view.width + this.viewData.width, 0)
+        await this.add(prev, 'prepend')
       }
     } else {
       this.stage.setTranslateOffset(this.viewData.width, 0)
+
+      this.location.currentPage -= 1
     }
   }
 
   async next() {
+    if (!this.location) {
+      return
+    }
+
+    const view = this.views.last()
+
     if (
       this.stage.containerWidth + this.stage.x <
       this.viewData.pageWidth * (this.viewData.divisor + 0.5)
     ) {
-      const next = this.views.last().section.next()
+      const next = view.section.next()
       if (next) {
         this.views.clear()
 
-        await this.append(next)
-
-        this.stage.setTranslate(0, 0)
+        await this.add(next)
       }
     } else {
       this.stage.setTranslateOffset(-this.viewData.width, 0)
+
+      this.location.currentPage += 1
     }
   }
 
-  async append(section: Section) {
+  async add(section: Section, mode: 'append' | 'prepend' = 'append') {
     const view = new View(section)
 
-    this.views.append(view)
+    if (mode === 'append') {
+      this.views.append(view)
+    } else {
+      this.views.prepend(view)
+    }
 
     await view.render()
 
     this.initViewLayout(view)
 
     this.stage.setSize(view.width, this.stage.height)
+
+    this.location.index = view.section.index
+
+    if (mode === 'append') {
+      this.location.currentPage = 1
+      this.stage.setTranslate(0, 0)
+    } else {
+      this.location.currentPage = view.width / this.viewData.pageWidth + 1 - this.viewData.divisor
+      this.stage.setTranslate(-view.width + this.viewData.width, 0)
+    }
 
     return view
   }
 
-  async prepend(section: Section) {
-    const view = new View(section)
+  updateLocation(view: View) {
+    if (view.hidden || !view.content) {
+      return
+    }
 
-    this.views.prepend(view)
+    const content = view.content
 
-    await view.render()
-
-    this.initViewLayout(view)
-
-    this.stage.setSize(view.width, this.stage.height)
-
-    return view
+    console.log(
+      content.document.elementFromPoint(
+        this.viewData.pageWidth * (this.location.currentPage - 1),
+        this.viewData.verticalPadding
+      )
+    )
   }
 
   initViewLayout(view: View) {
@@ -155,8 +211,6 @@ export class PaginationController {
     content.setStyle('overflow', 'hidden', true)
     content.setStyle('margin', '0px', true)
     content.setStyle('border', 'none', true)
-    content.setStyle('padding-top', '20px', true)
-    content.setStyle('padding-bottom', '20px', true)
     content.setStyle('box-sizing', 'border-box', true)
     content.setStyle('max-width', 'inherit', true)
     content.setStyle('column-fill', 'auto', true)
@@ -171,7 +225,8 @@ export class PaginationController {
       divisor: 1,
       gap: 0,
       pageWidth: this.stage.width,
-      columnWidth: this.stage.width
+      columnWidth: this.stage.width,
+      verticalPadding: Math.floor(this.stage.height / 24)
     }
 
     data.divisor = this.options.spread && data.width >= this.options.minSpreadWidth ? 2 : 1
@@ -197,40 +252,36 @@ export class PaginationController {
 
   updateViewLayout(view: View, fill = true) {
     if (view.hidden || !view.content) {
-      return {
-        pages: 0,
-        width: 0
-      }
+      return
     }
 
     const content = view.content
 
-    const { height, gap, columnWidth, pageWidth } = this.viewData
+    const { height, gap, columnWidth, pageWidth, verticalPadding } = this.viewData
 
     content.setStyle('width', `${pageWidth}px`, true)
     content.setStyle('height', `${height}px`, true)
     content.setStyle('padding-left', `${gap / 2}px`, true)
     content.setStyle('padding-right', `${gap / 2}px`, true)
+    content.setStyle('padding-top', `${verticalPadding}px`, true)
+    content.setStyle('padding-bottom', `${verticalPadding}px`, true)
     content.setStyle('column-gap', `${gap}px`, true)
     content.setStyle('column-width', `${columnWidth}px`, true)
 
     // NOTE
-    // view.setSize(content.textWidth(), height)
+    // view.setSize(content.textWidth, height)
 
-    let width = content.textWidth() + gap
-    let pages = Math.round(width / pageWidth)
+    let width = content.textWidth + gap
+    let totalPages = Math.round(width / pageWidth)
 
-    if (fill && this.viewData.divisor > 1 && pages % 2 !== 0) {
-      pages += 1
+    if (fill && this.viewData.divisor > 1 && totalPages % 2 !== 0) {
       width += pageWidth
+      totalPages += 1
     }
 
     view.setSize(width, height)
 
-    return {
-      pages,
-      width
-    }
+    this.location.totalPages = totalPages
   }
 
   setSpread(spread: boolean, minSpreadWidth = 800, gap = 0) {

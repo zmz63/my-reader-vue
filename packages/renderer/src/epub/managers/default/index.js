@@ -528,7 +528,7 @@ class DefaultViewManager {
 						this.settings.axis === "horizontal" &&
 						this.settings.direction === "rtl" &&
 						this.settings.rtlScrollType === "default") {
-						
+
 						this.scrollTo(this.container.scrollWidth, 0, true);
 					}
 					this.views.show();
@@ -675,7 +675,7 @@ class DefaultViewManager {
 		let pageWidth = (container.width < window.innerWidth) ? container.width : window.innerWidth;
 		let vertical = (this.settings.axis === "vertical");
 		let rtl =  (this.settings.direction === "rtl");
-		
+
 		let offset = 0;
 		let used = 0;
 
@@ -772,6 +772,7 @@ class DefaultViewManager {
 			}
 
 			used += pageWidth;
+      console.log(start,end);
 
 			let mapping = this.mapping.page(view.contents, view.section.cfiBase, start, end);
 
@@ -779,7 +780,7 @@ class DefaultViewManager {
 			let startPage = Math.floor(start / this.layout.pageWidth);
 			let pages = [];
 			let endPage = Math.floor(end / this.layout.pageWidth);
-			
+
 			// start page should not be negative
 			if (startPage < 0) {
 				startPage = 0;
@@ -807,6 +808,8 @@ class DefaultViewManager {
 				mapping
 			};
 		});
+
+    console.log(sections)
 
 		return sections;
 	}

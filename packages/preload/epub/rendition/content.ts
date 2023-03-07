@@ -11,7 +11,7 @@ export class Content {
     this.body = document.body
   }
 
-  textWidth() {
+  get textWidth() {
     const range = this.document.createRange()
 
     range.selectNodeContents(this.body)
@@ -21,7 +21,7 @@ export class Content {
     return Math.round(rect.width)
   }
 
-  textHeight() {
+  get textHeight() {
     const range = this.document.createRange()
 
     range.selectNodeContents(this.body)
@@ -31,19 +31,19 @@ export class Content {
     return Math.round(rect.height)
   }
 
-  clientWidth() {
+  get clientWidth() {
     return this.root.clientWidth
   }
 
-  clientHeight() {
+  get clientHeight() {
     return this.root.clientHeight
   }
 
-  scrollWidth() {
+  get scrollWidth() {
     return this.root.scrollWidth
   }
 
-  scrollHeight() {
+  get scrollHeight() {
     return this.root.scrollHeight
   }
 
@@ -52,50 +52,6 @@ export class Content {
       this.body.style.setProperty(property, value, priority ? 'important' : '')
     } else {
       this.body.style.removeProperty(property)
-    }
-  }
-
-  setColumns(width: number, height: number, columnWidth: number, gap: number) {
-    this.setStyle('width', `${width}px`)
-    this.setStyle('height', `${height}px`)
-    this.setStyle('overflow', 'hidden')
-    this.setStyle('margin', '0px', true)
-    this.setStyle('border', 'none', true)
-    this.setStyle('padding-top', '20px')
-    this.setStyle('padding-bottom', '20px')
-    this.setStyle('padding-left', `${gap / 2}px`, true)
-    this.setStyle('padding-right', `${gap / 2}px`, true)
-    this.setStyle('box-sizing', 'border-box')
-    this.setStyle('max-width', 'inherit')
-    this.setStyle('column-fill', 'auto')
-    this.setStyle('column-gap', `${gap}px`)
-    this.setStyle('column-width', `${columnWidth}px`)
-
-    return {
-      width: this.scrollWidth(),
-      height
-    }
-  }
-
-  lockWidth(width: number) {
-    this.setStyle('width', `${width}px`)
-    this.setStyle('height')
-    this.setStyle('overflow', 'hidden')
-    this.setStyle('margin', '0px', true)
-    this.setStyle('border', 'none', true)
-    this.setStyle('padding-top')
-    this.setStyle('padding-bottom')
-    this.setStyle('padding-left', `${width / 12}px`, true)
-    this.setStyle('padding-right', `${width / 12}px`, true)
-    this.setStyle('box-sizing', 'border-box')
-    this.setStyle('max-width')
-    this.setStyle('column-fill')
-    this.setStyle('column-gap')
-    this.setStyle('column-width')
-
-    return {
-      width,
-      height: this.scrollHeight()
     }
   }
 }

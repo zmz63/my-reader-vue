@@ -1,4 +1,4 @@
-import type { ZipArchive } from '../zip-archive'
+import type { ZipArchive } from '@preload/utils/zip-archive'
 import { indexOfNode } from '../utils'
 
 export type ManifestItem = {

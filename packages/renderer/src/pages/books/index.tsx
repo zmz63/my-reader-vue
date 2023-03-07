@@ -6,7 +6,7 @@ import BookCards from './components/BookCards'
 import BookList from './components/BookList'
 import './index.scss'
 
-import epub from '@/epub'
+import epub, { Rendition } from '@/epub'
 import type { PaginationController } from '@packages/preload/epub'
 
 type DisplayMode = 'list' | 'card'
@@ -16,6 +16,8 @@ export default defineComponent({
     const { books, importBook } = useBookStore()
 
     let controller: PaginationController
+
+    let rendition: Rendition
 
     const handleImportBook = async () => {
       const paths = await appIPC.selectOpenFilePaths({
@@ -55,7 +57,7 @@ export default defineComponent({
         if (files) {
           const book = epub(files[0])
           console.log(book)
-          const rendition = book.renderTo(testRef.value, {
+          rendition = book.renderTo(testRef.value, {
             width: '100%',
             height: '100%',
             method: 'default'
@@ -68,7 +70,7 @@ export default defineComponent({
             // direction: 'rtl'
           })
           console.log(rendition)
-          rendition.display(7)
+          rendition.display(59)
         }
       }
       input.click()
@@ -103,14 +105,24 @@ export default defineComponent({
             <NButton onClick={testEPub}>Test</NButton>
             <NButton
               onClick={() => {
-                controller.prev()
+                if (controller) {
+                  controller.prev()
+                }
+                if (rendition) {
+                  rendition.prev()
+                }
               }}
             >
               prev
             </NButton>
             <NButton
               onClick={() => {
-                controller.next()
+                if (controller) {
+                  controller.next()
+                }
+                if (rendition) {
+                  rendition.next()
+                }
               }}
             >
               next

@@ -1,6 +1,6 @@
 import _path from 'path/posix'
 import { Defer } from '@packages/common/defer'
-import { ZipArchive } from '../zip-archive'
+import { ZipArchive } from '@preload/utils/zip-archive'
 import { Container } from './container'
 import { Package } from './package'
 import { Spine } from './spine'

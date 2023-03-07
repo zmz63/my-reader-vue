@@ -1,4 +1,4 @@
-import type { ZipArchive } from '../zip-archive'
+import type { ZipArchive } from '@preload/utils/zip-archive'
 
 export type TocItem = {
   id: string
