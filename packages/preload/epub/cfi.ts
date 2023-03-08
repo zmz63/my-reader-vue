@@ -20,4 +20,8 @@ export class CFI {
 
     return fragment
   }
+
+  static rangeToCFI(range: Range, cfiBase: string) {
+    //
+  }
 }

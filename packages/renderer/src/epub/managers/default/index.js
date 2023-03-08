@@ -772,7 +772,6 @@ class DefaultViewManager {
 			}
 
 			used += pageWidth;
-      console.log(start,end);
 
 			let mapping = this.mapping.page(view.contents, view.section.cfiBase, start, end);
 
@@ -809,6 +808,7 @@ class DefaultViewManager {
 			};
 		});
 
+    //
     console.log(sections)
 
 		return sections;

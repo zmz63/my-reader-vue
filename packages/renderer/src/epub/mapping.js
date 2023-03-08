@@ -197,7 +197,9 @@ class Mapping {
 			});
 
 			if(found) {
-				return this.findTextStartRange(found, start, end);
+        const range = this.findTextStartRange(found, start, end);
+        console.log(range)
+				return range
 			}
 
 		}

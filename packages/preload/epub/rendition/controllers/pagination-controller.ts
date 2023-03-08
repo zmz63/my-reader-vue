@@ -21,6 +21,7 @@ export type PaginationViewData = {
   gap: number
   pageWidth: number
   columnWidth: number
+  horizontalPadding: number
   verticalPadding: number
 }
 
@@ -57,6 +58,7 @@ export class PaginationController {
     gap: 0,
     pageWidth: 0,
     columnWidth: 0,
+    horizontalPadding: 0,
     verticalPadding: 0
   }
 
@@ -109,29 +111,31 @@ export class PaginationController {
     if (view) {
       //
     } else {
-      await this.add(section)
+      const view = await this.add(section)
+
+      this.updateLocation(view)
     }
   }
 
   async prev() {
-    if (!this.location) {
-      return
-    }
-
-    const view = this.views.last()
+    let view = this.views.last()
 
     if (this.stage.x > -this.viewData.pageWidth * 0.5) {
       const prev = view.section.prev()
       if (prev) {
         this.views.clear()
 
-        await this.add(prev, 'prepend')
+        view = await this.add(prev, 'prepend')
+      } else {
+        return
       }
     } else {
       this.stage.setTranslateOffset(this.viewData.width, 0)
 
       this.location.currentPage -= 1
     }
+
+    this.updateLocation(view)
   }
 
   async next() {
@@ -139,7 +143,7 @@ export class PaginationController {
       return
     }
 
-    const view = this.views.last()
+    let view = this.views.last()
 
     if (
       this.stage.containerWidth + this.stage.x <
@@ -149,13 +153,17 @@ export class PaginationController {
       if (next) {
         this.views.clear()
 
-        await this.add(next)
+        view = await this.add(next)
+      } else {
+        return
       }
     } else {
       this.stage.setTranslateOffset(-this.viewData.width, 0)
 
       this.location.currentPage += 1
     }
+
+    this.updateLocation(view)
   }
 
   async add(section: Section, mode: 'append' | 'prepend' = 'append') {
@@ -179,7 +187,10 @@ export class PaginationController {
       this.location.currentPage = 1
       this.stage.setTranslate(0, 0)
     } else {
-      this.location.currentPage = view.width / this.viewData.pageWidth + 1 - this.viewData.divisor
+      this.location.currentPage = view.width / this.viewData.pageWidth
+      if (this.viewData.divisor > 1 && this.location.currentPage % 2 === 0) {
+        this.location.currentPage -= 1
+      }
       this.stage.setTranslate(-view.width + this.viewData.width, 0)
     }
 
@@ -192,13 +203,15 @@ export class PaginationController {
     }
 
     const content = view.content
-
-    console.log(
-      content.document.elementFromPoint(
-        this.viewData.pageWidth * (this.location.currentPage - 1),
-        this.viewData.verticalPadding
-      )
+    const start = this.viewData.pageWidth * (this.location.currentPage - 1)
+    const end = this.viewData.pageWidth * this.location.currentPage
+    const element = content.elementFromPoint(
+      start + this.viewData.horizontalPadding,
+      this.viewData.verticalPadding
     )
+
+    const result = content.getTextHorizontalStartPosition(element, start, end)
+    console.log(result)
   }
 
   initViewLayout(view: View) {
@@ -226,13 +239,18 @@ export class PaginationController {
       gap: 0,
       pageWidth: this.stage.width,
       columnWidth: this.stage.width,
+      horizontalPadding: 0,
       verticalPadding: Math.floor(this.stage.height / 24)
     }
 
     data.divisor = this.options.spread && data.width >= this.options.minSpreadWidth ? 2 : 1
     data.gap = this.options.gap || Math.floor(data.width / 12)
+    if (data.gap % 2 !== 0) {
+      data.gap -= 1
+    }
     data.pageWidth = data.width / data.divisor
     data.columnWidth = data.pageWidth - data.gap
+    data.horizontalPadding = Math.floor(data.gap / 2)
 
     this.viewData = data
   }
@@ -257,12 +275,13 @@ export class PaginationController {
 
     const content = view.content
 
-    const { height, gap, columnWidth, pageWidth, verticalPadding } = this.viewData
+    const { height, gap, columnWidth, pageWidth, horizontalPadding, verticalPadding } =
+      this.viewData
 
     content.setStyle('width', `${pageWidth}px`, true)
     content.setStyle('height', `${height}px`, true)
-    content.setStyle('padding-left', `${gap / 2}px`, true)
-    content.setStyle('padding-right', `${gap / 2}px`, true)
+    content.setStyle('padding-left', `${horizontalPadding}px`, true)
+    content.setStyle('padding-right', `${horizontalPadding}px`, true)
     content.setStyle('padding-top', `${verticalPadding}px`, true)
     content.setStyle('padding-bottom', `${verticalPadding}px`, true)
     content.setStyle('column-gap', `${gap}px`, true)

@@ -52,7 +52,7 @@
   <div class="a">
     <div class="b">
       aaaa
-      <div class="c">bbbbb</div>
+      <div class="c" a="a" b="b">bbbbb</div>
     </div>
     <div class="d">cccc</div>
   </div>
@@ -73,16 +73,23 @@
     // console.log(d.getClientRects())
     console.log(d.getBoundingClientRect())
 
-    const queue = [document.body]
+    // const queue = [document.body]
 
-    while (queue.length) {
-      const element = queue.shift()
+    // while (queue.length) {
+    //   const element = queue.shift()
 
-      console.log(element, element.tagName)
+    //   console.log(element, element.tagName)
 
-      if (element.childNodes) {
-        Array.from(element.childNodes).forEach(x => queue.push(x))
-      }
+    //   if (element.childNodes) {
+    //     Array.from(element.childNodes).forEach(x => queue.push(x))
+    //   }
+    // }
+    console.log(document.createAttribute('asd'))
+    c.a
+    const treeWalker = document.createTreeWalker(c)
+    let node
+    while ((node = treeWalker.nextNode())) {
+      console.log(node)
     }
   </script>
 </body>
