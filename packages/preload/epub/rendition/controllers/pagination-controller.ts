@@ -30,10 +30,7 @@ export type Location = {
   index: number
   totalPages: number
   currentPage: number
-  cfiMap: {
-    start: string
-    end: string
-  }
+  cfi: CFI | null
 }
 
 export class PaginationController {
@@ -67,10 +64,7 @@ export class PaginationController {
     index: 0,
     totalPages: 0,
     currentPage: 0,
-    cfiMap: {
-      start: '',
-      end: ''
-    }
+    cfi: null
   }
 
   constructor(book: Book, element: Element, options?: Partial<PaginationOptions>) {

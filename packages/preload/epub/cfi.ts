@@ -125,4 +125,8 @@ export class CFI {
     console.log(base + this.pathToString(path))
     // console.log(range, base, path)
   }
+
+  static cfiToRange(cfi: CFI) {
+    //
+  }
 }
