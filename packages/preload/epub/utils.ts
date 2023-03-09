@@ -1,7 +1,3 @@
-export function isNumber(number: unknown): number is number {
-  return typeof number === 'number'
-}
-
 export function indexOfNode(node: Node, nodeType: number) {
   const parent = node.parentNode as ParentNode
   const children = parent.childNodes

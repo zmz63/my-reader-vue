@@ -50,7 +50,7 @@ export class Content {
     return this.document.elementFromPoint(x, y) || this.body
   }
 
-  getTextHorizontalStartPosition(element: Element, start: number, end: number) {
+  getTextHorizontalStartRange(element: Element, start: number, end: number) {
     const treeWalker = this.document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
       acceptNode: node =>
         node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT

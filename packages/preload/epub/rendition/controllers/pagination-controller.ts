@@ -1,6 +1,7 @@
 import { Queue } from '@packages/common/queue'
 import type { Book } from '../..'
 import type { Section } from '../../book/section'
+import { CFI } from '../../cfi'
 import { RenditionLayout } from '../constants'
 import type { Content } from '../content'
 import { Stage } from '../stage'
@@ -210,8 +211,11 @@ export class PaginationController {
       this.viewData.verticalPadding
     )
 
-    const result = content.getTextHorizontalStartPosition(element, start, end)
-    console.log(result)
+    const range = content.getTextHorizontalStartRange(element, start, end)
+
+    if (range) {
+      CFI.rangeToCFI(range, view.section.cfiBase)
+    }
   }
 
   initViewLayout(view: View) {
