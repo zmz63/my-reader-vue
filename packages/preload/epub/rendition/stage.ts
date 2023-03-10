@@ -117,6 +117,14 @@ export class Stage {
     this.container.style.translate = `${this.x}px ${this.y}px`
   }
 
+  scrollTo(x: number, y: number) {
+    this.setTranslate(-x, -y)
+  }
+
+  scrollOffset(x: number, y: number) {
+    this.setTranslateOffset(-x, -y)
+  }
+
   destroy() {
     this.observer.disconnect()
 

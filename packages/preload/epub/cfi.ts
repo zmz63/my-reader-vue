@@ -13,24 +13,6 @@ export type CFIPath = {
 }
 
 export class CFI {
-  base: string
-
-  constructor(base: string) {
-    this.base = base
-  }
-
-  toString() {
-    const fragments = []
-
-    fragments.push('epubcfi(')
-    fragments.push(this.base)
-    fragments.push('!')
-    // fragments.push(this.base)
-    fragments.push(')')
-
-    return fragments.join()
-  }
-
   static isCFI(fragment: string) {
     return typeof fragment === 'string' && fragment.startsWith('epubcfi(') && fragment.endsWith(')')
   }
@@ -122,11 +104,19 @@ export class CFI {
 
   static rangeToCFI(range: Range, base: string) {
     const path = this.path(range.startContainer, range.startOffset)
-    console.log(base + this.pathToString(path))
-    // console.log(range, base, path)
+
+    const fragments = []
+
+    fragments.push('epubcfi(')
+    fragments.push(base)
+    fragments.push('!')
+    fragments.push(this.pathToString(path))
+    fragments.push(')')
+
+    return fragments.join('')
   }
 
-  static cfiToRange(cfi: CFI) {
+  static cfiToRange(cfi: string) {
     //
   }
 }

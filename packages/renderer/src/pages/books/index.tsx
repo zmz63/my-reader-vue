@@ -36,7 +36,7 @@ export default defineComponent({
         // const rendition = new ePub.Rendition(book, testRef.value)
         // rendition.display(7)
         controller = new ePub.PaginationController(book, testRef.value)
-        controller.display(59)
+        controller.display()
         try {
           await book.opened
           console.log(book)
@@ -70,7 +70,7 @@ export default defineComponent({
             // direction: 'rtl'
           })
           console.log(rendition)
-          rendition.display(59)
+          rendition.display()
         }
       }
       input.click()

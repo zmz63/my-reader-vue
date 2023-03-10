@@ -30,7 +30,8 @@ export type Location = {
   index: number
   totalPages: number
   currentPage: number
-  cfi: CFI | null
+  range: Range | null
+  cfi: string
 }
 
 export class PaginationController {
@@ -64,7 +65,8 @@ export class PaginationController {
     index: 0,
     totalPages: 0,
     currentPage: 0,
-    cfi: null
+    range: null,
+    cfi: ''
   }
 
   constructor(book: Book, element: Element, options?: Partial<PaginationOptions>) {
@@ -125,9 +127,9 @@ export class PaginationController {
         return
       }
     } else {
-      this.stage.setTranslateOffset(this.viewData.width, 0)
+      this.stage.scrollOffset(-this.viewData.width, 0)
 
-      this.location.currentPage -= 1
+      this.location.currentPage -= this.viewData.divisor
     }
 
     this.updateLocation(view)
@@ -153,9 +155,9 @@ export class PaginationController {
         return
       }
     } else {
-      this.stage.setTranslateOffset(-this.viewData.width, 0)
+      this.stage.scrollOffset(this.viewData.width, 0)
 
-      this.location.currentPage += 1
+      this.location.currentPage += this.viewData.divisor
     }
 
     this.updateLocation(view)
@@ -180,13 +182,13 @@ export class PaginationController {
 
     if (mode === 'append') {
       this.location.currentPage = 1
-      this.stage.setTranslate(0, 0)
+      this.stage.scrollTo(0, 0)
     } else {
-      this.location.currentPage = view.width / this.viewData.pageWidth
+      this.location.currentPage = Math.round(view.width / this.viewData.pageWidth)
       if (this.viewData.divisor > 1 && this.location.currentPage % 2 === 0) {
         this.location.currentPage -= 1
       }
-      this.stage.setTranslate(-view.width + this.viewData.width, 0)
+      this.stage.scrollTo((this.location.currentPage - 1) * this.viewData.pageWidth, 0)
     }
 
     return view
@@ -204,12 +206,12 @@ export class PaginationController {
       start + this.viewData.horizontalPadding,
       this.viewData.verticalPadding
     )
-
     const range = content.getTextHorizontalStartRange(element, start, end)
 
-    if (range) {
-      CFI.rangeToCFI(range, view.section.cfiBase)
-    }
+    this.location.range = range
+    this.location.cfi = range ? CFI.rangeToCFI(range, view.section.cfiBase) : ''
+
+    // console.log(element, this.location)
   }
 
   initViewLayout(view: View) {
@@ -264,6 +266,17 @@ export class PaginationController {
     })
 
     this.stage.setSize(width, this.stage.height)
+
+    if (this.location.range) {
+      const rect = this.location.range.getBoundingClientRect()
+      const index = Math.floor(rect.left / this.viewData.pageWidth)
+      this.location.currentPage = index + 1
+      if (this.viewData.divisor > 1 && this.location.currentPage % 2 === 0) {
+        this.location.currentPage -= 1
+      }
+      this.stage.scrollTo((this.location.currentPage - 1) * this.viewData.pageWidth, 0)
+      // console.log(rect, this.stage.x, this.viewData.pageWidth, this.location.currentPage)
+    }
   }
 
   updateViewLayout(view: View, fill = true) {
