@@ -4,16 +4,49 @@
   height: 100vh;
   box-sizing: border-box;
   flex-direction: column;
+  user-select: none;
 
-  &-main-container {
+  &-top-bar {
     display: flex;
-    overflow: hidden;
-    width: 100%;
-    flex-grow: 1;
+    height: 40px;
+    flex-shrink: 0;
+    justify-content: space-between;
+    -webkit-app-region: drag;
+
+    .left {
+      display: flex;
+      height: 100%;
+      align-items: center;
+      padding: 0 8px;
+      -webkit-app-region: no-drag;
+    }
+
+    .right {
+      display: flex;
+      height: 100%;
+      align-items: center;
+      -webkit-app-region: no-drag;
+      justify-self: flex-end;
+
+      .divider {
+        width: 1px;
+        height: 60%;
+        margin: 0 8px;
+        background-color: var(--divider-color);
+      }
+
+      .button-wrapper {
+        display: flex;
+        width: 160px;
+        align-items: center;
+        justify-content: space-evenly;
+      }
+    }
   }
 
-  &-main-view {
-    overflow: hidden;
+  &-view {
+    z-index: 1;
+    display: flex;
     flex-grow: 1;
   }
 }
