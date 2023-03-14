@@ -6,14 +6,18 @@ export class Container {
 
   directory = ''
 
-  async parse(archive: ZipArchive, containerPath: string) {
+  resolve(path: string) {
+    return _path.join(this.directory, path)
+  }
+
+  static async parse(inst: Container, archive: ZipArchive, containerPath: string) {
     try {
       const containerDocument = await archive.getXMLDocument(containerPath)
-      const rootFile = containerDocument.querySelector('rootfile') as Element
-      const packagePath = rootFile.getAttribute('full-path') as string
+      const rootFileElement = containerDocument.querySelector('rootfile') as Element
+      const packagePath = rootFileElement.getAttribute('full-path') as string
 
-      this.packagePath = packagePath
-      this.directory = _path.dirname(packagePath)
+      inst.packagePath = packagePath
+      inst.directory = _path.dirname(packagePath)
     } catch (error) {
       // TODO
       throw new Error()

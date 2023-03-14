@@ -1,5 +1,5 @@
 import { Defer } from '@packages/common/defer'
-import type { Section } from '../book/section'
+import type { Section } from '..'
 import { Content } from './content'
 
 export class View {

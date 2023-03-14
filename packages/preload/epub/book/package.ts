@@ -1,5 +1,6 @@
 import type { ZipArchive } from '@preload/utils/zip-archive'
-import { indexOfNode } from '../utils'
+import { indexOfNode } from '..'
+import type { Container } from './container'
 
 export type ManifestItem = {
   href: string
@@ -47,115 +48,111 @@ export class Package {
 
   coverPath = ''
 
+  cover: Buffer | null = null
+
   manifest: Record<string, ManifestItem> = {}
 
   spine: SpineItem[] = []
 
-  metadata: Metadata = {
-    title: '',
-    creator: '',
-    subject: '',
-    description: '',
-    date: '',
-    type: '',
-    publisher: '',
-    contributor: '',
-    format: '',
-    identifier: '',
-    source: '',
-    language: '',
-    relation: '',
-    coverage: '',
-    rights: '',
-    layout: '',
-    orientation: '',
-    flow: '',
-    viewport: '',
-    spread: '',
-    direction: ''
-  }
+  metadata: Partial<Metadata> = {}
 
   spineNodeIndex = 0
 
-  async parse(archive: ZipArchive, packagePath: string) {
+  static async parse(inst: Package, archive: ZipArchive, container: Container) {
     try {
-      const packageDocument = await archive.getXMLDocument(packagePath)
-      const metadataNode = packageDocument.querySelector('metadata') as Element
-      const manifestNode = packageDocument.querySelector('manifest') as Element
-      const spineNode = packageDocument.querySelector('spine') as Element
+      const packageDocument = await archive.getXMLDocument(container.packagePath)
+      const metadataElement = packageDocument.querySelector('metadata') as Element
+      const manifestElement = packageDocument.querySelector('manifest') as Element
+      const spineElement = packageDocument.querySelector('spine') as Element
 
-      this.parseManifest(manifestNode)
-      this.getNavPath(manifestNode)
-      this.getNcxPath(manifestNode, spineNode)
-      this.getCoverPath(manifestNode, metadataNode)
-      this.parseSpine(spineNode)
-      this.parseMetadata(metadataNode, spineNode)
-      this.spineNodeIndex = indexOfNode(spineNode, Node.ELEMENT_NODE)
+      inst.manifest = this.parseManifest(manifestElement)
+      inst.navPath = this.getNavPath(manifestElement)
+      inst.ncxPath = this.getNcxPath(manifestElement, spineElement)
+      inst.coverPath = this.getCoverPath(manifestElement, metadataElement)
+      inst.spine = this.parseSpine(spineElement)
+      inst.metadata = this.parseMetadata(metadataElement, spineElement)
+      inst.spineNodeIndex = indexOfNode(spineElement, Node.ELEMENT_NODE)
+
+      if (inst.coverPath) {
+        inst.cover = await archive.getBuffer(container.resolve(inst.coverPath))
+      }
     } catch (error) {
       // TODO
       throw new Error()
     }
   }
 
-  private parseManifest(manifestNode: Element) {
-    for (const item of manifestNode.querySelectorAll('item')) {
-      this.manifest[item.getAttribute('id') as string] = {
+  static parseManifest(manifestElement: Element) {
+    const manifest: Record<string, ManifestItem> = {}
+
+    for (const item of manifestElement.querySelectorAll('item')) {
+      manifest[item.getAttribute('id') as string] = {
         href: item.getAttribute('href') || '',
         overlay: item.getAttribute('media-overlay') || '',
         type: item.getAttribute('media-type') || '',
         properties: item.getAttribute('properties')?.split(' ') || []
       }
     }
+
+    return manifest
   }
 
-  private getNavPath(manifestNode: Element) {
-    for (const item of manifestNode.querySelectorAll('item')) {
+  static getNavPath(manifestElement: Element) {
+    for (const item of manifestElement.querySelectorAll('item')) {
       if (item.getAttribute('properties') === 'nav') {
-        this.navPath = (item.getAttribute('href') as string) || ''
+        return (item.getAttribute('href') as string) || ''
       }
     }
+
+    return ''
   }
 
-  private getNcxPath(manifestNode: Element, spineNode: Element) {
-    for (const item of manifestNode.querySelectorAll('item')) {
+  static getNcxPath(manifestElement: Element, spineElement: Element) {
+    for (const item of manifestElement.querySelectorAll('item')) {
       if (item.getAttribute('media-type') === 'application/x-dtbncx+xml') {
-        this.ncxPath = (item.getAttribute('href') as string) || ''
+        return (item.getAttribute('href') as string) || ''
       }
     }
 
-    if (spineNode.getAttribute('ncx')) {
-      for (const item of manifestNode.querySelectorAll('item')) {
+    if (spineElement.getAttribute('ncx')) {
+      for (const item of manifestElement.querySelectorAll('item')) {
         if (item.getAttribute('id') === 'toc') {
-          this.ncxPath = (item.getAttribute('href') as string) || ''
+          return (item.getAttribute('href') as string) || ''
         }
       }
     }
+
+    return ''
   }
 
-  private getCoverPath(manifestNode: Element, metadataNode: Element) {
-    for (const item of manifestNode.querySelectorAll('item')) {
+  static getCoverPath(manifestElement: Element, metadataElement: Element) {
+    for (const item of manifestElement.querySelectorAll('item')) {
       if (item.getAttribute('properties') === 'cover-image') {
-        this.coverPath = (item.getAttribute('href') as string) || ''
+        return (item.getAttribute('href') as string) || ''
       }
     }
 
-    for (const meta of metadataNode.querySelectorAll('meta')) {
+    for (const meta of metadataElement.querySelectorAll('meta')) {
       if (meta.getAttribute('name') === 'cover') {
         const id = meta.getAttribute('content')
         if (id) {
-          const item = manifestNode.querySelector(`#${id}`)
+          const item = manifestElement.querySelector(`#${id}`)
           if (item) {
-            this.coverPath = (item.getAttribute('href') as string) || ''
+            return (item.getAttribute('href') as string) || ''
           }
         }
       }
     }
+
+    return ''
   }
 
-  private parseSpine(spineNode: Element) {
-    const nodeList = spineNode.querySelectorAll('itemref')
-    nodeList.forEach((item, index) => {
-      this.spine.push({
+  static parseSpine(spineElement: Element) {
+    const spine: SpineItem[] = []
+
+    const elementList = spineElement.querySelectorAll('itemref')
+    elementList.forEach((item, index) => {
+      spine.push({
         idref: item.getAttribute('idref') || '',
         linear: item.getAttribute('linear') || 'yes',
         index,
@@ -163,9 +160,12 @@ export class Package {
         properties: item.getAttribute('properties')?.split(' ') || []
       })
     })
+
+    return spine
   }
 
-  private parseMetadata(metadataNode: Element, spineNode: Element) {
+  static parseMetadata(metadataElement: Element, spineElement: Element) {
+    const metadata: Partial<Metadata> = {}
     const dcTags = [
       'title',
       'creator',
@@ -186,25 +186,32 @@ export class Package {
     const renditionProps = ['layout', 'orientation', 'flow', 'viewport', 'spread']
 
     for (const tag of dcTags as (keyof Metadata)[]) {
-      this.metadata[tag] =
-        metadataNode.getElementsByTagNameNS(
-          metadataNode.getAttribute('xmlns:dc') || 'http://purl.org/dc/elements/1.1/',
-          tag
-        )[0]?.textContent || ''
+      const element = metadataElement.getElementsByTagNameNS(
+        metadataElement.getAttribute('xmlns:dc') || 'http://purl.org/dc/elements/1.1/',
+        tag
+      )[0]
+      if (element) {
+        metadata[tag] = element.textContent || ''
+      }
     }
 
-    const metaNodes = metadataNode.querySelectorAll('meta')
+    const metaElements = metadataElement.querySelectorAll('meta')
     for (const prop of renditionProps as (keyof Metadata)[]) {
-      for (const meta of metaNodes) {
+      for (const meta of metaElements) {
         if (meta.getAttribute('property') === `rendition:${prop}`) {
           if (meta.textContent) {
-            this.metadata[prop] = meta.textContent
+            metadata[prop] = meta.textContent
           }
           break
         }
       }
     }
 
-    this.metadata.direction = spineNode.getAttribute('page-progression-direction') || ''
+    const direction = spineElement.getAttribute('page-progression-direction')
+    if (direction) {
+      metadata.direction = direction
+    }
+
+    return metadata
   }
 }

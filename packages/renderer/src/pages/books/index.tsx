@@ -1,6 +1,6 @@
 import { defineComponent, ref } from 'vue'
 import { NButton, NScrollbar } from 'naive-ui'
-import { useBookStore } from '@/stores/books'
+import { useBookStore } from '@packages/renderer/src/stores/book'
 import SvgIcon from '@/components/SvgIcon'
 import BookCards from './components/BookCards'
 import BookList from './components/BookList'
@@ -13,7 +13,7 @@ type DisplayMode = 'list' | 'card'
 
 export default defineComponent({
   setup() {
-    const { books, importBook } = useBookStore()
+    // const { books, importBook } = useBookStore()
 
     let controller: PaginationController
 
@@ -35,10 +35,11 @@ export default defineComponent({
         const book = new ePub.Book(path)
         // const rendition = new ePub.Rendition(book, testRef.value)
         // rendition.display(7)
-        controller = new ePub.PaginationController(book, testRef.value)
+        controller = new ePub.PaginationController(book)
+        controller.attachTo(testRef.value)
         controller.display()
         try {
-          await book.opened
+          await book.unpacked
           console.log(book)
         } catch (error) {
           console.log(error)

@@ -1,12 +1,9 @@
 import { Queue } from '@packages/common/queue'
-import type { Book } from '../..'
-import type { Section } from '../../book/section'
-import { CFI } from '../../cfi'
-import { RenditionLayout } from '../constants'
-import type { Content } from '../content'
-import { Stage } from '../stage'
-import { View } from '../view'
-import { Views } from '../views'
+import { type Book, CFI, type Section } from '..'
+import { RenditionLayout } from './constants'
+import { Stage } from './stage'
+import { View } from './view'
+import { Views } from './views'
 
 export type PaginationOptions = {
   layout: RenditionLayout
@@ -69,19 +66,16 @@ export class PaginationController {
     cfi: ''
   }
 
-  constructor(book: Book, element: Element, options?: Partial<PaginationOptions>) {
+  constructor(book: Book, options?: Partial<PaginationOptions>) {
     this.book = book
     this.views = new Views(this.stage.container)
     this.queue = new Queue(this)
 
     Object.assign(this.options, options)
-
-    // this.queue.enqueue(this.init, element)
-    this.init(element)
   }
 
-  async init(element: Element) {
-    await this.book.opened
+  async attachTo(element: Element) {
+    await this.book.unpacked
 
     this.stage.hooks.resize.register(() => this.updateStageLayout())
     this.stage.attachTo(element)
@@ -94,7 +88,7 @@ export class PaginationController {
   }
 
   async display(target?: number | string) {
-    await this.book.opened
+    await this.book.unpacked
 
     const section = target === undefined ? this.book.spine.first() : this.book.spine.get(target)
 

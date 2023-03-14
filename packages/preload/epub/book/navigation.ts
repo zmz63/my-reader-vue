@@ -11,10 +11,10 @@ export type TocItem = {
 export class Navigation {
   list: TocItem[] = []
 
-  async parseNcx(archive: ZipArchive, ncxPath: string) {
+  static async parseNcx(inst: Navigation, archive: ZipArchive, ncxPath: string) {
     const ncxDocument = await archive.getXMLDocument(ncxPath)
-    const navMapNode = ncxDocument.querySelector('navMap') as Element
-    const navPoints = navMapNode.querySelectorAll('navPoint')
+    const navMapElement = ncxDocument.querySelector('navMap') as Element
+    const navPoints = navMapElement.querySelectorAll('navPoint')
 
     const tocMap: Record<string, TocItem> = {}
 
@@ -47,12 +47,12 @@ export class Navigation {
       if (item.parent) {
         tocMap[item.parent].subitems.push(item)
       } else {
-        this.list.push(item)
+        inst.list.push(item)
       }
     }
   }
 
-  async parseNav(archive: ZipArchive, navPath: string) {
+  static async parseNav(inst: Navigation, archive: ZipArchive, navPath: string) {
     const navDocument = await archive.getXMLDocument(navPath)
     // TODO
   }

@@ -67,7 +67,7 @@ function createMainWindow() {
   })
 
   mainWindow.on('always-on-top-changed', () => {
-    webContents.send('window-on-top', mainWindow.isAlwaysOnTop())
+    webContents.send('window-always-on-top-changed', mainWindow.isAlwaysOnTop())
   })
 }
 

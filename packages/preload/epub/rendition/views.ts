@@ -1,4 +1,4 @@
-import type { Section } from '../book/section'
+import type { Section } from '..'
 import type { View } from './view'
 
 export class Views {

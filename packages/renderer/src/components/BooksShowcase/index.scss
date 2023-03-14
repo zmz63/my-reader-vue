@@ -1,0 +1,23 @@
+.books-showcase {
+  &-header {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    gap: 32px;
+
+    .slot-wrap {
+      flex-grow: 1;
+    }
+
+    .switch-wrapper {
+      display: flex;
+      flex-shrink: 0;
+      gap: 16px;
+    }
+  }
+
+  &-body {
+    flex-grow: 1;
+  }
+}

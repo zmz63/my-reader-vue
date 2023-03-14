@@ -1,30 +1,53 @@
 import _path from 'path/posix'
 import type { ZipArchive } from '@preload/utils/zip-archive'
 import type { ManifestItem } from './package'
+import type { Container } from './container'
+
+type Asset = Simplify<
+  ManifestItem & {
+    data: Blob
+    url: string
+  }
+>
 
 export class Resources {
-  assets: Simplify<
-    ManifestItem & {
-      data: Blob
-      url: string
-    }
-  >[] = []
+  assets: Asset[] = []
 
-  async unpack(
+  replace(content: string, path: string) {
+    const substrings: string[] = []
+    const map: Record<string, string> = {}
+
+    for (const asset of this.assets) {
+      const url = _path.relative(_path.dirname(path), asset.href)
+      map[url] = asset.url
+      substrings.push(`(${url.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')})`)
+    }
+
+    return content.replace(new RegExp(substrings.join('|'), 'g'), substring => map[substring])
+  }
+
+  destroy() {
+    for (const asset of this.assets) {
+      URL.revokeObjectURL(asset.url)
+    }
+  }
+
+  static async unpack(
+    inst: Resources,
     archive: ZipArchive,
     manifest: Record<string, ManifestItem>,
-    resolver: (path: string) => string
+    container: Container
   ) {
     const cssList: Simplify<ManifestItem & { data: string | Blob }>[] = []
 
     for (const item of Object.values(manifest)) {
       if (item.type !== 'application/xhtml+xml' && item.type !== 'text/html') {
         if (item.type === 'text/css') {
-          const data = await archive.getText(resolver(item.href))
+          const data = await archive.getText(container.resolve(item.href))
           cssList.push({ ...item, data })
         } else {
-          const blob = await archive.getBlob(resolver(item.href), item.type)
-          this.assets.push({ ...item, data: blob, url: URL.createObjectURL(blob) })
+          const blob = await archive.getBlob(container.resolve(item.href), item.type)
+          inst.assets.push({ ...item, data: blob, url: URL.createObjectURL(blob) })
         }
       }
     }
@@ -53,33 +76,14 @@ export class Resources {
           }
         }
 
-        const content = this.replace(css.data, css.href)
+        const content = inst.replace(css.data, css.href)
         css.data = new Blob([content], { type: css.type })
-        this.assets.push({ ...css, url: URL.createObjectURL(css.data) } as typeof this.assets[0])
+        inst.assets.push({ ...css, url: URL.createObjectURL(css.data) } as Asset)
       }
 
       replaceCss(index + 1)
     }
 
     replaceCss()
-  }
-
-  replace(content: string, path: string) {
-    const substrings: string[] = []
-    const map: Record<string, string> = {}
-
-    for (const asset of this.assets) {
-      const url = _path.relative(_path.dirname(path), asset.href)
-      map[url] = asset.url
-      substrings.push(`(${url.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')})`)
-    }
-
-    return content.replace(new RegExp(substrings.join('|'), 'g'), substring => map[substring])
-  }
-
-  destroy() {
-    for (const asset of this.assets) {
-      URL.revokeObjectURL(asset.url)
-    }
   }
 }

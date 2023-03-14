@@ -1,7 +1,7 @@
 import { defineComponent } from 'vue'
-import { RouterView } from 'vue-router'
 import { NConfigProvider, NElement, NMessageProvider, NNotificationProvider } from 'naive-ui'
 import { defaultTheme } from '@/themes'
+import Layout from './layout'
 import './App.scss'
 
 export default defineComponent({
@@ -11,7 +11,7 @@ export default defineComponent({
         <NElement class="app">
           <NNotificationProvider max={5}>
             <NMessageProvider>
-              <RouterView />
+              <Layout />
             </NMessageProvider>
           </NNotificationProvider>
         </NElement>

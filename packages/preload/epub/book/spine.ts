@@ -1,6 +1,7 @@
 import { Hook } from '@packages/common/hook'
 import type { ZipArchive } from '@preload/utils/zip-archive'
-import { CFI } from '../cfi'
+import { CFI } from '..'
+import type { Container } from './container'
 import type { Package } from './package'
 import { Section } from './section'
 
@@ -15,38 +16,6 @@ export class Spine {
     serialize: Hook<(content: string, section: Section) => void>
   }> = {
     serialize: new Hook()
-  }
-
-  async unpack(
-    archive: ZipArchive,
-    { spine, manifest, spineNodeIndex }: Package,
-    resolver: (path: string) => string
-  ) {
-    for (const item of spine) {
-      const index = item.index
-      const manifestItem = manifest[item.idref]
-
-      const sectionDocument = await archive.getDocument(resolver(manifestItem.href))
-
-      const section = new Section(
-        this,
-        index,
-        item.linear === 'yes',
-        manifestItem.href,
-        manifestItem.type,
-        item.properties,
-        CFI.generateChapterFragment(spineNodeIndex, index, item.id),
-        sectionDocument
-      )
-
-      this.sections[index] = section
-
-      this.hrefMap[decodeURI(manifestItem.href)] = index
-      this.hrefMap[encodeURI(manifestItem.href)] = index
-      this.hrefMap[manifestItem.href] = index
-
-      this.idMap[item.idref] = index
-    }
   }
 
   get(target: number | string) {
@@ -83,6 +52,39 @@ export class Spine {
   destroy() {
     for (const section of this.sections) {
       section.destroy()
+    }
+  }
+
+  static async unpack(
+    inst: Spine,
+    archive: ZipArchive,
+    { spine, manifest, spineNodeIndex }: Package,
+    container: Container
+  ) {
+    for (const item of spine) {
+      const index = item.index
+      const manifestItem = manifest[item.idref]
+
+      const sectionDocument = await archive.getDocument(container.resolve(manifestItem.href))
+
+      const section = new Section(
+        inst,
+        index,
+        item.linear === 'yes',
+        manifestItem.href,
+        manifestItem.type,
+        item.properties,
+        CFI.generateChapterFragment(spineNodeIndex, index, item.id),
+        sectionDocument
+      )
+
+      inst.sections[index] = section
+
+      inst.hrefMap[decodeURI(manifestItem.href)] = index
+      inst.hrefMap[encodeURI(manifestItem.href)] = index
+      inst.hrefMap[manifestItem.href] = index
+
+      inst.idMap[item.idref] = index
     }
   }
 }

@@ -10,20 +10,23 @@ export default defineComponent({
     const isOnTop = ref(false)
     const isMaximized = ref(false)
 
-    let onTopHandler: () => void
+    let alwaysOnTopChangedHandler: () => void
     let maximizeHandler: () => void
 
     onBeforeMount(() => {
-      onTopHandler = windowIPC.addWindowStateListener('on-top', value => {
-        isOnTop.value = value
-      })
+      alwaysOnTopChangedHandler = windowIPC.addWindowStateListener(
+        'always-on-top-changed',
+        value => {
+          isOnTop.value = value
+        }
+      )
       maximizeHandler = windowIPC.addWindowStateListener('maximize', value => {
         isMaximized.value = value
       })
     })
 
     onUnmounted(() => {
-      onTopHandler()
+      alwaysOnTopChangedHandler()
       maximizeHandler()
     })
 
