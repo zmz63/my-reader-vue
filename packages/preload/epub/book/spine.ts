@@ -1,4 +1,4 @@
-import { Hook } from '@packages/common/hook'
+import { Hook } from '@common/hook'
 import type { ZipArchive } from '@preload/utils/zip-archive'
 import { CFI } from '..'
 import type { Container } from './container'

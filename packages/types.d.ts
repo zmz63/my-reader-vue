@@ -1,25 +1,36 @@
 // eslint-disable-next-line spaced-comment
 /// <reference types="vite/client" />
 
-declare module '*.frag' {
+module '*.frag' {
   const module: string
   export default module
 }
 
-declare module '*.vert' {
+module '*.vert' {
   const module: string
   export default module
 }
 
-declare module '*.wasm' {
+module '*.wasm' {
   const module: string
   export default module
 }
 
-declare module '*.vue' {
+module '*.sql' {
+  const module: string
+  export default module
+}
+
+module '*?node-worker' {
+  import type { Worker } from 'worker_threads'
+  const module: (options?: WorkerOptions) => Worker
+  export default module
+}
+
+module '*.vue' {
   import type { ComponentOptions } from 'vue'
-  const component: ComponentOptions
-  export default component
+  const module: ComponentOptions
+  export default module
 }
 
 type Mutable<T> = {
@@ -30,11 +41,11 @@ type Simplify<T> = {
   [P in keyof T]: T[P]
 }
 
-type PartialKey<T, U extends keyof T> = Simplify<
+type PartialKey<T, U extends keyof T = keyof T> = Simplify<
   { [P in U]?: T[P] } & { [P in keyof T as P extends U ? never : P]-?: T[P] }
 >
 
-type RequiredKey<T, U extends keyof T> = Simplify<
+type RequiredKey<T, U extends keyof T = keyof T> = Simplify<
   { [P in U]-?: T[P] } & { [P in keyof T as P extends U ? never : P]?: T[P] }
 >
 

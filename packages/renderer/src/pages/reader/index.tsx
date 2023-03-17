@@ -17,19 +17,19 @@ export default defineComponent({
       return () => null
     }
 
-    const controller = new ePub.PaginationController(bookStore.currentBook)
+    const renderer = new ePub.PaginationRenderer(bookStore.currentBook)
 
     onMounted(() => {
       if (!containerRef.value) {
         return
       }
 
-      controller.attachTo(containerRef.value)
-      controller.display()
+      renderer.attachTo(containerRef.value)
+      renderer.display()
     })
 
     onBeforeUnmount(() => {
-      controller.destroy()
+      renderer.destroy()
 
       //   if (bookStore.currentBook) {
       //     bookStore.currentBook.destroy()
@@ -38,11 +38,11 @@ export default defineComponent({
     })
 
     const prevPage = () => {
-      controller.prev()
+      renderer.prev()
     }
 
     const nextPage = () => {
-      controller.next()
+      renderer.next()
     }
 
     const pageData = reactive({

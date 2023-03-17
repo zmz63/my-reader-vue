@@ -1,4 +1,4 @@
-import { indexOfNode } from './utils'
+import { indexOfNode } from './util'
 
 export type CFIStep = {
   type: number

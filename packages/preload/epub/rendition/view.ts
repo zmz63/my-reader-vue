@@ -1,4 +1,4 @@
-import { Defer } from '@packages/common/defer'
+import { Defer } from '@common/defer'
 import type { Section } from '..'
 import { Content } from './content'
 

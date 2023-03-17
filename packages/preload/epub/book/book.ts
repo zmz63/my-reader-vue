@@ -1,5 +1,6 @@
-import { Defer } from '@packages/common/defer'
+import { Defer } from '@common/defer'
 import { ZipArchive } from '@preload/utils/zip-archive'
+import { md5 } from '@preload/utils/md5'
 import { Container } from './container'
 import { Package } from './package'
 import { Spine } from './spine'
@@ -14,6 +15,8 @@ export type OpenOptions = {
 
 export class Book {
   path: string
+
+  md5 = ''
 
   container = new Container()
 
@@ -48,6 +51,8 @@ export class Book {
 
       await Container.parse(this.container, archive, CONTAINER_PATH)
       await Package.parse(this.package, archive, this.container)
+
+      this.md5 = await md5(path)
 
       this.defer.opened.resolve()
 

@@ -3,7 +3,8 @@ import electron from 'electron'
 import { build, createServer } from 'vite'
 import { distMainPath, distPreloadPath, mainPath, preloadPath } from './paths.mjs'
 import { configFactory, rendererConfigFactory } from './config.mjs'
-import wasmLoader from './wasm-loader.mjs'
+import wasmLoader from './plugins/wasm-loader.mjs'
+import nodeWorkerLoader from './plugins/node-worker-loader.mjs'
 
 const env = 'development'
 
@@ -36,6 +37,7 @@ await build(
         process.electronApp = _cp.spawn(electron, ['.'], { stdio: 'inherit', env })
         process.electronApp.once('exit', process.exit)
       }
-    }
+    },
+    nodeWorkerLoader()
   ])
 )

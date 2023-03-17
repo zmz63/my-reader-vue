@@ -1,5 +1,5 @@
 import yauzl from 'yauzl'
-import { Defer } from '@packages/common/defer'
+import { Defer } from '@common/defer'
 
 export type ZipEntries = Record<string, yauzl.Entry>
 

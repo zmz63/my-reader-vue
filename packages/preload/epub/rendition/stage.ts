@@ -1,4 +1,4 @@
-import { Hook } from '@packages/common/hook'
+import { Hook } from '@common/hook'
 
 export class Stage {
   wrapper: HTMLDivElement

@@ -7,7 +7,7 @@ import BookList from './components/BookList'
 import './index.scss'
 
 import epub, { Rendition } from '@/epub'
-import type { PaginationController } from '@packages/preload/epub'
+import type { PaginationRenderer } from '@packages/preload/epub'
 
 type DisplayMode = 'list' | 'card'
 
@@ -15,12 +15,12 @@ export default defineComponent({
   setup() {
     // const { books, importBook } = useBookStore()
 
-    let controller: PaginationController
+    let renderer: PaginationRenderer
 
     let rendition: Rendition
 
     const handleImportBook = async () => {
-      const paths = await appIPC.selectOpenFilePaths({
+      const paths = await appChannel.selectOpenFilePaths({
         filters: [{ name: 'Electronic Book', extensions: ['epub'] }],
         properties: ['multiSelections']
       })
@@ -35,9 +35,9 @@ export default defineComponent({
         const book = new ePub.Book(path)
         // const rendition = new ePub.Rendition(book, testRef.value)
         // rendition.display(7)
-        controller = new ePub.PaginationController(book)
-        controller.attachTo(testRef.value)
-        controller.display()
+        renderer = new ePub.PaginationRenderer(book)
+        renderer.attachTo(testRef.value)
+        renderer.display()
         try {
           await book.unpacked
           console.log(book)
@@ -106,8 +106,8 @@ export default defineComponent({
             <NButton onClick={testEPub}>Test</NButton>
             <NButton
               onClick={() => {
-                if (controller) {
-                  controller.prev()
+                if (renderer) {
+                  renderer.prev()
                 }
                 if (rendition) {
                   rendition.prev()
@@ -118,8 +118,8 @@ export default defineComponent({
             </NButton>
             <NButton
               onClick={() => {
-                if (controller) {
-                  controller.next()
+                if (renderer) {
+                  renderer.next()
                 }
                 if (rendition) {
                   rendition.next()

@@ -16,6 +16,7 @@ export const distRendererPath = _path.join(distPath, 'renderer')
 
 export const mainPath = _path.join(packagesPath, 'main')
 export const preloadPath = _path.join(packagesPath, 'preload')
+export const commonPath = _path.join(packagesPath, 'common')
 export const rendererPath = _path.join(packagesPath, 'renderer')
 
 export const rendererSrcPath = _path.join(rendererPath, 'src')

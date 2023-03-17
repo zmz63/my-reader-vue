@@ -2,23 +2,23 @@ import _module from 'module'
 import _path from 'path'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import {
+  commonPath,
   distRendererPath,
   mainPath,
-  packagesPath,
   preloadPath,
   publicPath,
   rendererPath,
   rendererSrcPath
 } from './paths.mjs'
-import svgLoader from './svg-loader.mjs'
+import svgLoader from './plugins/svg-loader.mjs'
 import packageConfig from '../package.json' assert { type: 'json' }
 
 const { devDependencies } = packageConfig
 
 const alias = {
-  '@packages': packagesPath,
   '@main': mainPath,
   '@preload': preloadPath,
+  '@common': commonPath,
   '@': rendererSrcPath
 }
 

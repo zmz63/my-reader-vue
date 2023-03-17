@@ -1,7 +1,6 @@
 import { defineComponent, onBeforeMount, onUnmounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { NButton } from 'naive-ui'
-import { WindowControlType } from '@packages/constants'
 import SvgIcon from '@/components/SvgIcon'
 import './index.scss'
 
@@ -14,13 +13,13 @@ export default defineComponent({
     let maximizeHandler: () => void
 
     onBeforeMount(() => {
-      alwaysOnTopChangedHandler = windowIPC.addWindowStateListener(
+      alwaysOnTopChangedHandler = windowChannel.addWindowStateListener(
         'always-on-top-changed',
         value => {
           isOnTop.value = value
         }
       )
-      maximizeHandler = windowIPC.addWindowStateListener('maximize', value => {
+      maximizeHandler = windowChannel.addWindowStateListener('maximize', value => {
         isMaximized.value = value
       })
     })
@@ -41,7 +40,7 @@ export default defineComponent({
                 quaternary
                 size="tiny"
                 focusable={false}
-                onClick={() => windowIPC.controlWindow(WindowControlType.ON_TOP, !isOnTop.value)}
+                onClick={() => windowChannel.controlWindow('always-on-top', !isOnTop.value)}
               >
                 <SvgIcon
                   size={16}
@@ -52,7 +51,7 @@ export default defineComponent({
                 quaternary
                 size="tiny"
                 focusable={false}
-                onClick={() => windowIPC.controlWindow(WindowControlType.MINIMIZE)}
+                onClick={() => windowChannel.controlWindow('minimize')}
               >
                 <SvgIcon size={16} name="ic_fluent_subtract_24_regular" />
               </NButton>
@@ -60,9 +59,7 @@ export default defineComponent({
                 quaternary
                 size="tiny"
                 focusable={false}
-                onClick={() =>
-                  windowIPC.controlWindow(WindowControlType.MAXIMIZE, !isMaximized.value)
-                }
+                onClick={() => windowChannel.controlWindow('maximize', !isMaximized.value)}
               >
                 <SvgIcon
                   size={16}
@@ -77,7 +74,7 @@ export default defineComponent({
                 quaternary
                 size="tiny"
                 focusable={false}
-                onClick={() => windowIPC.controlWindow(WindowControlType.CLOSE)}
+                onClick={() => windowChannel.controlWindow('close')}
               >
                 <SvgIcon size={16} name="ic_fluent_dismiss_24_regular" />
               </NButton>

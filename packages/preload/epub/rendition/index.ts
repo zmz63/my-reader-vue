@@ -1,5 +1,4 @@
-export * from './pagination-controller'
-export * from './constants'
+export * from './pagination-renderer'
 export * from './stage'
 export * from './views'
 export * from './view'

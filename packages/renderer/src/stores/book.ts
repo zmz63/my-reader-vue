@@ -1,7 +1,7 @@
 import { type Raw, markRaw, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
+import type { Book } from '@preload/epub'
 import router from '@/router'
-import type { Book } from '@packages/preload/epub'
 
 interface OpenBook {
   (path: string): Promise<void>
@@ -22,7 +22,7 @@ export const useBookStore = defineStore('book', () => {
     let bookPath = path
 
     if (!bookPath) {
-      const paths = await appIPC.selectOpenFilePaths({
+      const paths = await appChannel.selectOpenFilePaths({
         filters: [{ name: 'Electronic Book', extensions: ['epub'] }]
       })
 
@@ -46,7 +46,7 @@ export const useBookStore = defineStore('book', () => {
     let bookPaths = paths
 
     if (!bookPaths) {
-      const paths = await appIPC.selectOpenFilePaths({
+      const paths = await appChannel.selectOpenFilePaths({
         filters: [{ name: 'Electronic Book', extensions: ['epub'] }],
         properties: ['multiSelections']
       })

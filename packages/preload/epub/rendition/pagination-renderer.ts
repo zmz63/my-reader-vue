@@ -1,12 +1,11 @@
-import { Queue } from '@packages/common/queue'
+import { Queue } from '@common/queue'
 import { type Book, CFI, type Section } from '..'
-import { RenditionLayout } from './constants'
 import { Stage } from './stage'
 import { View } from './view'
 import { Views } from './views'
 
 export type PaginationOptions = {
-  layout: RenditionLayout
+  layout: 'relowable' | 'pre-paginated'
   spread: boolean
   minSpreadWidth: number
   gap: number
@@ -31,7 +30,7 @@ export type Location = {
   cfi: string
 }
 
-export class PaginationController {
+export class PaginationRenderer {
   stage = new Stage()
 
   book: Book
@@ -41,7 +40,7 @@ export class PaginationController {
   queue: Queue
 
   options: PaginationOptions = {
-    layout: RenditionLayout.Relowable,
+    layout: 'relowable',
     spread: true,
     minSpreadWidth: 800,
     gap: 0
