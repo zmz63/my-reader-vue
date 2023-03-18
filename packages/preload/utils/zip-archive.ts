@@ -18,16 +18,20 @@ export class ZipArchive {
     opened: new Defer<void>()
   }
 
-  constructor(path?: string) {
+  constructor(input?: string | Buffer) {
     this.opened = this.defer.opened.promise
 
-    if (path) {
-      this.open(path)
+    if (input) {
+      this.open(input)
     }
   }
 
-  open(path: string) {
-    yauzl.open(path, { autoClose: false, lazyEntries: false }, (error, zipFile) => {
+  open(input: string | Buffer) {
+    const options: yauzl.Options = {
+      autoClose: false,
+      lazyEntries: false
+    }
+    const callback = (error: Error | null, zipFile: yauzl.ZipFile) => {
       if (error) {
         this.defer.opened.reject(error)
       }
@@ -43,7 +47,13 @@ export class ZipArchive {
       zipFile.on('end', async () => {
         this.defer.opened.resolve()
       })
-    })
+    }
+
+    if (typeof input === 'string') {
+      yauzl.open(input, options, callback)
+    } else {
+      yauzl.fromBuffer(input, options, callback)
+    }
   }
 
   async getBuffer(path: string) {

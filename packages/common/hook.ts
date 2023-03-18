@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class Hook<T extends (...args: any) => any> {
-  private context: unknown
+  private context: any
 
   private hooks: T[] = []
 
-  constructor(context?: unknown) {
+  constructor(context?: any) {
     this.context = context || this
   }
 
@@ -22,8 +22,8 @@ export class Hook<T extends (...args: any) => any> {
   }
 
   trigger(...args: Parameters<T>) {
-    return new Promise(resolve => {
-      const result: unknown[] = []
+    return new Promise<any[]>(resolve => {
+      const result: any[] = []
       for (let i = 0; i < this.hooks.length; i++) {
         const hook = this.hooks[i]
         try {

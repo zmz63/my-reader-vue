@@ -1,3 +1,4 @@
+import _fs from 'fs-extra'
 import { Defer } from '@common/defer'
 import { ZipArchive } from '@preload/utils/zip-archive'
 import { md5 } from '@preload/utils/md5'
@@ -14,9 +15,13 @@ export type OpenOptions = {
 }
 
 export class Book {
-  path: string
+  path = ''
 
   md5 = ''
+
+  file: Buffer | null = null
+
+  archive: ZipArchive | null = null
 
   container = new Container()
 
@@ -47,29 +52,29 @@ export class Book {
 
   private async open(path: string, options?: Partial<OpenOptions>) {
     try {
-      const archive = new ZipArchive(path)
+      this.file = await _fs.readFile(path)
+      this.md5 = md5(this.file)
+      this.archive = new ZipArchive(this.file)
 
-      await Container.parse(this.container, archive, CONTAINER_PATH)
-      await Package.parse(this.package, archive, this.container)
-
-      this.md5 = await md5(path)
+      await Container.parse(this.container, this.archive, CONTAINER_PATH)
+      await Package.parse(this.package, this.archive, this.container)
 
       this.defer.opened.resolve()
 
       if (options && options.unpack) {
-        await Resources.unpack(this.resources, archive, this.package.manifest, this.container)
-        await Spine.unpack(this.spine, archive, this.package, this.container)
+        await Resources.unpack(this.resources, this.archive, this.package.manifest, this.container)
+        await Spine.unpack(this.spine, this.archive, this.package, this.container)
 
         if (this.package.ncxPath) {
           await Navigation.parseNcx(
             this.navigation,
-            archive,
+            this.archive,
             this.container.resolve(this.package.ncxPath)
           )
         } else if (this.package.navPath) {
           await Navigation.parseNav(
             this.navigation,
-            archive,
+            this.archive,
             this.container.resolve(this.package.navPath)
           )
         }
@@ -83,7 +88,10 @@ export class Book {
 
       console.log(this)
 
-      archive.close()
+      await this.archive.close()
+
+      this.archive = null
+      this.file = null
     } catch (error) {
       this.defer.opened.reject(error)
     }

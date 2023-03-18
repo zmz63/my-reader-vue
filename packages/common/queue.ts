@@ -2,15 +2,15 @@
 import { Defer } from './defer'
 
 export class Queue {
-  private context: unknown
+  private context: any
 
-  private queue: (Promise<unknown> | (() => Promise<unknown>))[] = []
+  private queue: (Promise<any> | (() => Promise<any>))[] = []
 
   private running = false
 
   private defer = new Defer<void>()
 
-  constructor(context?: unknown) {
+  constructor(context?: any) {
     this.context = context || this
   }
 

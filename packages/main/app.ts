@@ -14,12 +14,12 @@ export function listenAppChannel() {
     const window = BrowserWindow.fromWebContents(event.sender)
 
     if (!window) {
-      return null
+      return
     }
 
     const { canceled, filePaths } = await dialog.showOpenDialog(window, options)
     if (canceled) {
-      return null
+      return
     } else {
       return filePaths
     }
@@ -29,12 +29,12 @@ export function listenAppChannel() {
     const window = BrowserWindow.fromWebContents(event.sender)
 
     if (!window) {
-      return null
+      return
     }
 
     const { canceled, filePath } = await dialog.showSaveDialog(window, options)
     if (canceled) {
-      return null
+      return
     } else {
       return filePath
     }

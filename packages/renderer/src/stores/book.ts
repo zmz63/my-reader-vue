@@ -1,5 +1,6 @@
 import { type Raw, markRaw, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
+import type { BookData } from '@main/db/server'
 import type { Book } from '@preload/epub'
 import router from '@/router'
 
@@ -35,6 +36,8 @@ export const useBookStore = defineStore('book', () => {
 
     const book = new ePub.Book(bookPath, { unpack: true })
 
+    await book.opened
+
     await book.unpacked
 
     currentBook.value = markRaw(book)
@@ -62,7 +65,29 @@ export const useBookStore = defineStore('book', () => {
     for (const path of bookPaths) {
       const book = new ePub.Book(path)
 
-      promises.push(book.opened.catch(error => error))
+      promises.push(
+        book.opened
+          .then(async () => {
+            const { title, creator, description, identifier } = book.package.metadata
+
+            const bookData: BookData = {
+              md5: book.md5,
+              size: (book.file as Buffer).byteLength,
+              createTime: Math.floor(Date.now() / 1000),
+              file: book.file,
+              title,
+              cover: book.package.cover,
+              creator,
+              description,
+              identifier
+            }
+
+            await dbChannel.addBook(bookData)
+
+            return bookData
+          })
+          .catch(error => error)
+      )
     }
 
     await Promise.all(promises)

@@ -22,9 +22,9 @@ export function openPath(path: string) {
 }
 
 export function selectOpenFilePaths(options: OpenDialogOptions) {
-  return ipcRenderer.invoke('app:show-open-dialog', options) as Promise<string[] | null>
+  return ipcRenderer.invoke('app:show-open-dialog', options) as Promise<string[] | void>
 }
 
 export function selectSaveFilePath(options: SaveDialogOptions) {
-  return ipcRenderer.invoke('app:show-save-dialog', options) as Promise<string | null>
+  return ipcRenderer.invoke('app:show-save-dialog', options) as Promise<string | void>
 }
