@@ -1,8 +1,6 @@
 import { type Raw, markRaw, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { BookData } from '@main/db/server'
-import type { Book } from '@preload/epub'
-import router from '@/router'
 
 interface OpenBook {
   (path: string): Promise<void>
@@ -15,10 +13,6 @@ interface ImportBooks {
 }
 
 export const useBookStore = defineStore('book', () => {
-  const books = reactive<Book[]>([])
-
-  const currentBook = ref<Raw<Book> | null>(null)
-
   const openBook = (async (path?: string) => {
     let bookPath = path
 
@@ -40,9 +34,7 @@ export const useBookStore = defineStore('book', () => {
 
     await book.unpacked
 
-    currentBook.value = markRaw(book)
-
-    router.push({ name: 'READER' })
+    // router.push({ name: 'READER' })
   }) as OpenBook
 
   const importBooks = (async (paths?: string[]) => {
@@ -82,7 +74,8 @@ export const useBookStore = defineStore('book', () => {
               identifier
             }
 
-            await dbChannel.addBook(bookData)
+            const id = await dbChannel.insertBook(bookData)
+            console.log('id', id)
 
             return bookData
           })
@@ -95,20 +88,13 @@ export const useBookStore = defineStore('book', () => {
     // TODO
   }) as ImportBooks
 
-  const getRecentBooks = () => {
-    // TODO
-  }
-
-  const getBooks = () => {
+  const getBookMetaList = () => {
     // TODO
   }
 
   return {
-    currentBook,
-    books,
     openBook,
     importBooks,
-    getRecentBooks,
-    getBooks
+    getBookMetaList
   }
 })

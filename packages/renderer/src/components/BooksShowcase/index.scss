@@ -1,12 +1,18 @@
 .books-showcase {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+
   &-header {
     display: flex;
     flex-shrink: 0;
     justify-content: space-between;
-    padding-bottom: 12px;
+    padding: 16px;
     gap: 32px;
 
     .slot-wrap {
+      overflow: hidden;
       flex-grow: 1;
     }
 
@@ -18,6 +24,194 @@
   }
 
   &-body {
+    overflow: hidden;
     flex-grow: 1;
+
+    .books-container {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 16px;
+    }
+
+    .cover-wrapper {
+      display: flex;
+      justify-content: center;
+
+      .cover {
+        border-radius: 4px;
+        box-shadow: var(--box-shadow-1);
+        cursor: pointer;
+        object-fit: cover;
+        -webkit-user-drag: none;
+      }
+
+      .cover-placeholder {
+        display: flex;
+        justify-content: center;
+        border-radius: 4px;
+        box-shadow: var(--box-shadow-1);
+        color: var(--text-color-1);
+        cursor: pointer;
+
+        .cover-title {
+          font-weight: var(--font-weight-strong);
+        }
+      }
+    }
+
+    .list {
+      width: 100%;
+
+      .list-item {
+        display: flex;
+        padding: 16px;
+        gap: 16px;
+        transition: background-color 0.3s linear;
+
+        &:hover {
+          background-color: var(--hover-color);
+        }
+
+        .meta-wrapper {
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1;
+          justify-content: space-between;
+
+          .top {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+          }
+
+          .bottom {
+            display: flex;
+            justify-content: flex-end;
+          }
+
+          .text {
+            overflow: hidden;
+            cursor: pointer;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .title {
+            font-size: var(--font-size-huge);
+          }
+
+          .creator {
+            color: var(--text-color-3);
+
+            &:hover {
+              color: var(--text-color-2);
+              text-decoration: underline;
+            }
+          }
+
+          .publisher {
+            color: var(--text-color-3);
+
+            &:hover {
+              color: var(--text-color-2);
+              text-decoration: underline;
+            }
+          }
+
+          .description {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            color: var(--text-color-3);
+            -webkit-line-clamp: 3;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .cover-wrapper {
+          flex-shrink: 0;
+
+          .cover {
+            width: 142px;
+            height: 194px;
+          }
+
+          .cover-placeholder {
+            width: 142px;
+            height: 194px;
+
+            .cover-title {
+              padding: 12px;
+              font-size: var(--font-size-medium);
+            }
+          }
+        }
+      }
+    }
+
+    .card-wrapper {
+      display: grid;
+      width: 100%;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+
+      .card-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: var(--text-color-3);
+        transition: color 0.3s ease-in-out;
+        user-select: none;
+
+        &:hover {
+          color: var(--text-color-1);
+        }
+
+        .title-wrapper {
+          display: flex;
+          width: 168px;
+          justify-content: center;
+
+          .title {
+            overflow: hidden;
+            padding-top: 12px;
+            cursor: pointer;
+            font-size: var(--font-size-huge);
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+
+        .cover-wrapper {
+          width: 100%;
+          flex-grow: 1;
+
+          .cover {
+            width: 168px;
+            transition: transform 0.3s ease-in-out;
+
+            &:hover {
+              transform: scale(1.03);
+            }
+          }
+
+          .cover-placeholder {
+            width: 168px;
+            min-height: 224px;
+            transition: transform 0.3s ease-in-out;
+
+            &:hover {
+              transform: scale(1.03);
+            }
+
+            .cover-title {
+              padding: 20px;
+              font-size: var(--font-size-huge);
+            }
+          }
+        }
+      }
+    }
   }
 }

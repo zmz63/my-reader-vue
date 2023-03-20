@@ -8,7 +8,9 @@ CREATE TABLE books (
   cover BLOB,
   creator TEXT,
   description TEXT,
-  identifier TEXT,
+  date TEXT,
+  publisher TEXT,
+  identifier TEXT UNIQUE,
   location TEXT,
   accessTime INTEGER,
 );

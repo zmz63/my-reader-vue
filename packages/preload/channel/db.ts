@@ -1,10 +1,18 @@
 import { ipcRenderer } from 'electron'
-import type { BookData } from '@main/db/server'
+import type { BookData, BookMeta } from '@main/db/server'
 
-export function addBook(book: BookData) {
-  return ipcRenderer.invoke('db:add-book', book) as Promise<number>
+export function insertBook(book: BookData) {
+  return ipcRenderer.invoke('db:insert-book', book) as Promise<number>
 }
 
-export function getRecentBooks() {
-  return ipcRenderer.invoke('db:get-recent-books') as Promise<void>
+export function getBook(rowid: number) {
+  return ipcRenderer.invoke('db:get-book', rowid) as Promise<BookData | undefined>
+}
+
+export function getBookMetaList() {
+  return ipcRenderer.invoke('db:get-book-meta-list') as Promise<BookMeta[]>
+}
+
+export function updateBook() {
+  return ipcRenderer.invoke('db:update-book') as Promise<void>
 }

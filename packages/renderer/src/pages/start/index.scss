@@ -37,6 +37,7 @@
   &-view {
     z-index: 1;
     display: flex;
+    overflow: hidden;
     flex-grow: 1;
     background-color: var(--base-color);
     box-shadow: -1px -1px 8px -8px;
