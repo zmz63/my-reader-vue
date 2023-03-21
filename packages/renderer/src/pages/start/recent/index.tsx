@@ -5,6 +5,14 @@ import './index.scss'
 
 export default defineComponent({
   setup() {
+    const getRecentBookList = async () => {
+      const list = await dbChannel.getRecentBookMetaList()
+
+      console.log('list', list)
+    }
+
+    getRecentBookList()
+
     return () => (
       <div class="recent-page">
         <BooksShowcase list={[]}>

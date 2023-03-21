@@ -1,48 +1,66 @@
 import { defineComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useBookStore } from '@/stores/book'
+import { useRoute, useRouter } from 'vue-router'
+import type { Book, PaginationRenderer } from '@preload/epub'
 import './index.scss'
 
 export default defineComponent({
   setup() {
-    const router = useRouter()
+    const route = useRoute()
 
-    const bookStore = useBookStore()
+    const router = useRouter()
 
     const containerRef = ref<HTMLDivElement>()
 
-    if (!bookStore.currentBook) {
-      router.replace({ name: 'START' })
+    const { path, id } = route.query as Partial<{ path: string; id: string }>
 
-      return () => null
+    let renderer: PaginationRenderer | null = null
+
+    const init = async () => {
+      let book: Book | null = null
+      if (path) {
+        book = new ePub.Book(path, { unpack: true })
+      } else if (id) {
+        const bookData = await dbChannel.getBookById(Number(id))
+        if (bookData) {
+          book = new ePub.Book(Buffer.from(bookData.file as Buffer), { unpack: true })
+        }
+      }
+
+      if (book) {
+        renderer = new ePub.PaginationRenderer(book)
+      }
     }
 
-    const renderer = new ePub.PaginationRenderer(bookStore.currentBook)
+    const defer = init()
 
-    onMounted(() => {
+    onMounted(async () => {
       if (!containerRef.value) {
         return
       }
 
-      renderer.attachTo(containerRef.value)
-      renderer.display()
+      await defer
+
+      if (renderer) {
+        renderer.attachTo(containerRef.value)
+        renderer.display()
+      } else {
+        router.replace({
+          name: 'START'
+        })
+      }
     })
 
     onBeforeUnmount(() => {
-      renderer.destroy()
-
-      //   if (bookStore.currentBook) {
-      //     bookStore.currentBook.destroy()
-      //     bookStore.currentBook = null
-      //   }
+      renderer?.destroy()
+      renderer?.book.destroy()
     })
 
     const prevPage = () => {
-      renderer.prev()
+      renderer?.prev()
     }
 
     const nextPage = () => {
-      renderer.next()
+      renderer?.next()
     }
 
     const pageData = reactive({

@@ -1,19 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ipcMain } from 'electron'
+import type { RunResult } from 'better-sqlite3'
 import { Client } from './client'
-import type { BookData, BookMeta } from '@main/db/server'
+import type { DBPayload } from './server'
 
 const client = new Client()
 
 export function listenDBChannel() {
-  ipcMain.handle('db:insert-book', (_, book: BookData) =>
-    client.request<number>('insert-book', book)
-  )
+  ipcMain.handle('db:run', (_, data: DBPayload) => client.request<RunResult>('run', data))
 
-  ipcMain.handle('db:get-book', (_, rowid: number) =>
-    client.request<BookData | undefined>('get-book', rowid)
-  )
+  ipcMain.handle('db:get', (_, data: DBPayload) => client.request<any>('get', data))
 
-  ipcMain.handle('db:get-book-meta-list', () => client.request<BookMeta[]>('get-book-meta-list'))
-
-  ipcMain.handle('db:update-book', () => client.request('update-book'))
+  ipcMain.handle('db:all', (_, data: DBPayload) => client.request<any[]>('all', data))
 }

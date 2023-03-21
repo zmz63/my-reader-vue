@@ -42,17 +42,35 @@ export class Book {
     unpacked: new Defer<void>()
   }
 
-  constructor(path: string, options?: Partial<OpenOptions>) {
-    this.path = path
+  constructor(path: string, options?: Partial<OpenOptions>)
+
+  constructor(file: Buffer, options?: Partial<OpenOptions>)
+
+  constructor(target: string | Buffer, options?: Partial<OpenOptions>) {
     this.opened = this.defer.opened.promise
     this.unpacked = this.defer.unpacked.promise
 
-    this.open(path, options)
+    if (typeof target === 'string') {
+      this.path = target
+
+      this.open(target, options)
+    } else {
+      this.open(target, options)
+    }
   }
 
-  private async open(path: string, options?: Partial<OpenOptions>) {
+  private async open(path: string, options?: Partial<OpenOptions>): Promise<void>
+
+  private async open(file: Buffer, options?: Partial<OpenOptions>): Promise<void>
+
+  private async open(target: string | Buffer, options?: Partial<OpenOptions>) {
     try {
-      this.file = await _fs.readFile(path)
+      if (typeof target === 'string') {
+        this.file = await _fs.readFile(target)
+      } else {
+        this.file = target
+      }
+
       this.md5 = md5(this.file)
       this.archive = new ZipArchive(this.file)
 

@@ -5,6 +5,8 @@ import { listenDBChannel } from './db'
 
 const gotTheLock = app.requestSingleInstanceLock()
 
+console.log('argv', process.argv)
+
 if (!gotTheLock) {
   app.quit()
 

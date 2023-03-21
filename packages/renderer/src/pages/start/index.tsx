@@ -1,12 +1,28 @@
 import { type DefineComponent, KeepAlive, defineComponent } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
-import { useBookStore } from '@/stores/book'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
 import SvgIcon from '@/components/SvgIcon'
 import './index.scss'
 
 export default defineComponent({
   setup() {
-    const bookStore = useBookStore()
+    const router = useRouter()
+
+    const openBook = async () => {
+      const paths = await appChannel.selectOpenFilePaths({
+        filters: [{ name: 'Electronic Book', extensions: ['epub'] }]
+      })
+
+      if (!paths) {
+        return
+      }
+
+      router.push({
+        name: 'READER',
+        query: {
+          path: paths[0]
+        }
+      })
+    }
 
     const startMenuOptions = [
       {
@@ -22,9 +38,7 @@ export default defineComponent({
       {
         label: '打开',
         icon: 'ic_fluent_folder_open_24_regular',
-        callback: async () => {
-          bookStore.openBook()
-        }
+        callback: openBook
       }
     ]
 

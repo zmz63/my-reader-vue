@@ -1,6 +1,7 @@
 import { type PropType, defineComponent, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { NButton, NScrollbar } from 'naive-ui'
-import type { BookMeta } from '@main/db/server'
+import type { BookMeta } from '@preload/channel/db'
 import SvgIcon from '@/components/SvgIcon'
 import Image from '@/components/Image'
 import './index.scss'
@@ -17,6 +18,8 @@ const booksShowcaseProps = {
 export default defineComponent({
   props: booksShowcaseProps,
   setup(props, { slots }) {
+    const router = useRouter()
+
     const displayMode = ref<DisplayMode>('card')
 
     const switchDisplayMode = (mode: DisplayMode) => {
@@ -27,6 +30,15 @@ export default defineComponent({
       displayMode.value = mode
     }
 
+    const openBook = (id: number) => {
+      router.push({
+        name: 'READER',
+        query: {
+          id
+        }
+      })
+    }
+
     const booksRenderer = () => {
       switch (displayMode.value) {
         case 'card':
@@ -34,7 +46,12 @@ export default defineComponent({
             <div class="card-wrapper">
               {props.list.map(item => (
                 <div class="card-item" key={item.rowid}>
-                  <Image class="cover-wrapper" imageClass="cover" data={item.cover}>
+                  <Image
+                    class="cover-wrapper"
+                    imageClass="cover"
+                    data={item.cover}
+                    onClick={() => openBook(item.rowid)}
+                  >
                     {{
                       placeholder: () => (
                         <div class="cover-placeholder">
@@ -43,7 +60,7 @@ export default defineComponent({
                       )
                     }}
                   </Image>
-                  <div class="title-wrapper">
+                  <div class="title-wrapper" onClick={() => openBook(item.rowid)}>
                     <div class="title">{item.title}</div>
                   </div>
                 </div>
@@ -55,7 +72,12 @@ export default defineComponent({
             <div class="list">
               {props.list.map(item => (
                 <div class="list-item" key={item.rowid}>
-                  <Image class="cover-wrapper" imageClass="cover" data={item.cover}>
+                  <Image
+                    class="cover-wrapper"
+                    imageClass="cover"
+                    data={item.cover}
+                    onClick={() => openBook(item.rowid)}
+                  >
                     {{
                       placeholder: () => (
                         <div class="cover-placeholder">
@@ -66,7 +88,9 @@ export default defineComponent({
                   </Image>
                   <div class="meta-wrapper">
                     <div class="top">
-                      <div class="text title">{item.title}</div>
+                      <div class="text title" onClick={() => openBook(item.rowid)}>
+                        {item.title}
+                      </div>
                       <div class="text creator">{item.creator ? item.creator : '佚名'}</div>
                       <div class="text publisher">
                         {item.publisher ? item.publisher : '未知出版社'}

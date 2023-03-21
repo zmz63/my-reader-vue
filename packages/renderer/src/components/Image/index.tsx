@@ -11,7 +11,8 @@ const imageProps = {
 
 export default defineComponent({
   props: imageProps,
-  setup(props, { slots }) {
+  emits: ['click'],
+  setup(props, { emit, slots }) {
     const url = ref('')
 
     const state = ref<0 | 1 | 2>(0)
@@ -38,7 +39,7 @@ export default defineComponent({
     }
 
     return () => (
-      <div>
+      <div onClick={() => emit('click')}>
         {state.value === 0 ? (slots.placeholder ? slots.placeholder() : null) : null}
         <img
           class={props.imageClass}

@@ -1,6 +1,6 @@
 import { defineComponent, ref } from 'vue'
 import { NButton } from 'naive-ui'
-import type { BookData, BookMeta } from '@main/db/server'
+import type { BookData, BookMeta } from '@preload/channel/db'
 import Search from '@/components/Search'
 import BooksShowcase from '@/components/BooksShowcase'
 import './index.scss'
@@ -14,8 +14,12 @@ export default defineComponent({
 
       console.log('list', list)
 
+      // dbChannel.updateBook(6, { title: '三体' })
+
       bookList.value = list
     }
+
+    updateBookList()
 
     const importBooks = async () => {
       const paths = await appChannel.selectOpenFilePaths({
@@ -51,8 +55,8 @@ export default defineComponent({
                 identifier
               }
 
-              const id = await dbChannel.insertBook(bookData)
-              console.log('id', id)
+              const result = await dbChannel.insertBook(bookData)
+              console.log('result', result)
             })
             .catch(error => {
               console.log(error)
@@ -64,8 +68,6 @@ export default defineComponent({
 
       // TODO
     }
-
-    updateBookList()
 
     return () => (
       <div class="bookrack-page">
