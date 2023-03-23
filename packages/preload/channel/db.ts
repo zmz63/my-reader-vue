@@ -3,20 +3,20 @@ import { ipcRenderer } from 'electron'
 import type { RunResult } from 'better-sqlite3'
 
 export type BookMeta = {
-  rowid: number
+  rowid: number | bigint
   md5: string
   size: number
   createTime: number
-  path?: string | null
-  location?: string | null
-  accessTime?: number | null
-  title?: string | null
+  path?: string
+  location?: string
+  accessTime?: number
+  title?: string
   cover?: Buffer | null
-  creator?: string | null
-  description?: string | null
-  date?: string | null
-  publisher?: string | null
-  identifier?: string | null
+  creator?: string
+  description?: string
+  date?: string
+  publisher?: string
+  identifier?: string
 }
 
 export type BookData = {
@@ -46,13 +46,15 @@ function invokeDB(type: 'run' | 'get' | 'all', source: string, params?: any[]) {
 export async function insertBook(book: BookData) {
   const target = (await invokeDB(
     'get',
-    'SELECT rowid FROM books WHERE md5 = ? AND (title = ? OR creator = ?)',
-    [book.md5, book.title, book.creator]
-  )) as { rowid: number } | undefined
+    'SELECT rowid, location, accessTime FROM books WHERE (md5 = ? AND (title = ? OR creator = ?)) OR identifier = ?',
+    [book.md5, book.title, book.creator, book.identifier]
+  )) as Pick<BookMeta, 'rowid' | 'location' | 'accessTime'> | undefined
 
   if (target) {
-    return { code: 1, id: target.rowid }
+    return target
   }
+
+  const keys = Object.keys(book)
 
   if (book.path) {
     const target = (await invokeDB('get', 'SELECT rowid FROM books WHERE path = ?', [
@@ -60,11 +62,17 @@ export async function insertBook(book: BookData) {
     ])) as { rowid: number } | undefined
 
     if (target) {
-      return { code: 0, id: target.rowid }
+      await invokeDB(
+        'run',
+        `REPLACE books rowid = ?, (${keys.join(', ')}) VALUES (${keys
+          .map(key => `$${key}`)
+          .join(', ')})`,
+        [target.rowid, book]
+      )
+
+      return target.rowid
     }
   }
-
-  const keys = Object.keys(book)
 
   const result = await invokeDB(
     'run',
@@ -72,10 +80,10 @@ export async function insertBook(book: BookData) {
     [book]
   )
 
-  return { code: 0, id: result.lastInsertRowid }
+  return result.lastInsertRowid
 }
 
-export async function updateBook(id: number, book: Partial<BookData>) {
+export async function updateBook(id: number | bigint, book: Partial<BookData>) {
   const keys = Object.keys(book)
 
   return await invokeDB(
@@ -85,11 +93,11 @@ export async function updateBook(id: number, book: Partial<BookData>) {
   )
 }
 
-export async function deleteBook(id: number) {
+export async function deleteBook(id: number | bigint) {
   return await invokeDB('run', `DELETE FROM books WHERE rowid = ?`, [id])
 }
 
-export function getBookById(id: number) {
+export function getBookById(id: number | bigint) {
   return invokeDB('get', 'SELECT * FROM books WHERE rowid = ?', [id]) as Promise<
     BookData | undefined
   >

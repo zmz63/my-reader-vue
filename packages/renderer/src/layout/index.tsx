@@ -1,11 +1,14 @@
 import { defineComponent, onBeforeMount, onUnmounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { NButton } from 'naive-ui'
-import SvgIcon from '@/components/SvgIcon'
+import { useLayoutStore } from '@/stores/layout'
+import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
 
 export default defineComponent({
   setup() {
+    const layoutStore = useLayoutStore()
+
     const isOnTop = ref(false)
     const isMaximized = ref(false)
 
@@ -32,7 +35,7 @@ export default defineComponent({
     return () => (
       <div class="layout">
         <div class="layout-top-bar">
-          <div class="left">Hello World</div>
+          <div class="left">{layoutStore.topBarSlot ? layoutStore.topBarSlot() : null}</div>
           <div class="right">
             <div class="divider" />
             <div class="button-wrapper">
@@ -42,7 +45,7 @@ export default defineComponent({
                 focusable={false}
                 onClick={() => windowChannel.controlWindow('always-on-top', !isOnTop.value)}
               >
-                <SvgIcon
+                <SVGIcon
                   size={16}
                   name={isOnTop.value ? 'ic_fluent_pin_off_24_regular' : 'ic_fluent_pin_24_regular'}
                 />
@@ -53,7 +56,7 @@ export default defineComponent({
                 focusable={false}
                 onClick={() => windowChannel.controlWindow('minimize')}
               >
-                <SvgIcon size={16} name="ic_fluent_subtract_24_regular" />
+                <SVGIcon size={16} name="ic_fluent_subtract_24_regular" />
               </NButton>
               <NButton
                 quaternary
@@ -61,7 +64,7 @@ export default defineComponent({
                 focusable={false}
                 onClick={() => windowChannel.controlWindow('maximize', !isMaximized.value)}
               >
-                <SvgIcon
+                <SVGIcon
                   size={16}
                   name={
                     isMaximized.value
@@ -76,7 +79,7 @@ export default defineComponent({
                 focusable={false}
                 onClick={() => windowChannel.controlWindow('close')}
               >
-                <SvgIcon size={16} name="ic_fluent_dismiss_24_regular" />
+                <SVGIcon size={16} name="ic_fluent_dismiss_24_regular" />
               </NButton>
             </div>
           </div>

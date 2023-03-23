@@ -14,8 +14,6 @@ export default defineComponent({
 
       console.log('list', list)
 
-      // dbChannel.updateBook(6, { title: '三体' })
-
       bookList.value = list
     }
 
@@ -65,6 +63,8 @@ export default defineComponent({
       }
 
       await Promise.all(promises)
+
+      updateBookList()
 
       // TODO
     }

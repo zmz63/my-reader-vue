@@ -1,0 +1,104 @@
+.book-list {
+  width: 100%;
+
+  .list-item {
+    display: flex;
+    padding: 16px;
+    gap: 16px;
+    transition: background-color 0.3s linear;
+
+    &:hover {
+      background-color: var(--hover-color);
+    }
+
+    .meta-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
+
+      .top {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .bottom {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .text {
+        overflow: hidden;
+        cursor: pointer;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .title {
+        font-size: var(--font-size-huge);
+      }
+
+      .creator {
+        color: var(--text-color-3);
+
+        &:hover {
+          color: var(--text-color-2);
+          text-decoration: underline;
+        }
+      }
+
+      .publisher {
+        color: var(--text-color-3);
+
+        &:hover {
+          color: var(--text-color-2);
+          text-decoration: underline;
+        }
+      }
+
+      .description {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        color: var(--text-color-3);
+        -webkit-line-clamp: 3;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .cover-wrapper {
+      display: flex;
+      flex-shrink: 0;
+      justify-content: center;
+
+      .cover {
+        width: 122px;
+        height: 166px;
+        border-radius: 4px;
+        box-shadow: var(--box-shadow-1);
+        cursor: pointer;
+        object-fit: cover;
+        -webkit-user-drag: none;
+      }
+
+      .cover-placeholder {
+        display: flex;
+        width: 142px;
+        height: 194px;
+        justify-content: center;
+        border-radius: 4px;
+        box-shadow: var(--box-shadow-1);
+        color: var(--text-color-1);
+        cursor: pointer;
+
+        .cover-title {
+          padding: 12px;
+          font-size: var(--font-size-medium);
+          font-weight: var(--font-weight-strong);
+        }
+      }
+    }
+  }
+}

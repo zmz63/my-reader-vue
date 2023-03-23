@@ -1,6 +1,6 @@
 import { type DefineComponent, KeepAlive, defineComponent } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
-import SvgIcon from '@/components/SvgIcon'
+import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
 
 export default defineComponent({
@@ -48,12 +48,12 @@ export default defineComponent({
           {startMenuOptions.map(({ name, label, icon, callback }) =>
             name ? (
               <RouterLink to={{ name }} class="item" activeClass="active" key={name}>
-                <SvgIcon size={20} name={icon} />
+                <SVGIcon size={20} name={icon} />
                 <div>{label}</div>
               </RouterLink>
             ) : (
               <div class="item" key={label} onClick={callback}>
-                <SvgIcon size={20} name={icon} />
+                <SVGIcon size={20} name={icon} />
                 <div>{label}</div>
               </div>
             )

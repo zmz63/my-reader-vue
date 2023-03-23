@@ -214,6 +214,7 @@ export class PaginationRenderer {
 
     const content = view.content
 
+    content.setStyle('position', 'relative', true)
     content.setStyle('overflow', 'hidden', true)
     content.setStyle('margin', '0px', true)
     content.setStyle('border', 'none', true)
@@ -237,7 +238,7 @@ export class PaginationRenderer {
     }
 
     data.divisor = this.options.spread && data.width >= this.options.minSpreadWidth ? 2 : 1
-    data.gap = this.options.gap || Math.floor(data.width / 12)
+    data.gap = this.options.gap || Math.floor(data.width / 24)
     if (data.gap % 2 !== 0) {
       data.gap -= 1
     }

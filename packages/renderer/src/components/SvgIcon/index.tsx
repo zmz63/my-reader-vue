@@ -1,7 +1,7 @@
 import { defineComponent } from 'vue'
 import './index.scss'
 
-const svgIconProps = {
+const SVGIconProps = {
   name: {
     type: String,
     required: true
@@ -12,7 +12,7 @@ const svgIconProps = {
 } as const
 
 export default defineComponent({
-  props: svgIconProps,
+  props: SVGIconProps,
   setup(props) {
     return () => (
       <svg

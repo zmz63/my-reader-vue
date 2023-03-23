@@ -1,7 +1,7 @@
 import { defineComponent } from 'vue'
 import { NInput, inputProps } from 'naive-ui'
 import type { OnUpdateValue } from 'naive-ui/es/input/src/interface'
-import SvgIcon from '@/components/SvgIcon'
+import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
 
 const searchBoxProps = {
@@ -35,7 +35,7 @@ export default defineComponent({
         <NInput defaultValue={props.defaultValue} onInput={handleInput} onKeyup={handleKeyup}>
           {{
             prefix: () => (
-              <SvgIcon class="search-prefix" size={20} name="ic_fluent_search_24_regular" />
+              <SVGIcon class="search-prefix" size={20} name="ic_fluent_search_24_regular" />
             )
           }}
         </NInput>
