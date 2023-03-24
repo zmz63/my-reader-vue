@@ -35,7 +35,7 @@ export class Navigation {
       return {
         id: navPoint.getAttribute('id') || '',
         href: content.getAttribute('src') || '',
-        label: navLabel.textContent || '',
+        label: navLabel.textContent?.trim() || '',
         subitems: [],
         parent
       } as TocItem

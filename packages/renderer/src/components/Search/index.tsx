@@ -1,18 +1,22 @@
-import { defineComponent } from 'vue'
+import { type PropType, defineComponent } from 'vue'
 import { NInput, inputProps } from 'naive-ui'
 import type { OnUpdateValue } from 'naive-ui/es/input/src/interface'
 import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
 
 const searchBoxProps = {
-  ...inputProps
+  ...inputProps,
+  width: {
+    type: [Number, String] as PropType<number | string>,
+    default: '100%'
+  }
 } as const
 
 export default defineComponent({
   props: searchBoxProps,
   emits: {
-    search(payload: string) {
-      return typeof payload === 'string'
+    search(content: string) {
+      return typeof content === 'string'
     }
   },
   setup(props, { emit }) {
@@ -31,7 +35,10 @@ export default defineComponent({
     }
 
     return () => (
-      <div class="search">
+      <div
+        class="search"
+        style={`width: ${typeof props.width === 'number' ? `${props.width}px` : props.width}`}
+      >
         <NInput defaultValue={props.defaultValue} onInput={handleInput} onKeyup={handleKeyup}>
           {{
             prefix: () => (

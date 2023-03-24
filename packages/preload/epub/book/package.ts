@@ -191,7 +191,7 @@ export class Package {
         tag
       )[0]
       if (element) {
-        metadata[tag] = element.textContent || ''
+        metadata[tag] = element.textContent?.trim() || ''
       }
     }
 
@@ -200,7 +200,7 @@ export class Package {
       for (const meta of metaElements) {
         if (meta.getAttribute('property') === `rendition:${prop}`) {
           if (meta.textContent) {
-            metadata[prop] = meta.textContent
+            metadata[prop] = meta.textContent.trim()
           }
           break
         }

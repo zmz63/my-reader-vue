@@ -1,11 +1,12 @@
-import { defineComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { type Raw, defineComponent, markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { NButton } from 'naive-ui'
 import type { Book, Metadata, PaginationRenderer } from '@preload/epub'
 import type { BookData } from '@preload/channel/db'
 import { useLayoutStore } from '@/stores/layout'
-import './index.scss'
 import SVGIcon from '@/components/SVGIcon'
-import { NButton } from 'naive-ui'
+import SideBar from './components/SideBar'
+import './index.scss'
 
 export default defineComponent({
   setup() {
@@ -15,32 +16,29 @@ export default defineComponent({
 
     const layoutStore = useLayoutStore()
 
-    const containerRef = ref<HTMLDivElement>()
-
-    const sideBarRef = ref<HTMLDivElement>()
+    const containerRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
 
     const { path, id } = route.query as Partial<{ path: string; id: string }>
 
-    let book: Book | null = null
-
-    let renderer: PaginationRenderer | null = null
-
-    let bookId: number | bigint | null = null
-
-    const metadata = ref<Partial<Metadata>>({})
+    const bookData = reactive({
+      book: null as Raw<Book> | null,
+      renderer: null as Raw<PaginationRenderer> | null,
+      id: null as number | bigint | null,
+      metadata: {} as Partial<Metadata>
+    })
 
     const updateReadingLocation = (location: string) => {
-      if (bookId) {
-        dbChannel.updateBook(bookId, {
+      if (bookData.id) {
+        dbChannel.updateBook(bookData.id, {
           location
         })
       }
     }
 
     const updateAccessTime = () => {
-      if (bookId) {
+      if (bookData.id) {
         const time = Date.now()
-        dbChannel.updateBook(bookId, {
+        dbChannel.updateBook(bookData.id, {
           accessTime: time
         })
       }
@@ -50,19 +48,20 @@ export default defineComponent({
       let location: string | undefined
       try {
         if (path) {
-          book = new ePub.Book(path, { unpack: true })
+          bookData.book = markRaw(new ePub.Book(path, { unpack: true }))
 
-          await book.opened
+          await bookData.book.opened
 
-          const { title, creator, description, date, publisher, identifier } = book.package.metadata
+          const { title, creator, description, date, publisher, identifier } =
+            bookData.book.package.metadata
 
-          const bookData: BookData = {
-            md5: book.md5,
-            size: (book.file as Buffer).byteLength,
+          const book: BookData = {
+            md5: bookData.book.md5,
+            size: (bookData.book.file as Buffer).byteLength,
             createTime: Math.floor(Date.now() / 1000),
             path,
             title,
-            cover: book.package.cover,
+            cover: bookData.book.package.cover,
             creator,
             description,
             date,
@@ -70,35 +69,37 @@ export default defineComponent({
             identifier
           }
 
-          const result = await dbChannel.insertBook(bookData)
+          const result = await dbChannel.insertBook(book)
 
           if (typeof result === 'object') {
-            bookId = result.rowid
+            bookData.id = result.rowid
             location = result.location
           } else {
-            bookId = result
+            bookData.id = result
           }
         } else if (id) {
           const result = await dbChannel.getBookById(BigInt(id))
           if (result) {
-            book = new ePub.Book(Buffer.from(result.file as Buffer), { unpack: true })
-            bookId = BigInt(id)
+            bookData.book = markRaw(
+              new ePub.Book(Buffer.from(result.file as Buffer), { unpack: true })
+            )
+            bookData.id = BigInt(id)
             location = result.location
           }
         }
 
-        if (book) {
-          renderer = new ePub.PaginationRenderer(book)
+        if (bookData.book) {
+          bookData.renderer = markRaw(new ePub.PaginationRenderer(bookData.book))
 
-          await book.opened
+          await bookData.book.opened
 
-          metadata.value = book.package.metadata
+          bookData.metadata = bookData.book.package.metadata
 
-          layoutStore.topBarSlot = () => (
+          layoutStore.topBarSlot = (
             <div class="top-bar-slot">
-              <div class="title">{metadata.value.title}</div>
+              <div class="title">{bookData.metadata.title}</div>
               <div class="divider">-</div>
-              <div class="creator">{metadata.value.creator}</div>
+              <div class="creator">{bookData.metadata.creator}</div>
             </div>
           )
         }
@@ -112,18 +113,14 @@ export default defineComponent({
     const defer = init()
 
     onMounted(async () => {
-      if (!containerRef.value) {
-        return
-      }
-
       const location = await defer
 
       console.log('location', location)
 
-      if (bookId && renderer) {
-        renderer.attachTo(containerRef.value)
+      if (bookData.id && bookData.renderer) {
+        bookData.renderer.attachTo(containerRef.value)
         // renderer.display(location)
-        renderer.display()
+        bookData.renderer.display()
 
         updateAccessTime()
       } else {
@@ -134,76 +131,42 @@ export default defineComponent({
     })
 
     onBeforeUnmount(() => {
-      renderer?.destroy()
-      book?.destroy()
+      bookData.renderer?.destroy()
+      bookData.book?.destroy()
     })
 
     const prevPage = () => {
-      if (renderer) {
-        renderer.prev()
-        updateReadingLocation(renderer.location.cfi)
+      if (bookData.renderer) {
+        bookData.renderer.prev()
+        updateReadingLocation(bookData.renderer.location.cfi)
       }
     }
 
     const nextPage = () => {
-      if (renderer) {
-        renderer.next()
-        updateReadingLocation(renderer.location.cfi)
+      if (bookData.renderer) {
+        bookData.renderer.next()
+        updateReadingLocation(bookData.renderer.location.cfi)
       }
     }
 
-    const pageData = reactive({
-      showSideBar: false,
-      sideBarContent: null as JSX.Element | null
-    })
-
-    const sideBarSwitch = () => {
-      if (containerRef.value && sideBarRef.value) {
-        if (pageData.showSideBar) {
-          pageData.showSideBar = false
-          sideBarRef.value.style.width = '0'
-          containerRef.value.style.width = '100%'
-        } else {
-          pageData.showSideBar = true
-          sideBarRef.value.style.width = '196px'
-          containerRef.value.style.width = 'calc(100% - 196px)'
-        }
+    const handleSideTranslate = (value: number) => {
+      if (value) {
+        containerRef.value.style.width = `calc(100% - ${value}px)`
+      } else {
+        containerRef.value.style.width = '100%'
       }
     }
 
     return () => (
       <div class="reader-page">
-        <div ref={sideBarRef} class="reader-page-side-bar">
-          <div class="tag" onClick={sideBarSwitch}>
-            <SVGIcon
-              size={18}
-              name={
-                pageData.showSideBar
-                  ? 'ic_fluent_arrow_left_24_filled'
-                  : 'ic_fluent_arrow_right_24_filled'
-              }
-            />
-          </div>
-          <div class="content-wrapper">{pageData.sideBarContent}</div>
-          <div class="divider" />
-        </div>
+        <SideBar
+          book={bookData.book}
+          renderer={bookData.renderer}
+          onTranslate={handleSideTranslate}
+        />
         <div ref={containerRef} class="reader-page-container">
           <div class="top-bar">
-            <div class="left">
-              {/* <NButton
-                class="button"
-                quaternary
-                size="small"
-                focusable={false}
-                onClick={sideBarSwitch}
-              >
-                <SVGIcon
-                  size={24}
-                  name="ic_fluent_panel_left_24_filled"
-                  v-show={!pageData.showSideBar}
-                />
-              </NButton> */}
-            </div>
+            <div class="left"></div>
             <div class="center">center</div>
             <div class="right">
               <NButton
