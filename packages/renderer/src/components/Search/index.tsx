@@ -39,7 +39,12 @@ export default defineComponent({
         class="search"
         style={`width: ${typeof props.width === 'number' ? `${props.width}px` : props.width}`}
       >
-        <NInput defaultValue={props.defaultValue} onInput={handleInput} onKeyup={handleKeyup}>
+        <NInput
+          {...props}
+          defaultValue={props.defaultValue}
+          onInput={handleInput}
+          onKeyup={handleKeyup}
+        >
           {{
             prefix: () => (
               <SVGIcon class="search-prefix" size={20} name="ic_fluent_search_24_regular" />

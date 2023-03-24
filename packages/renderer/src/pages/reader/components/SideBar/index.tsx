@@ -2,9 +2,15 @@ import { type PropType, defineComponent, onBeforeUnmount, onMounted, reactive, r
 import { NScrollbar } from 'naive-ui'
 import type { Book, Metadata, PaginationRenderer, TocItem } from '@preload/epub'
 import SVGIcon from '@/components/SVGIcon'
+import Search from '@/components/Search'
 import './index.scss'
 
 type SideBarKey = 'navigation' | 'search' | 'highlight' | 'note'
+
+type SideBarItem = {
+  label: string
+  render: () => JSX.Element | null
+}
 
 const sideBarProps = {
   book: {
@@ -31,8 +37,11 @@ export default defineComponent({
 
     let dragging = false
 
-    const translate = (width = 200) => {
+    let lastWidth = 200
+
+    const translate = (width = lastWidth) => {
       sideBarRef.value.style.width = `${width}px`
+      lastWidth = width
 
       if (sideBarData.show) {
         sideBarRef.value.style.translate = '0 0'
@@ -57,13 +66,11 @@ export default defineComponent({
     }
 
     const handleMouseenter = () => {
-      dividerRef.value.style.width = '4px'
-      dividerRef.value.style.backgroundColor = 'blue'
+      dividerRef.value.style.backgroundColor = '#999'
     }
 
     const handleMouseleave = () => {
       if (!dragging) {
-        dividerRef.value.style.width = '2px'
         dividerRef.value.style.backgroundColor = ''
       }
     }
@@ -73,8 +80,7 @@ export default defineComponent({
 
       document.addEventListener('mousemove', handleMousemove)
 
-      dividerRef.value.style.width = '4px'
-      dividerRef.value.style.backgroundColor = 'blue'
+      dividerRef.value.style.backgroundColor = '#999'
 
       for (const item of document.querySelectorAll('iframe')) {
         item.style.pointerEvents = 'none'
@@ -92,7 +98,6 @@ export default defineComponent({
         }
 
         if (event.currentTarget !== dividerRef.value) {
-          dividerRef.value.style.width = '2px'
           dividerRef.value.style.backgroundColor = ''
         } else {
           event.stopPropagation()
@@ -110,37 +115,65 @@ export default defineComponent({
 
     const sideBarData = reactive({
       show: false,
-      key: '' as SideBarKey | '',
-      content: null as JSX.Element | null
+      key: '' as SideBarKey | ''
     })
 
     const sideBarKeys: SideBarKey[] = ['navigation', 'search', 'highlight', 'note']
 
-    const createNavigation = () => {
-      const navigation = props.book?.navigation
+    const sideBarItems: Record<SideBarKey, SideBarItem> = {
+      navigation: {
+        label: '导航',
+        render() {
+          const navigation = props.book?.navigation
 
-      if (!navigation) {
-        return null
+          if (!navigation) {
+            return null
+          }
+
+          const redirectPage = (item: TocItem) => {
+            // TODO
+            console.log(item)
+          }
+
+          const generateNode = (items: TocItem[], deep = 0) =>
+            items.map(item => (
+              <div
+                class="navigation-item"
+                style={`padding-left: ${deep * 4}px`}
+                onClick={() => redirectPage(item)}
+              >
+                <div>{item.label}</div>
+                {item.subitems.length ? <div>{generateNode(item.subitems, deep + 1)}</div> : null}
+              </div>
+            ))
+
+          return <NScrollbar class="navigation-wrapper">{generateNode(navigation.list)}</NScrollbar>
+        }
+      },
+      search: {
+        label: '查找',
+        render() {
+          return (
+            <div class="search-wrapper">
+              <div class="">
+                <Search size="small" />
+              </div>
+            </div>
+          )
+        }
+      },
+      highlight: {
+        label: '高亮',
+        render() {
+          return null
+        }
+      },
+      note: {
+        label: '笔记',
+        render() {
+          return null
+        }
       }
-
-      const redirectPage = (item: TocItem) => {
-        // TODO
-        console.log(item)
-      }
-
-      const generateNode = (items: TocItem[], deep = 0) =>
-        items.map(item => (
-          <div
-            class="navigation-item"
-            style={`padding-left: ${deep * 4}px`}
-            onClick={() => redirectPage(item)}
-          >
-            <div>{item.label}</div>
-            {item.subitems.length ? <div>{generateNode(item.subitems, deep + 1)}</div> : null}
-          </div>
-        ))
-
-      return <NScrollbar class="navigation-wrap">{generateNode(navigation.list)}</NScrollbar>
     }
 
     const switchSideBar = (key: SideBarKey) => {
@@ -153,24 +186,6 @@ export default defineComponent({
       }
 
       translate()
-
-      switch (sideBarData.key) {
-        case 'navigation':
-          sideBarData.content = createNavigation()
-          break
-        case 'search':
-          sideBarData.content = <div>search</div>
-          break
-        case 'highlight':
-          sideBarData.content = <div>highlight</div>
-          break
-        case 'note':
-          sideBarData.content = <div>note</div>
-          break
-        default:
-          sideBarData.content = null
-          break
-      }
     }
 
     return () => (
@@ -191,7 +206,14 @@ export default defineComponent({
           onMousedown={handleMousedown}
           onMouseup={handleMouseup}
         />
-        <div class="content-wrapper">{sideBarData.content}</div>
+        <div class="content-wrapper">
+          {sideBarData.key ? (
+            <>
+              <div class="content-header">{sideBarItems[sideBarData.key].label}</div>
+              <div class="content-view">{sideBarItems[sideBarData.key].render()}</div>
+            </>
+          ) : null}
+        </div>
       </div>
     )
   }

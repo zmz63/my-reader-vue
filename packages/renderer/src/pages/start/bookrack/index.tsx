@@ -75,7 +75,7 @@ export default defineComponent({
           {{
             header: () => (
               <div class="bookrack-page-header">
-                <Search />
+                <Search width={368} />
                 <NButton onClick={importBooks}>导入</NButton>
               </div>
             )

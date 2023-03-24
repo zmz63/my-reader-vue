@@ -54,7 +54,7 @@ export default defineComponent({
     return () => (
       <div class="books-showcase">
         <div class="books-showcase-header">
-          <div class="slot-wrap">{slots.header ? slots.header() : null}</div>
+          <div class="slot-wrapper">{slots.header ? slots.header() : null}</div>
           <div class="switch-wrapper">
             <NButton text focusable={false} onClick={() => switchDisplayMode('card')}>
               <SVGIcon
