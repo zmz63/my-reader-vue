@@ -23,10 +23,10 @@ export class View {
 
   content: Content | null = null
 
-  loaded: Promise<void>
+  loaded: Promise<this>
 
   private defer = {
-    loaded: new Defer<void>()
+    loaded: new Defer<this>()
   }
 
   constructor(section: Section) {
@@ -81,7 +81,7 @@ export class View {
       this.document = document
       this.content = content
 
-      this.defer.loaded.resolve()
+      this.defer.loaded.resolve(this)
     }
 
     return this.loaded

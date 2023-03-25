@@ -222,6 +222,22 @@ export class PaginationRenderer {
     content.setStyle('max-width', 'inherit', true)
     content.setStyle('column-fill', 'auto', true)
 
+    content.addStylesheetRule('img', {
+      'max-width': '100%',
+      'max-height': `${100 - 25 / 6}vh`,
+      'object-fit': 'contain',
+      'page-break-inside': 'avoid',
+      'break-inside': 'avoid',
+      'box-sizing': 'border-box'
+    })
+
+    content.addStylesheetRule('svg', {
+      'max-width': '100%',
+      'max-height': `${100 - 25 / 6}vh`,
+      'page-break-inside': 'avoid',
+      'break-inside': 'avoid'
+    })
+
     this.updateViewLayout(view)
   }
 
@@ -234,7 +250,7 @@ export class PaginationRenderer {
       pageWidth: this.stage.width,
       columnWidth: this.stage.width,
       horizontalPadding: 0,
-      verticalPadding: Math.floor(this.stage.height / 24)
+      verticalPadding: Math.floor(this.stage.height / 48)
     }
 
     data.divisor = this.options.spread && data.width >= this.options.minSpreadWidth ? 2 : 1

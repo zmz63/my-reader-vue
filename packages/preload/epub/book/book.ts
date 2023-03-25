@@ -33,13 +33,13 @@ export class Book {
 
   navigation = new Navigation()
 
-  opened: Promise<void>
+  opened: Promise<this>
 
-  unpacked: Promise<void>
+  unpacked: Promise<this>
 
   private defer = {
-    opened: new Defer<void>(),
-    unpacked: new Defer<void>()
+    opened: new Defer<this>(),
+    unpacked: new Defer<this>()
   }
 
   constructor(path: string, options?: Partial<OpenOptions>)
@@ -77,7 +77,7 @@ export class Book {
       await Container.parse(this.container, this.archive, CONTAINER_PATH)
       await Package.parse(this.package, this.archive, this.container)
 
-      this.defer.opened.resolve()
+      this.defer.opened.resolve(this)
 
       if (options && options.unpack) {
         await Resources.unpack(this.resources, this.archive, this.package.manifest, this.container)
@@ -101,7 +101,7 @@ export class Book {
           section.content = this.resources.replace(content, section.href)
         })
 
-        this.defer.unpacked.resolve()
+        this.defer.unpacked.resolve(this)
       }
 
       console.log(this)

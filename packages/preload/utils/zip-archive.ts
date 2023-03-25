@@ -12,10 +12,10 @@ export class ZipArchive {
 
   domParser = new DOMParser()
 
-  opened: Promise<void>
+  opened: Promise<this>
 
   private defer = {
-    opened: new Defer<void>()
+    opened: new Defer<this>()
   }
 
   constructor(input?: string | Buffer) {
@@ -45,7 +45,7 @@ export class ZipArchive {
       })
 
       zipFile.on('end', async () => {
-        this.defer.opened.resolve()
+        this.defer.opened.resolve(this)
       })
     }
 

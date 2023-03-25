@@ -91,11 +91,37 @@ export class Content {
     return null
   }
 
+  getStylesheetNode() {
+    let styleElement = this.document.querySelector('style')
+
+    if (!styleElement) {
+      styleElement = this.document.createElement('style')
+      this.document.head.appendChild(styleElement)
+    }
+
+    return styleElement
+  }
+
   setStyle(property: string, value?: string, priority = true) {
     if (value) {
       this.body.style.setProperty(property, value, priority ? 'important' : '')
     } else {
       this.body.style.removeProperty(property)
     }
+  }
+
+  addStylesheetRule(selector: string, rule: Record<string, string>) {
+    const stylesheet = this.getStylesheetNode().sheet
+
+    if (!stylesheet) {
+      return
+    }
+
+    stylesheet.insertRule(
+      `${selector}{${Object.entries(rule)
+        .map(([key, value]) => `${key}:${value};`)
+        .join('')}}`,
+      stylesheet.cssRules.length
+    )
   }
 }

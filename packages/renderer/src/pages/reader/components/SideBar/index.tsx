@@ -137,12 +137,8 @@ export default defineComponent({
 
           const generateNode = (items: TocItem[], deep = 0) =>
             items.map(item => (
-              <div
-                class="navigation-item"
-                style={`padding-left: ${deep * 4}px`}
-                onClick={() => redirectPage(item)}
-              >
-                <div>{item.label}</div>
+              <div style={`padding-left: ${deep * 4}px`} onClick={() => redirectPage(item)}>
+                <div class="navigation-item">{item.label}</div>
                 {item.subitems.length ? <div>{generateNode(item.subitems, deep + 1)}</div> : null}
               </div>
             ))
@@ -155,8 +151,11 @@ export default defineComponent({
         render() {
           return (
             <div class="search-wrapper">
-              <div class="">
+              <div class="search-box">
                 <Search size="small" />
+              </div>
+              <div class="search-result-wrapper">
+                <NScrollbar class="content"></NScrollbar>
               </div>
             </div>
           )
