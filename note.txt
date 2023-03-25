@@ -27,3 +27,6 @@
   'scrolled-continuous' | 'scrolled-doc'
   'vertical'
 }
+
+https://futurepress.github.io/epubjs-reader
+https://readium.firebaseapp.com/
