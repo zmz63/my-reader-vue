@@ -15,11 +15,7 @@ export class View {
 
   hidden = false
 
-  writingMode: string | null = null
-
-  window: Window | null = null
-
-  document: Document | null = null
+  writingMode = ''
 
   content: Content | null = null
 
@@ -73,12 +69,9 @@ export class View {
     this.wrapper.appendChild(this.iframe)
 
     this.iframe.onload = () => {
-      const window = this.iframe.contentWindow as Window
       const document = this.iframe.contentDocument as Document
       const content = new Content(document)
 
-      this.window = window
-      this.document = document
       this.content = content
 
       this.defer.loaded.resolve(this)

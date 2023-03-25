@@ -13,8 +13,7 @@ type Asset = Simplify<
 export class Resources {
   assets: Asset[] = []
 
-  replace(content: string, path: string) {
-    const substrings: string[] = []
+  replace(content: string, path: string, substrings: string[] = []) {
     const map: Record<string, string> = {}
 
     for (const asset of this.assets) {
@@ -23,7 +22,7 @@ export class Resources {
       substrings.push(`(${url.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')})`)
     }
 
-    return content.replace(new RegExp(substrings.join('|'), 'g'), substring => map[substring])
+    return content.replace(new RegExp(substrings.join('|'), 'g'), substring => map[substring] || '')
   }
 
   destroy() {

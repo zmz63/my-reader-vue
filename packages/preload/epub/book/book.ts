@@ -98,7 +98,9 @@ export class Book {
         }
 
         this.spine.hooks.serialize.register((content, section) => {
-          section.content = this.resources.replace(content, section.href)
+          section.content = this.resources.replace(content, section.href, [
+            'preserveAspectRatio="none"'
+          ])
         })
 
         this.defer.unpacked.resolve(this)

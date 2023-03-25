@@ -23,9 +23,6 @@ export type PaginationViewData = {
 }
 
 export type Location = {
-  index: number
-  totalPages: number
-  currentPage: number
   range: Range | null
   cfi: string
 }
@@ -58,9 +55,6 @@ export class PaginationRenderer {
   }
 
   location: Location = {
-    index: 0,
-    totalPages: 0,
-    currentPage: 0,
     range: null,
     cfi: ''
   }
@@ -89,7 +83,7 @@ export class PaginationRenderer {
   async display(target?: number | string) {
     await this.book.unpacked
 
-    const section = target === undefined ? this.book.spine.first() : this.book.spine.get(target)
+    const section = this.book.spine.get(target)
 
     if (!section) {
       // TODO
@@ -101,31 +95,31 @@ export class PaginationRenderer {
     if (view) {
       //
     } else {
-      const view = await this.add(section)
+      const view = await this.setView(section)
 
+      this.stage.scrollTo(0, 0)
       this.updateLocation(view)
     }
   }
 
   async prev() {
-    let view = this.views.last()
+    let view = this.views.get(0)
 
     if (this.stage.x > -this.viewData.pageWidth * 0.5) {
       const prev = view.section.prev()
       if (prev) {
-        this.views.clear()
+        view = await this.setView(prev)
 
-        view = await this.add(prev, 'prepend')
-      } else {
-        return
+        const n = Math.floor(view.width / this.viewData.pageWidth) - 1
+        const offset =
+          (this.viewData.divisor > 1 && n % 2 === 1 ? n - 1 : n) * this.viewData.pageWidth
+        this.stage.scrollTo(offset, 0)
+        this.updateLocation(view)
       }
     } else {
       this.stage.scrollOffset(-this.viewData.width, 0)
-
-      this.location.currentPage -= this.viewData.divisor
+      this.updateLocation(view)
     }
-
-    this.updateLocation(view)
   }
 
   async next() {
@@ -133,7 +127,7 @@ export class PaginationRenderer {
       return
     }
 
-    let view = this.views.last()
+    let view = this.views.get(0)
 
     if (
       this.stage.containerWidth + this.stage.x <
@@ -141,48 +135,27 @@ export class PaginationRenderer {
     ) {
       const next = view.section.next()
       if (next) {
-        this.views.clear()
+        view = await this.setView(next)
 
-        view = await this.add(next)
-      } else {
-        return
+        this.stage.scrollTo(0, 0)
+        this.updateLocation(view)
       }
     } else {
       this.stage.scrollOffset(this.viewData.width, 0)
-
-      this.location.currentPage += this.viewData.divisor
+      this.updateLocation(view)
     }
-
-    this.updateLocation(view)
   }
 
-  async add(section: Section, mode: 'append' | 'prepend' = 'append') {
+  async setView(section: Section) {
     const view = new View(section)
 
-    if (mode === 'append') {
-      this.views.append(view)
-    } else {
-      this.views.prepend(view)
-    }
+    this.views.set(0, view)
 
     await view.render()
 
-    this.initViewLayout(view)
+    this.initViewContent(view)
 
     this.stage.setSize(view.width, this.stage.height)
-
-    this.location.index = view.section.index
-
-    if (mode === 'append') {
-      this.location.currentPage = 1
-      this.stage.scrollTo(0, 0)
-    } else {
-      this.location.currentPage = Math.round(view.width / this.viewData.pageWidth)
-      if (this.viewData.divisor > 1 && this.location.currentPage % 2 === 0) {
-        this.location.currentPage -= 1
-      }
-      this.stage.scrollTo((this.location.currentPage - 1) * this.viewData.pageWidth, 0)
-    }
 
     return view
   }
@@ -193,8 +166,8 @@ export class PaginationRenderer {
     }
 
     const content = view.content
-    const start = this.viewData.pageWidth * (this.location.currentPage - 1)
-    const end = this.viewData.pageWidth * this.location.currentPage
+    const start = this.stage.offsetX
+    const end = this.stage.offsetX + this.viewData.pageWidth
     const element = content.elementFromPoint(
       start + this.viewData.horizontalPadding,
       this.viewData.verticalPadding
@@ -203,11 +176,9 @@ export class PaginationRenderer {
 
     this.location.range = range
     this.location.cfi = range ? CFI.rangeToCFI(range, view.section.cfiBase) : ''
-
-    // console.log(element, this.location)
   }
 
-  initViewLayout(view: View) {
+  initViewContent(view: View) {
     if (!view.content) {
       return
     }
@@ -241,6 +212,13 @@ export class PaginationRenderer {
     this.updateViewLayout(view)
   }
 
+  moveTo(range: Range) {
+    const rect = range.getBoundingClientRect()
+    const n = Math.floor(rect.left / this.viewData.pageWidth)
+    const offset = (this.viewData.divisor > 1 && n % 2 === 1 ? n - 1 : n) * this.viewData.pageWidth
+    this.stage.scrollTo(offset, 0)
+  }
+
   updateViewData() {
     const data: PaginationViewData = {
       width: this.stage.width,
@@ -266,30 +244,20 @@ export class PaginationRenderer {
   }
 
   updateStageLayout() {
+    const view = this.views.get(0)
+
     this.updateViewData()
 
-    let width = 0
+    this.updateViewLayout(view)
 
-    this.views.forEach(view => {
-      this.updateViewLayout(view)
-      width += view.width
-    })
-
-    this.stage.setSize(width, this.stage.height)
+    this.stage.setSize(view.width, this.stage.height)
 
     if (this.location.range) {
-      const rect = this.location.range.getBoundingClientRect()
-      const index = Math.floor(rect.left / this.viewData.pageWidth)
-      this.location.currentPage = index + 1
-      if (this.viewData.divisor > 1 && this.location.currentPage % 2 === 0) {
-        this.location.currentPage -= 1
-      }
-      this.stage.scrollTo((this.location.currentPage - 1) * this.viewData.pageWidth, 0)
-      // console.log(rect, this.stage.x, this.viewData.pageWidth, this.location.currentPage)
+      this.moveTo(this.location.range)
     }
   }
 
-  updateViewLayout(view: View, fill = true) {
+  updateViewLayout(view: View) {
     if (view.hidden || !view.content) {
       return
     }
@@ -308,20 +276,7 @@ export class PaginationRenderer {
     content.setStyle('column-gap', `${gap}px`, true)
     content.setStyle('column-width', `${columnWidth}px`, true)
 
-    // NOTE
-    // view.setSize(content.textWidth, height)
-
-    let width = content.textWidth + gap
-    let totalPages = Math.round(width / pageWidth)
-
-    if (fill && this.viewData.divisor > 1 && totalPages % 2 !== 0) {
-      width += pageWidth
-      totalPages += 1
-    }
-
-    view.setSize(width, height)
-
-    this.location.totalPages = totalPages
+    view.setSize(content.textWidth + gap, height)
   }
 
   setSpread(spread: boolean, minSpreadWidth = 800, gap = 0) {

@@ -18,14 +18,6 @@ export class Views {
     return this.views
   }
 
-  first() {
-    return this.views[0]
-  }
-
-  last() {
-    return this.views[this.views.length - 1]
-  }
-
   indexOf(view: View, index: number) {
     return this.views.indexOf(view, index)
   }
@@ -38,8 +30,21 @@ export class Views {
     return this.views[index]
   }
 
+  set(index: number, view: View) {
+    if (this.views[index]) {
+      this.destroyView(this.views[index])
+    }
+
+    if (this.container) {
+      this.container.appendChild(view.wrapper)
+    }
+
+    this.views[index] = view
+  }
+
   append(view: View) {
     this.views.push(view)
+
     if (this.container) {
       this.container.appendChild(view.wrapper)
     }
@@ -49,6 +54,7 @@ export class Views {
 
   prepend(view: View) {
     this.views.unshift(view)
+
     if (this.container) {
       this.container.insertBefore(view.wrapper, this.container.firstChild)
     }

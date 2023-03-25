@@ -82,6 +82,14 @@ export class Stage {
     return element
   }
 
+  get offsetX() {
+    return -this.x
+  }
+
+  get offsetY() {
+    return -this.y
+  }
+
   setSize(width: number, height: number, minWidth = 0, minHeight = 0) {
     this.containerWidth = width
     this.containerHeight = height

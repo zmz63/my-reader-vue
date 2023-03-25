@@ -18,14 +18,22 @@ export class Spine {
     serialize: new Hook()
   }
 
-  get(target: number | string) {
+  get(target?: number | string) {
     let index = -1
+
     if (typeof target === 'number') {
       index = target
-    } else if (target.indexOf('#') === 0) {
-      index = this.idMap[target.substring(1)] || -1
+    } else if (typeof target === 'string') {
+      if (CFI.isCFI(target)) {
+        //
+      } else if (target.indexOf('#') === 0) {
+        index = this.idMap[target.substring(1)] || -1
+      } else {
+        target = target.split('#')[0]
+        index = this.hrefMap[target] || -1
+      }
     } else {
-      index = this.hrefMap[target] || -1
+      return this.first()
     }
 
     return this.sections[index] || null
