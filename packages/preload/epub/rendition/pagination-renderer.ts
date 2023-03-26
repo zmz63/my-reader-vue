@@ -197,7 +197,7 @@ export class PaginationRenderer {
     this.location.range = range
     this.location.cfi = range ? CFI.generate(view.section.cfiBase, range) : ''
 
-    console.log(element, range, range.startContainer, this.location.cfi)
+    console.log(element, range, this.location.cfi)
   }
 
   initViewContent(view: View) {
@@ -316,6 +316,7 @@ export class PaginationRenderer {
   }
 
   destroy() {
-    //
+    this.views.clear()
+    this.stage.destroy()
   }
 }

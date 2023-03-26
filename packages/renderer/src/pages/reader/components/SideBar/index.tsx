@@ -9,7 +9,8 @@ type SideBarKey = 'navigation' | 'search' | 'highlight' | 'note'
 
 type SideBarItem = {
   label: string
-  render: () => JSX.Element | null
+  header?: () => JSX.Element
+  content: () => JSX.Element | null
 }
 
 const sideBarProps = {
@@ -123,7 +124,7 @@ export default defineComponent({
     const sideBarItems: Record<SideBarKey, SideBarItem> = {
       navigation: {
         label: '导航',
-        render() {
+        content() {
           const navigation = props.book?.navigation
 
           if (!navigation) {
@@ -131,8 +132,7 @@ export default defineComponent({
           }
 
           const redirectPage = (item: TocItem) => {
-            // TODO
-            console.log(item)
+            props.renderer?.display(item.href)
           }
 
           const generateNode = (items: TocItem[], deep = 0) =>
@@ -143,34 +143,32 @@ export default defineComponent({
               </div>
             ))
 
-          return <NScrollbar class="navigation-wrapper">{generateNode(navigation.list)}</NScrollbar>
+          return <NScrollbar class="navigation-content">{generateNode(navigation.list)}</NScrollbar>
         }
       },
       search: {
         label: '查找',
-        render() {
+        header() {
           return (
-            <div class="search-wrapper">
-              <div class="search-box">
-                <Search size="small" />
-              </div>
-              <div class="search-result-wrapper">
-                <NScrollbar class="content"></NScrollbar>
-              </div>
+            <div class="search-header">
+              <Search size="small" />
             </div>
           )
+        },
+        content() {
+          return <NScrollbar class="search-content"></NScrollbar>
         }
       },
       highlight: {
         label: '高亮',
-        render() {
-          return null
+        content() {
+          return <div>hello</div>
         }
       },
       note: {
         label: '笔记',
-        render() {
-          return null
+        content() {
+          return <div>hello</div>
         }
       }
     }
@@ -208,8 +206,13 @@ export default defineComponent({
         <div class="content-wrapper">
           {sideBarData.key ? (
             <>
-              <div class="content-header">{sideBarItems[sideBarData.key].label}</div>
-              <div class="content-view">{sideBarItems[sideBarData.key].render()}</div>
+              <div class="content-header">
+                <div class="label">{sideBarItems[sideBarData.key].label}</div>
+                {sideBarItems[sideBarData.key].header
+                  ? (sideBarItems[sideBarData.key].header as () => JSX.Element)()
+                  : null}
+              </div>
+              <div class="content-view">{sideBarItems[sideBarData.key].content()}</div>
             </>
           ) : null}
         </div>

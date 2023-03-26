@@ -60,6 +60,10 @@ export class Spine {
     for (const section of this.sections) {
       section.destroy()
     }
+
+    this.sections = []
+    this.hrefMap = {}
+    this.idMap = {}
   }
 
   static async unpack(
@@ -72,7 +76,8 @@ export class Spine {
       const index = item.index
       const manifestItem = manifest[item.idref]
 
-      const sectionDocument = await archive.getDocument(container.resolve(manifestItem.href))
+      // const sectionDocument = await archive.getDocument(container.resolve(manifestItem.href))
+      const content = await archive.getText(container.resolve(manifestItem.href))
 
       const section = new Section(
         inst,
@@ -82,7 +87,8 @@ export class Spine {
         manifestItem.type,
         item.properties,
         CFI.generateBase(spineNodeIndex, index, item.id),
-        sectionDocument
+        // sectionDocument
+        content
       )
 
       inst.sections[index] = section

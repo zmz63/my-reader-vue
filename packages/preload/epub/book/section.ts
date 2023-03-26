@@ -15,9 +15,7 @@ export class Section {
 
   cfiBase: string
 
-  document: XMLDocument
-
-  root: HTMLElement
+  // document: XMLDocument
 
   content = ''
 
@@ -31,7 +29,8 @@ export class Section {
     type: string,
     properties: string[],
     cfiBase: string,
-    document: XMLDocument
+    // document: XMLDocument
+    content: string
   ) {
     this.spine = spine
     this.index = index
@@ -40,18 +39,25 @@ export class Section {
     this.type = type
     this.properties = properties
     this.cfiBase = cfiBase
-    this.document = document
-    this.root = document.documentElement
+    // this.document = document
+    this.content = content
   }
 
   async serialize() {
-    const serializer = new XMLSerializer()
-    const content = serializer.serializeToString(this.root)
-    await this.spine.hooks.serialize.trigger(content, this)
-
     if (this.blobUrl) {
-      URL.revokeObjectURL(this.blobUrl)
+      return
     }
+
+    // const serializer = new XMLSerializer()
+    // const content = serializer.serializeToString(this.document.documentElement)
+
+    // await this.spine.hooks.serialize.trigger(content, this)
+
+    await this.spine.hooks.serialize.trigger(this.content, this)
+
+    // if (this.blobUrl) {
+    //   URL.revokeObjectURL(this.blobUrl)
+    // }
 
     this.blobUrl = URL.createObjectURL(new Blob([this.content], { type: this.type }))
   }

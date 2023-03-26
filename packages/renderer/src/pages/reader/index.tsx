@@ -95,7 +95,7 @@ export default defineComponent({
 
           bookData.metadata = bookData.book.package.metadata
 
-          layoutStore.topBarSlot = (
+          layoutStore.topBarSlot = () => (
             <div class="top-bar-slot">
               <div class="title">{bookData.metadata.title}</div>
               <div class="divider">-</div>
@@ -132,6 +132,11 @@ export default defineComponent({
     onBeforeUnmount(() => {
       bookData.renderer?.destroy()
       bookData.book?.destroy()
+
+      bookData.renderer = null
+      bookData.book = null
+
+      layoutStore.topBarSlot = null
     })
 
     const prevPage = async () => {

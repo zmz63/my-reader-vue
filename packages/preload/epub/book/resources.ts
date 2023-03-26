@@ -29,6 +29,8 @@ export class Resources {
     for (const asset of this.assets) {
       URL.revokeObjectURL(asset.url)
     }
+
+    this.assets = []
   }
 
   static async unpack(
@@ -37,7 +39,7 @@ export class Resources {
     manifest: Record<string, ManifestItem>,
     container: Container
   ) {
-    const cssList: Simplify<ManifestItem & { data: string | Blob }>[] = []
+    const cssList: Simplify<ManifestItem & { data: string }>[] = []
 
     for (const item of Object.values(manifest)) {
       if (item.type !== 'application/xhtml+xml' && item.type !== 'text/html') {
@@ -57,7 +59,7 @@ export class Resources {
       }
 
       const css = cssList[index]
-      if (typeof css.data === 'string') {
+      if (css.data) {
         const substrings: string[] = []
         const map: Record<string, number> = {}
 
@@ -76,8 +78,18 @@ export class Resources {
         }
 
         const content = inst.replace(css.data, css.href)
-        css.data = new Blob([content], { type: css.type })
-        inst.assets.push({ ...css, url: URL.createObjectURL(css.data) } as Asset)
+        const blob = new Blob([content], { type: css.type })
+
+        inst.assets.push({
+          href: css.href,
+          overlay: css.overlay,
+          properties: css.properties,
+          type: css.type,
+          data: blob,
+          url: URL.createObjectURL(blob)
+        })
+
+        css.data = ''
       }
 
       replaceCss(index + 1)

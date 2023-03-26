@@ -75,13 +75,17 @@ export class Book {
       this.archive = new ZipArchive(this.file)
 
       await Container.parse(this.container, this.archive, CONTAINER_PATH)
+      console.log('container loaded')
       await Package.parse(this.package, this.archive, this.container)
+      console.log('package loaded')
 
       this.defer.opened.resolve(this)
 
       if (options && options.unpack) {
         await Resources.unpack(this.resources, this.archive, this.package.manifest, this.container)
+        console.log('resources loaded')
         await Spine.unpack(this.spine, this.archive, this.package, this.container)
+        console.log('spine loaded')
 
         if (this.package.ncxPath) {
           await Navigation.parseNcx(

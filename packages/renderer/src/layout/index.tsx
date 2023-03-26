@@ -35,7 +35,7 @@ export default defineComponent({
     return () => (
       <div class="layout">
         <div class="layout-top-bar">
-          <div class="left">{layoutStore.topBarSlot}</div>
+          <div class="left">{layoutStore.topBarSlot ? layoutStore.topBarSlot() : null}</div>
           <div class="right">
             <div class="divider" />
             <div class="button-wrapper">
