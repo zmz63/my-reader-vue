@@ -119,8 +119,7 @@ export default defineComponent({
 
       if (bookData.id && bookData.renderer) {
         bookData.renderer.attachTo(containerRef.value)
-        // renderer.display(location)
-        bookData.renderer.display()
+        bookData.renderer.display(location)
 
         updateAccessTime()
       } else {
@@ -135,16 +134,16 @@ export default defineComponent({
       bookData.book?.destroy()
     })
 
-    const prevPage = () => {
+    const prevPage = async () => {
       if (bookData.renderer) {
-        bookData.renderer.prev()
+        await bookData.renderer.prev()
         updateReadingLocation(bookData.renderer.location.cfi)
       }
     }
 
-    const nextPage = () => {
+    const nextPage = async () => {
       if (bookData.renderer) {
-        bookData.renderer.next()
+        await bookData.renderer.next()
         updateReadingLocation(bookData.renderer.location.cfi)
       }
     }

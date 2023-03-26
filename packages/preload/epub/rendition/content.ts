@@ -12,13 +12,13 @@ export class Content {
   }
 
   get textWidth() {
-    const rect = this.getRangeBoundingRect(this.body)
+    const rect = this.getNodeContentsRangeBoundingRect(this.body)
 
     return Math.round(rect.width)
   }
 
   get textHeight() {
-    const rect = this.getRangeBoundingRect(this.body)
+    const rect = this.getNodeContentsRangeBoundingRect(this.body)
 
     return Math.round(rect.height)
   }
@@ -39,9 +39,15 @@ export class Content {
     return this.root.scrollHeight
   }
 
-  getRangeBoundingRect(node: Node) {
+  getNodeContentsRange(node: Node) {
     const range = this.document.createRange()
     range.selectNodeContents(node)
+
+    return range
+  }
+
+  getNodeContentsRangeBoundingRect(node: Node) {
+    const range = this.getNodeContentsRange(node)
 
     return range.getBoundingClientRect()
   }
@@ -58,8 +64,7 @@ export class Content {
 
     let node: Node | null
     while ((node = treeWalker.nextNode())) {
-      let range = this.document.createRange()
-      range.selectNodeContents(node)
+      let range = this.getNodeContentsRange(node)
 
       const rect = range.getBoundingClientRect()
       if (rect.left < end && rect.right > start) {
@@ -68,8 +73,7 @@ export class Content {
           let right = range.endOffset
           while (left < right) {
             const middle = Math.floor((left + right) / 2)
-            range = this.document.createRange()
-            range.selectNodeContents(node)
+            range = this.getNodeContentsRange(node)
             range.setStart(node, left)
             range.setEnd(node, middle)
 
@@ -82,9 +86,9 @@ export class Content {
           }
         }
 
-        range.collapse(true)
-
         return range
+      } else if (rect.left > end) {
+        return null
       }
     }
 

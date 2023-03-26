@@ -67,10 +67,10 @@ export class Resources {
           substrings.push(`(${url.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')})`)
         }
 
-        const matchList = css.data.match(new RegExp(substrings.join('|'), 'g'))
+        const matches = css.data.match(new RegExp(substrings.join('|'), 'g'))
 
-        if (matchList) {
-          for (const match of matchList) {
+        if (matches) {
+          for (const match of matches) {
             replaceCss(map[match])
           }
         }

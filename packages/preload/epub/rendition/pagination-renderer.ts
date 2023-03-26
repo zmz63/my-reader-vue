@@ -1,5 +1,5 @@
 import { Queue } from '@common/queue'
-import { type Book, CFI, type Section } from '..'
+import { type Book, CFI, type CFIPath, Content, type Section } from '..'
 import { Stage } from './stage'
 import { View } from './view'
 import { Views } from './views'
@@ -83,20 +83,35 @@ export class PaginationRenderer {
   async display(target?: number | string) {
     await this.book.unpacked
 
-    const section = this.book.spine.get(target)
+    let section: Section | undefined
+    let cfi = ''
+    let path: CFIPath | null = null
+    if (CFI.isCFI(target)) {
+      const result = CFI.parse(target as string)
+      section = this.book.spine.get(result.base.sectionIndex)
+      cfi = target as string
+      path = result.path
+    } else {
+      section = this.book.spine.get(target)
+    }
 
     if (!section) {
       // TODO
       throw new Error()
     }
 
-    const view = this.views.find(section)
+    let view = this.views.find(section)
+    if (!view) {
+      view = await this.setView(section)
+    }
 
-    if (view) {
-      //
+    if (path) {
+      const range = CFI.pathToRange(path, (view.content as Content).document)
+
+      this.moveTo(range)
+      this.location.cfi = cfi
+      this.location.range = range
     } else {
-      const view = await this.setView(section)
-
       this.stage.scrollTo(0, 0)
       this.updateLocation(view)
     }
@@ -172,10 +187,17 @@ export class PaginationRenderer {
       start + this.viewData.horizontalPadding,
       this.viewData.verticalPadding
     )
-    const range = content.getTextHorizontalStartRange(element, start, end)
+
+    const range =
+      content.getTextHorizontalStartRange(element, start, end) ||
+      content.getNodeContentsRange(element)
+
+    // range.collapse(true)
 
     this.location.range = range
-    this.location.cfi = range ? CFI.rangeToCFI(range, view.section.cfiBase) : ''
+    this.location.cfi = range ? CFI.generate(view.section.cfiBase, range) : ''
+
+    console.log(element, range, range.startContainer, this.location.cfi)
   }
 
   initViewContent(view: View) {
@@ -269,6 +291,8 @@ export class PaginationRenderer {
 
     content.setStyle('width', `${pageWidth}px`, true)
     content.setStyle('height', `${height}px`, true)
+    content.setStyle('min-width', `${pageWidth}px`, true)
+    content.setStyle('min-height', `${height}px`, true)
     content.setStyle('padding-left', `${horizontalPadding}px`, true)
     content.setStyle('padding-right', `${horizontalPadding}px`, true)
     content.setStyle('padding-top', `${verticalPadding}px`, true)

@@ -2,17 +2,35 @@ export function indexOfNode(node: Node, nodeType: number) {
   const parent = node.parentNode as ParentNode
   const children = parent.childNodes
 
-  let index = -1
+  let i = -1
   for (const child of children) {
     if (child.nodeType === nodeType) {
-      index++
+      i++
       if (child === node) {
-        return index
+        return i
       }
     }
   }
 
-  return index
+  return i
+}
+
+export function getNodeByIndex(parent: ParentNode, index: number, nodeType: number) {
+  const children = parent.childNodes
+
+  let i = -1
+  for (const child of children) {
+    if (child.nodeType === nodeType) {
+      i++
+      if (i === index) {
+        return child
+      } else if (i > index) {
+        return null
+      }
+    }
+  }
+
+  return null
 }
 
 export function replaceBase(document: Document, url: string) {

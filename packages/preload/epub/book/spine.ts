@@ -24,12 +24,11 @@ export class Spine {
     if (typeof target === 'number') {
       index = target
     } else if (typeof target === 'string') {
-      if (CFI.isCFI(target)) {
-        //
-      } else if (target.indexOf('#') === 0) {
-        index = this.idMap[target.substring(1)] || -1
+      if (target.indexOf('#') === 0) {
+        index = this.idMap[target.slice(1)] || -1
+      } else if (target === '') {
+        return this.first()
       } else {
-        target = target.split('#')[0]
         index = this.hrefMap[target] || -1
       }
     } else {
@@ -82,7 +81,7 @@ export class Spine {
         manifestItem.href,
         manifestItem.type,
         item.properties,
-        CFI.generateChapterFragment(spineNodeIndex, index, item.id),
+        CFI.generateBase(spineNodeIndex, index, item.id),
         sectionDocument
       )
 

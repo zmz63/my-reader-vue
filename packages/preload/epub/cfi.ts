@@ -1,4 +1,4 @@
-import { indexOfNode } from './util'
+import { getNodeByIndex, indexOfNode } from './util'
 
 export type CFIStep = {
   type: number
@@ -8,34 +8,98 @@ export type CFIStep = {
 
 export type CFIPath = {
   steps: CFIStep[]
-  offset: number
+  offset?: number
   assertion?: string
 }
 
 export class CFI {
-  static isCFI(fragment: string) {
+  static isCFI(fragment: unknown) {
     return typeof fragment === 'string' && fragment.startsWith('epubcfi(') && fragment.endsWith(')')
   }
 
-  static parse(fragment: string) {
-    //
-  }
+  static parseSteps(fragment: string) {
+    const fragments = fragment.split('/')
 
-  static parseComponent() {
-    //
-  }
-
-  static generateChapterFragment(spineNodeIndex: number, sectionIndex: number, sectionId: string) {
-    let fragment = `/${(spineNodeIndex + 1) * 2}/${(sectionIndex + 1) * 2}`
-
-    if (sectionId) {
-      fragment += `[${sectionId}]`
+    if (fragments[0] === '') {
+      fragments.shift()
     }
 
-    return fragment
+    const steps = fragments.map(fragment => {
+      const n = parseInt(fragment)
+
+      const step: CFIStep =
+        n % 2 === 0
+          ? { index: n / 2 - 1, type: Node.ELEMENT_NODE }
+          : { index: (n - 1) / 2, type: Node.TEXT_NODE }
+
+      const matches = fragment.match(/\[(.*)\]/)
+
+      if (matches && matches[1]) {
+        step.assertion = matches[1]
+      }
+
+      return step
+    })
+
+    return steps
   }
 
-  static steps(node: Node) {
+  static parsePath(fragment: string) {
+    const ranges = fragment.split(',')
+    const parts = ranges[0].split(':')
+
+    const path: CFIPath = {
+      steps: this.parseSteps(parts[0])
+    }
+
+    if (parts[1]) {
+      path.offset = parseInt(parts[1])
+    }
+
+    return path
+  }
+
+  static pathToRange(path: CFIPath, document: Document) {
+    const root = document.documentElement
+    const range = document.createRange()
+    let currentNode: Node | null = root
+
+    for (const step of path.steps) {
+      currentNode = getNodeByIndex(currentNode as ParentNode, step.index, step.type)
+    }
+
+    if (currentNode) {
+      range.selectNodeContents(currentNode)
+    } else {
+      range.selectNodeContents(document.body)
+    }
+
+    return range
+  }
+
+  static parseBase(fragment: string) {
+    const steps = this.parseSteps(fragment)
+
+    return {
+      nodeIndex: steps[0].index,
+      sectionIndex: steps[1].index,
+      sectionId: steps[1].assertion
+    }
+  }
+
+  static parse(fragment: string) {
+    const parts = fragment.slice(8, fragment.length - 1).split('!')
+
+    const base = this.parseBase(parts[0])
+    const path = this.parsePath(parts[1])
+
+    return {
+      base,
+      path
+    }
+  }
+
+  static generateSteps(node: Node) {
     const steps: CFIStep[] = []
     let currentNode = node
 
@@ -61,8 +125,19 @@ export class CFI {
     return steps.reverse()
   }
 
-  static stepsToString(steps: CFIStep[]) {
-    return steps
+  static generatePath(node: Node, offset?: number) {
+    const steps = this.generateSteps(node)
+
+    const path: CFIPath = {
+      steps,
+      offset
+    }
+
+    return path
+  }
+
+  static pathToString(path: CFIPath) {
+    let fragment = path.steps
       .map(step => {
         let fragment = `/${
           step.type === Node.ELEMENT_NODE ? (step.index + 1) * 2 : step.index * 2 + 1
@@ -75,21 +150,6 @@ export class CFI {
         return fragment
       })
       .join('')
-  }
-
-  static path(node: Node, offset: number) {
-    const steps = this.steps(node)
-
-    const path: CFIPath = {
-      steps,
-      offset
-    }
-
-    return path
-  }
-
-  static pathToString(path: CFIPath) {
-    let fragment = this.stepsToString(path.steps)
 
     if (path.offset !== undefined) {
       fragment += `:${path.offset}`
@@ -102,8 +162,21 @@ export class CFI {
     return fragment
   }
 
-  static rangeToCFI(range: Range, base: string) {
-    const path = this.path(range.startContainer, range.startOffset)
+  static generateBase(nodeIndex: number, sectionIndex: number, sectionId: string) {
+    let fragment = `/${(nodeIndex + 1) * 2}/${(sectionIndex + 1) * 2}`
+
+    if (sectionId) {
+      fragment += `[${sectionId}]`
+    }
+
+    return fragment
+  }
+
+  static generate(base: string, range: Range) {
+    const path = this.generatePath(
+      range.startContainer,
+      range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : undefined
+    )
 
     const fragments = []
 
@@ -114,9 +187,5 @@ export class CFI {
     fragments.push(')')
 
     return fragments.join('')
-  }
-
-  static cfiToRange(cfi: string) {
-    //
   }
 }
