@@ -29,40 +29,45 @@ export default defineComponent({
         return
       }
 
-      const promises: Promise<unknown>[] = []
-      for (const path of paths) {
-        const book = new ePub.Book(path)
+      const openBook = async (path: string) => {
+        try {
+          const file = await preloadUtil.openFile(path)
+          const book = new ePub.Book(file, false)
 
-        promises.push(
-          book.opened
-            .then(async () => {
-              const { title, creator, description, date, publisher, identifier } =
-                book.package.metadata
+          await book.opened
 
-              const bookData: BookData = {
-                md5: book.md5,
-                size: (book.file as Buffer).byteLength,
-                createTime: Math.floor(Date.now() / 1000),
-                file: book.file,
-                title,
-                cover: book.package.cover,
-                creator,
-                description,
-                date,
-                publisher,
-                identifier
-              }
+          const { title, creator, description, date, publisher, identifier } = book.package.metadata
 
-              const result = await dbChannel.insertBook(bookData)
-              console.log('result', result)
-            })
-            .catch(error => {
-              console.log(error)
-            })
-        )
+          const bookData: BookData = {
+            md5: preloadUtil.md5(file),
+            size: file.byteLength,
+            createTime: Math.floor(Date.now() / 1000),
+            file,
+            title,
+            cover: book.package.cover,
+            creator,
+            description,
+            date,
+            publisher,
+            identifier
+          }
+
+          const result = await dbChannel.insertBook(bookData)
+
+          return result
+        } catch (error) {
+          return error
+        }
       }
 
-      await Promise.all(promises)
+      const promises: Promise<unknown>[] = []
+      for (const path of paths) {
+        promises.push(openBook(path))
+      }
+
+      const result = await Promise.all(promises)
+
+      console.log(result)
 
       updateBookList()
 

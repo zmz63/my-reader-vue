@@ -1,5 +1,17 @@
+import _path from 'path/posix'
 import _crypto from 'crypto'
 import _fs from 'fs-extra'
+import { getPath } from '@preload/channel/app'
+
+export function openFile(path: string) {
+  return _fs.readFile(path)
+}
+
+export async function getBookCachePath() {
+  const userDataPath = await getPath('userData')
+
+  return _path.join(userDataPath, 'book_cache')
+}
 
 export function md5(buffer: Buffer): string
 export function md5(path: string): Promise<string>

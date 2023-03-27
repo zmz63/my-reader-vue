@@ -55,10 +55,6 @@ export class Section {
 
     await this.spine.hooks.serialize.trigger(this.content, this)
 
-    // if (this.blobUrl) {
-    //   URL.revokeObjectURL(this.blobUrl)
-    // }
-
     this.blobUrl = URL.createObjectURL(new Blob([this.content], { type: this.type }))
   }
 

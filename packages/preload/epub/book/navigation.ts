@@ -1,7 +1,10 @@
+import _path from 'path/posix'
 import type { ZipArchive } from '@preload/utils/zip-archive'
+import type { Spine } from './spine'
 
 export type TocItem = {
   id: string
+  index: number
   href: string
   label: string
   subitems: TocItem[]
@@ -11,10 +14,18 @@ export type TocItem = {
 export class Navigation {
   list: TocItem[] = []
 
-  static async parseNcx(inst: Navigation, archive: ZipArchive, ncxPath: string) {
+  directory = ''
+
+  resolve(path: string) {
+    return _path.join(this.directory, path)
+  }
+
+  static async parseNcx(inst: Navigation, archive: ZipArchive, ncxPath: string, spine: Spine) {
     const ncxDocument = await archive.getXMLDocument(ncxPath)
     const navMapElement = ncxDocument.querySelector('navMap') as Element
     const navPoints = navMapElement.querySelectorAll('navPoint')
+
+    inst.directory = _path.dirname(ncxPath)
 
     const tocMap: Record<string, TocItem> = {}
 
@@ -32,9 +43,13 @@ export class Navigation {
         parent = parentNode.getAttribute('id')
       }
 
+      const src = content.getAttribute('src')
+      const href = src ? inst.resolve(src) : ''
+
       return {
         id: navPoint.getAttribute('id') || '',
-        href: content.getAttribute('src') || '',
+        index: spine.hrefMap[href] || -1,
+        href,
         label: navLabel.textContent?.trim() || '',
         subitems: [],
         parent
@@ -52,7 +67,7 @@ export class Navigation {
     }
   }
 
-  static async parseNav(inst: Navigation, archive: ZipArchive, navPath: string) {
+  static async parseNav(inst: Navigation, archive: ZipArchive, navPath: string, spine: Spine) {
     const navDocument = await archive.getXMLDocument(navPath)
     // TODO
   }

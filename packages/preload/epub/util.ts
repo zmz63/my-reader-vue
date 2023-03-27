@@ -34,10 +34,11 @@ export function getNodeByIndex(parent: ParentNode, index: number, nodeType: numb
 }
 
 export function replaceBase(document: Document, url: string) {
-  const head = document.querySelector('head')
+  let head = document.querySelector('head')
 
   if (!head) {
-    return
+    head = document.createElement('head')
+    document.documentElement.insertBefore(head, document.documentElement.firstChild)
   }
 
   let base = head.querySelector('base')
@@ -50,38 +51,16 @@ export function replaceBase(document: Document, url: string) {
   base.setAttribute('href', url)
 }
 
-export function calculateBorder(element: Element) {
-  const style = window.getComputedStyle(element)
-  const widthProps = [
-    'paddingRight',
-    'paddingLeft',
-    'marginRight',
-    'marginLeft',
-    'borderRightWidth',
-    'borderLeftWidth'
-  ]
-  const heightProps = [
-    'paddingTop',
-    'paddingBottom',
-    'marginTop',
-    'marginBottom',
-    'borderTopWidth',
-    'borderBottomWidth'
-  ]
+export function replaceAttribute(
+  document: Document,
+  tag: keyof HTMLElementTagNameMap | keyof SVGElementTagNameMap,
+  attribute: string,
+  value: string,
+  origin?: string
+) {
+  const elements = document.querySelectorAll(`${tag}[${attribute}${origin ? `="${origin}"` : ''}]`)
 
-  let width = 0
-  let height = 0
-
-  for (const prop of widthProps as (keyof CSSStyleDeclaration)[]) {
-    width += parseFloat(style[prop] as string) || 0
-  }
-
-  for (const prop of heightProps as (keyof CSSStyleDeclaration)[]) {
-    height += parseFloat(style[prop] as string) || 0
-  }
-
-  return {
-    height,
-    width
+  for (const element of elements) {
+    element.setAttribute(attribute, value)
   }
 }

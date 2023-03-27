@@ -118,6 +118,6 @@ export class View {
   }
 
   destroy() {
-    // TODO
+    this.content?.destroy()
   }
 }

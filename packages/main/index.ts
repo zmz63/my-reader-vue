@@ -1,4 +1,5 @@
-import { BrowserWindow, app, shell } from 'electron'
+import { BrowserWindow, app, protocol, shell } from 'electron'
+import _url from 'url'
 import { listenAppChannel } from './app'
 import { createWindow, listenWindowChannel } from './window'
 import { listenDBChannel } from './db'
@@ -33,6 +34,11 @@ app.whenReady().then(() => {
 
       return { action: 'deny' }
     })
+  })
+
+  protocol.registerFileProtocol('book-cache', (request, callback) => {
+    const filePath = _url.fileURLToPath(`file://${request.url.slice('book-cache://'.length)}`)
+    callback(filePath)
   })
 
   listenWindowChannel()

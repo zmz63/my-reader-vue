@@ -1,3 +1,5 @@
+import _fs from 'fs-extra'
+import _path from 'path/posix'
 import yauzl from 'yauzl'
 import { Defer } from '@common/defer'
 
@@ -6,7 +8,9 @@ export type ZipEntries = Record<string, yauzl.Entry>
 export class ZipArchive {
   file: yauzl.ZipFile | null = null
 
-  entries: ZipEntries = {}
+  files: ZipEntries = {}
+
+  directories: ZipEntries = {}
 
   buffers: Record<string, Buffer> = {}
 
@@ -31,6 +35,7 @@ export class ZipArchive {
       autoClose: false,
       lazyEntries: false
     }
+
     const callback = (error: Error | null, zipFile: yauzl.ZipFile) => {
       if (error) {
         this.defer.opened.reject(error)
@@ -40,7 +45,9 @@ export class ZipArchive {
 
       zipFile.on('entry', entry => {
         if (!/\/$/.test(entry.fileName)) {
-          this.entries[entry.fileName] = entry
+          this.files[entry.fileName] = entry
+        } else {
+          this.directories[entry.fileName] = entry
         }
       })
 
@@ -56,22 +63,65 @@ export class ZipArchive {
     }
   }
 
-  async getBuffer(path: string) {
-    if (this.buffers[path]) {
-      return this.buffers[path]
+  async dump(key: string, dumpPath: string, assert = false) {
+    const path = _path.join(dumpPath, key)
+
+    if (assert) {
+      const directory = _path.dirname(path)
+
+      if (!_fs.existsSync(directory)) {
+        _fs.mkdirsSync(directory)
+      }
+    }
+
+    if (this.buffers[key]) {
+      _fs.writeFile(path, this.buffers[key])
+
+      return path
+    }
+
+    await this.opened
+
+    return new Promise<string>((resolve, reject) => {
+      if (!this.file || !this.files[key]) {
+        // TODO
+        return reject()
+      }
+
+      const writeStream = _fs.createWriteStream(path)
+
+      this.file.openReadStream(this.files[key], (error, readStream) => {
+        if (error) reject(error)
+
+        readStream.pipe(writeStream)
+
+        readStream.on('end', () => {
+          resolve(path)
+        })
+
+        readStream.on('error', error => {
+          reject(error)
+        })
+      })
+    })
+  }
+
+  async getBuffer(key: string) {
+    if (this.buffers[key]) {
+      return this.buffers[key]
     }
 
     await this.opened
 
     return new Promise<Buffer>((resolve, reject) => {
-      if (!this.file || !this.entries[path]) {
+      if (!this.file || !this.files[key]) {
         // TODO
         return reject()
       }
 
       const chunks: Buffer[] = []
 
-      this.file.openReadStream(this.entries[path], (error, readStream) => {
+      this.file.openReadStream(this.files[key], (error, readStream) => {
         if (error) reject(error)
 
         readStream.on('data', chunk => {
@@ -80,7 +130,7 @@ export class ZipArchive {
 
         readStream.on('end', () => {
           const data = Buffer.concat(chunks)
-          this.buffers[path] = data
+          this.buffers[key] = data
           resolve(data)
         })
 
@@ -91,26 +141,26 @@ export class ZipArchive {
     })
   }
 
-  async getText(path: string) {
-    const buffer = await this.getBuffer(path)
+  async getText(key: string) {
+    const buffer = await this.getBuffer(key)
 
     return buffer.toString('utf8')
   }
 
-  async getBlob(path: string, type?: string) {
-    const buffer = await this.getBuffer(path)
+  async getBlob(key: string, type?: string) {
+    const buffer = await this.getBuffer(key)
 
     return new Blob([buffer], { type })
   }
 
-  async getXMLDocument(path: string) {
-    const text = await this.getText(path)
+  async getXMLDocument(key: string) {
+    const text = await this.getText(key)
 
     return this.domParser.parseFromString(text, 'application/xml') as XMLDocument
   }
 
-  async getDocument(path: string) {
-    const text = await this.getText(path)
+  async getDocument(key: string) {
+    const text = await this.getText(key)
 
     return this.domParser.parseFromString(text, 'application/xhtml+xml') as Document
   }

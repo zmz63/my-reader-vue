@@ -1,6 +1,6 @@
 import { type PropType, defineComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { NScrollbar } from 'naive-ui'
-import type { Book, Metadata, PaginationRenderer, TocItem } from '@preload/epub'
+import type { Book, PaginationRenderer, TocItem } from '@preload/epub'
 import SVGIcon from '@/components/SVGIcon'
 import Search from '@/components/Search'
 import './index.scss'
@@ -137,7 +137,13 @@ export default defineComponent({
 
           const generateNode = (items: TocItem[], deep = 0) =>
             items.map(item => (
-              <div style={`padding-left: ${deep * 4}px`} onClick={() => redirectPage(item)}>
+              <div
+                style={`padding-left: ${deep * 4}px`}
+                onClick={event => {
+                  redirectPage(item)
+                  event.stopPropagation()
+                }}
+              >
                 <div class="navigation-item">{item.label}</div>
                 {item.subitems.length ? <div>{generateNode(item.subitems, deep + 1)}</div> : null}
               </div>

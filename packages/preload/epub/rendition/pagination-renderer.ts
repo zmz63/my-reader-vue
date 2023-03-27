@@ -1,3 +1,4 @@
+import { Hook } from '@common/hook'
 import { Queue } from '@common/queue'
 import { type Book, CFI, type CFIPath, Content, type Section } from '..'
 import { Stage } from './stage'
@@ -27,6 +28,12 @@ export type Location = {
   cfi: string
 }
 
+export type LocationData = {
+  cfi: string
+  index: number
+  href: string
+}
+
 export class PaginationRenderer {
   stage = new Stage()
 
@@ -54,15 +61,36 @@ export class PaginationRenderer {
     verticalPadding: 0
   }
 
-  location: Location = {
-    range: null,
-    cfi: ''
+  location: Location
+
+  readonly hooks: Readonly<{
+    location: Hook<(data: LocationData) => void>
+  }> = {
+    location: new Hook()
   }
 
   constructor(book: Book, options?: Partial<PaginationOptions>) {
     this.book = book
     this.views = new Views(this.stage.container)
     this.queue = new Queue(this)
+    this.location = new Proxy<Location>(
+      { range: null, cfi: '' },
+      {
+        get: (target, property, receiver) => Reflect.get(target, property, receiver),
+        set: (target, property, value, receiver) => {
+          if (property === 'cfi') {
+            const view = this.views.get(0)
+            this.hooks.location.trigger({
+              cfi: value,
+              index: view.section.index,
+              href: view.section.href
+            })
+          }
+
+          return Reflect.set(target, property, value, receiver)
+        }
+      }
+    )
 
     Object.assign(this.options, options)
   }
@@ -86,11 +114,18 @@ export class PaginationRenderer {
     let section: Section | undefined
     let cfi = ''
     let path: CFIPath | null = null
-    if (CFI.isCFI(target)) {
-      const result = CFI.parse(target as string)
-      section = this.book.spine.get(result.base.sectionIndex)
-      cfi = target as string
-      path = result.path
+    let id = ''
+    if (typeof target === 'string') {
+      if (CFI.isCFI(target)) {
+        const result = CFI.parse(target)
+        section = this.book.spine.get(result.base.sectionIndex)
+        cfi = target
+        path = result.path
+      } else {
+        const parts = target.split('#')
+        section = this.book.spine.get(parts[0])
+        id = parts[1]
+      }
     } else {
       section = this.book.spine.get(target)
     }
@@ -111,6 +146,17 @@ export class PaginationRenderer {
       this.moveTo(range)
       this.location.cfi = cfi
       this.location.range = range
+    }
+    if (id) {
+      const node = (view.content as Content).document.querySelector(`#${id}`)
+
+      if (node) {
+        const range = (view.content as Content).getNodeContentsRange(node)
+
+        this.moveTo(range)
+        this.location.range = range
+        this.location.cfi = CFI.generate(view.section.cfiBase, range)
+      }
     } else {
       this.stage.scrollTo(0, 0)
       this.updateLocation(view)

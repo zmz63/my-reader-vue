@@ -10,8 +10,6 @@ export class Spine {
 
   hrefMap: Record<string, number> = {}
 
-  idMap: Record<string, number> = {}
-
   readonly hooks: Readonly<{
     serialize: Hook<(content: string, section: Section) => void>
   }> = {
@@ -24,9 +22,7 @@ export class Spine {
     if (typeof target === 'number') {
       index = target
     } else if (typeof target === 'string') {
-      if (target.indexOf('#') === 0) {
-        index = this.idMap[target.slice(1)] || -1
-      } else if (target === '') {
+      if (target === '') {
         return this.first()
       } else {
         index = this.hrefMap[target] || -1
@@ -63,7 +59,6 @@ export class Spine {
 
     this.sections = []
     this.hrefMap = {}
-    this.idMap = {}
   }
 
   static async unpack(
@@ -75,29 +70,25 @@ export class Spine {
     for (const item of spine) {
       const index = item.index
       const manifestItem = manifest[item.idref]
-
-      // const sectionDocument = await archive.getDocument(container.resolve(manifestItem.href))
-      const content = await archive.getText(container.resolve(manifestItem.href))
+      const href = container.resolve(manifestItem.href)
+      const content = await archive.getText(href)
 
       const section = new Section(
         inst,
         index,
         item.linear === 'yes',
-        manifestItem.href,
+        href,
         manifestItem.type,
         item.properties,
         CFI.generateBase(spineNodeIndex, index, item.id),
-        // sectionDocument
         content
       )
 
       inst.sections[index] = section
 
-      inst.hrefMap[decodeURI(manifestItem.href)] = index
-      inst.hrefMap[encodeURI(manifestItem.href)] = index
-      inst.hrefMap[manifestItem.href] = index
-
-      inst.idMap[item.idref] = index
+      inst.hrefMap[href] = index
+      inst.hrefMap[href] = index
+      inst.hrefMap[href] = index
     }
   }
 }

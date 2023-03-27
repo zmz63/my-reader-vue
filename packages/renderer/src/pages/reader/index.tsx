@@ -1,7 +1,7 @@
 import { type Raw, defineComponent, markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton } from 'naive-ui'
-import type { Book, Metadata, PaginationRenderer } from '@preload/epub'
+import type { Book, LocationData, Metadata, PaginationRenderer, TocItem } from '@preload/epub'
 import type { BookData } from '@preload/channel/db'
 import { useLayoutStore } from '@/stores/layout'
 import SVGIcon from '@/components/SVGIcon'
@@ -24,15 +24,39 @@ export default defineComponent({
       book: null as Raw<Book> | null,
       renderer: null as Raw<PaginationRenderer> | null,
       id: null as number | bigint | null,
-      metadata: {} as Partial<Metadata>
+      metadata: {} as Partial<Metadata>,
+      location: {} as Partial<LocationData>,
+      chapter: ''
     })
 
-    const updateReadingLocation = (location: string) => {
-      if (bookData.id) {
+    const handleUpdateLocation = (location: LocationData) => {
+      if (bookData.id && location.cfi !== bookData.location.cfi) {
         dbChannel.updateBook(bookData.id, {
-          location
+          location: location.cfi
         })
       }
+
+      const navigation = bookData.book?.navigation
+      if (navigation && location.index !== bookData.location.index) {
+        bookData.chapter = ''
+
+        const findChapter = (items: TocItem[]) => {
+          for (const item of items) {
+            if (item.index === location.index) {
+              bookData.chapter = item.label
+              return true
+            } else if (item.subitems.length && findChapter(item.subitems)) {
+              return true
+            }
+          }
+
+          return false
+        }
+
+        findChapter(navigation.list)
+      }
+
+      bookData.location = location
     }
 
     const updateAccessTime = () => {
@@ -47,8 +71,15 @@ export default defineComponent({
     const init = async () => {
       let location: string | undefined
       try {
+        const dumpPath = await preloadUtil.getBookCachePath()
+
         if (path) {
-          bookData.book = markRaw(new ePub.Book(path, { unpack: true }))
+          const file = await preloadUtil.openFile(path)
+          bookData.book = markRaw(
+            new ePub.Book(file, true, {
+              path: dumpPath
+            })
+          )
 
           await bookData.book.opened
 
@@ -56,8 +87,8 @@ export default defineComponent({
             bookData.book.package.metadata
 
           const book: BookData = {
-            md5: bookData.book.md5,
-            size: (bookData.book.file as Buffer).byteLength,
+            md5: preloadUtil.md5(file),
+            size: file.byteLength,
             createTime: Math.floor(Date.now() / 1000),
             path,
             title,
@@ -81,7 +112,9 @@ export default defineComponent({
           const result = await dbChannel.getBookById(BigInt(id))
           if (result) {
             bookData.book = markRaw(
-              new ePub.Book(Buffer.from(result.file as Buffer), { unpack: true })
+              new ePub.Book(Buffer.from(result.file as Buffer), true, {
+                path: dumpPath
+              })
             )
             bookData.id = BigInt(id)
             location = result.location
@@ -121,6 +154,8 @@ export default defineComponent({
         bookData.renderer.attachTo(containerRef.value)
         bookData.renderer.display(location)
 
+        bookData.renderer.hooks.location.register(handleUpdateLocation)
+
         updateAccessTime()
       } else {
         router.replace({
@@ -141,15 +176,13 @@ export default defineComponent({
 
     const prevPage = async () => {
       if (bookData.renderer) {
-        await bookData.renderer.prev()
-        updateReadingLocation(bookData.renderer.location.cfi)
+        bookData.renderer.prev()
       }
     }
 
     const nextPage = async () => {
       if (bookData.renderer) {
-        await bookData.renderer.next()
-        updateReadingLocation(bookData.renderer.location.cfi)
+        bookData.renderer.next()
       }
     }
 
@@ -171,7 +204,7 @@ export default defineComponent({
         <div ref={containerRef} class="reader-page-container">
           <div class="top-bar">
             <div class="left"></div>
-            <div class="center">center</div>
+            <div class="center">{bookData.chapter}</div>
             <div class="right">
               <NButton
                 class="button"

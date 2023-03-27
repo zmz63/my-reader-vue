@@ -22,7 +22,7 @@ export class Stage {
   y = 0
 
   readonly hooks: Readonly<{
-    resize: Hook<() => void>
+    resize: Hook<(width: number, height: number) => void>
   }> = {
     resize: new Hook()
   }
@@ -35,7 +35,7 @@ export class Stage {
         const { width, height } = entries[0].contentRect
         this.width = width
         this.height = height
-        this.hooks.resize.trigger()
+        this.hooks.resize.trigger(width, height)
       }
     })
   }
