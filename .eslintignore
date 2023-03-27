@@ -1,4 +1,4 @@
 /node_modules
 /release
 /dist
-/packages/renderer/src/epub
+/temp
