@@ -1,7 +1,6 @@
 export * from './book'
 export * from './container'
 export * from './package'
-export * from './resources'
 export * from './spine'
 export * from './navigation'
 export * from './section'

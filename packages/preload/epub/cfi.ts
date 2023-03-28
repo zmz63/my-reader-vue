@@ -32,7 +32,7 @@ export class CFI {
           ? { index: n / 2 - 1, type: Node.ELEMENT_NODE }
           : { index: (n - 1) / 2, type: Node.TEXT_NODE }
 
-      const matches = fragment.match(/\[(.*)\]/)
+      const matches = fragment.match(/\[(.*?)\]/)
 
       if (matches && matches[1]) {
         step.assertion = matches[1]

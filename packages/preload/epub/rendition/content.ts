@@ -1,5 +1,3 @@
-import { Hook } from '@common/hook'
-
 export class Content {
   document: Document
 
@@ -7,62 +5,10 @@ export class Content {
 
   body: HTMLElement
 
-  observer: ResizeObserver
-
-  readonly hooks: Readonly<{
-    link: Hook<(href: string) => void>
-    image: Hook<(src: string) => void>
-    select: Hook<(selection: Selection) => void>
-    resize: Hook<(width: number, height: number) => void>
-  }> = {
-    link: new Hook(),
-    image: new Hook(),
-    select: new Hook(),
-    resize: new Hook()
-  }
-
   constructor(document: Document) {
     this.document = document
     this.root = document.documentElement
     this.body = document.body
-
-    this.observer = new ResizeObserver(entries => {
-      if (entries[0]) {
-        const { width, height } = entries[0].contentRect
-        this.hooks.resize.trigger(width, height)
-      }
-    })
-    this.observer.observe(this.root)
-
-    const anchors = this.document.querySelectorAll('a[href]') as NodeListOf<HTMLAnchorElement>
-    for (const anchor of anchors) {
-      anchor.onclick = (event: MouseEvent) => {
-        if (anchor.href) {
-          this.hooks.link.trigger(anchor.href)
-        }
-
-        event.preventDefault()
-      }
-    }
-
-    const images = this.document.querySelectorAll('img') as NodeListOf<HTMLImageElement>
-    for (const image of images) {
-      image.onclick = (event: MouseEvent) => {
-        if (image.src) {
-          this.hooks.image.trigger(image.src)
-        }
-
-        event.preventDefault()
-      }
-    }
-
-    this.document.onselectionchange = () => {
-      const selection = this.document.getSelection()
-
-      if (selection) {
-        this.hooks.select.trigger(selection)
-      }
-    }
   }
 
   get textWidth() {
@@ -127,7 +73,7 @@ export class Content {
           let right = range.endOffset
           while (left < right) {
             const middle = Math.floor((left + right) / 2)
-            range = this.getNodeContentsRange(node)
+            range = this.document.createRange()
             range.setStart(node, left)
             range.setEnd(node, middle)
 
@@ -184,6 +130,6 @@ export class Content {
   }
 
   destroy() {
-    this.observer.disconnect()
+    // TODO
   }
 }

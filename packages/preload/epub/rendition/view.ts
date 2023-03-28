@@ -1,4 +1,5 @@
 import { Defer } from '@common/defer'
+import { Hook } from '@common/hook'
 import type { Section } from '..'
 import { Content } from './content'
 
@@ -21,6 +22,22 @@ export class View {
 
   loaded: Promise<this>
 
+  observer: ResizeObserver
+
+  readonly hooks: Readonly<{
+    anchorClick: Hook<(href: string) => void>
+    imageClick: Hook<(src: string) => void>
+    imageLoad: Hook<() => void>
+    select: Hook<(selection: Selection) => void>
+    resize: Hook<(width: number, height: number) => void>
+  }> = {
+    anchorClick: new Hook(),
+    imageClick: new Hook(),
+    imageLoad: new Hook(),
+    select: new Hook(),
+    resize: new Hook()
+  }
+
   private defer = {
     loaded: new Defer<this>()
   }
@@ -30,6 +47,14 @@ export class View {
 
     this.wrapper = this.createWrapper()
     this.iframe = this.createIframe()
+
+    this.observer = new ResizeObserver(entries => {
+      if (entries[0]) {
+        const { width, height } = entries[0].contentRect
+        console.log('resize observer')
+        this.hooks.resize.trigger(width, height)
+      }
+    })
 
     this.loaded = this.defer.loaded.promise
   }
@@ -65,6 +90,8 @@ export class View {
       await this.section.serialize()
     }
 
+    console.log('---------- start render')
+
     this.iframe.src = this.section.blobUrl
     this.wrapper.appendChild(this.iframe)
 
@@ -73,6 +100,50 @@ export class View {
       const content = new Content(document)
 
       this.content = content
+
+      this.observer.observe(document.documentElement)
+
+      const anchors = document.querySelectorAll('a[href]') as NodeListOf<HTMLAnchorElement>
+      for (const anchor of anchors) {
+        anchor.onclick = (event: MouseEvent) => {
+          if (anchor.href) {
+            console.log('anchor onclick')
+            this.hooks.anchorClick.trigger(anchor.href)
+          }
+
+          event.preventDefault()
+        }
+      }
+
+      const images = document.querySelectorAll('img') as NodeListOf<HTMLImageElement>
+      for (const image of images) {
+        image.onclick = (event: MouseEvent) => {
+          if (image.src) {
+            console.log('image onclick')
+            this.hooks.imageClick.trigger(image.src)
+          }
+
+          event.preventDefault()
+        }
+
+        if (image.complete) {
+          console.log('image complete')
+          this.hooks.imageLoad.trigger()
+        } else {
+          image.onload = () => {
+            console.log('image onload')
+            this.hooks.imageLoad.trigger()
+          }
+        }
+      }
+
+      document.onselectionchange = () => {
+        const selection = document.getSelection()
+
+        if (selection) {
+          this.hooks.select.trigger(selection)
+        }
+      }
 
       this.defer.loaded.resolve(this)
     }
@@ -94,19 +165,30 @@ export class View {
     this.wrapper.style.height = `${this.height}px`
   }
 
-  setSize(width: number, height: number) {
+  setSize(width?: number, height?: number) {
     if (this.hidden) {
       return
     }
 
-    this.width = width
-    this.height = height
+    if (width) {
+      this.width = width
+      this.wrapper.style.width = `${width}px`
+      this.iframe.style.width = `${width}px`
+    } else {
+      this.width = 0
+      this.wrapper.style.width = ''
+      this.iframe.style.width = ''
+    }
 
-    this.wrapper.style.width = `${width}px`
-    this.wrapper.style.height = `${height}px`
-
-    this.iframe.style.width = `${width}px`
-    this.iframe.style.height = `${height}px`
+    if (height) {
+      this.height = height
+      this.wrapper.style.height = `${height}px`
+      this.iframe.style.height = `${height}px`
+    } else {
+      this.height = 0
+      this.wrapper.style.height = ''
+      this.iframe.style.height = ''
+    }
   }
 
   setAxis(axis: 'vertical' | 'horizontal') {
@@ -118,6 +200,7 @@ export class View {
   }
 
   destroy() {
+    this.observer.disconnect()
     this.content?.destroy()
   }
 }

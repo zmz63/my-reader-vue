@@ -68,9 +68,9 @@ export class Book {
       const archive = new ZipArchive(file)
 
       await Container.parse(this.container, archive, CONTAINER_PATH)
-      console.log('container loaded')
+      console.log('---------- container loaded')
       await Package.parse(this.package, archive, this.container)
-      console.log('package loaded')
+      console.log('---------- package loaded')
 
       this.defer.opened.resolve(this)
 
@@ -102,7 +102,7 @@ export class Book {
 
   private async unpack(archive: ZipArchive) {
     await Spine.unpack(this.spine, archive, this.package, this.container)
-    console.log('spine loaded')
+    console.log('---------- spine loaded')
 
     if (this.package.ncxPath) {
       await Navigation.parseNcx(
@@ -119,17 +119,13 @@ export class Book {
         this.spine
       )
     }
+    console.log('---------- navigation loaded')
 
-    const domParser = new DOMParser()
-    const xmlSerializer = new XMLSerializer()
-
-    this.spine.hooks.serialize.register((content, section) => {
-      const document = domParser.parseFromString(content, 'application/xhtml+xml') as Document
+    this.spine.hooks.serialize.register(section => {
+      const document = section.document
 
       replaceBase(document, `book-cache:///${_path.join(this.cachePath, section.href)}`)
       replaceAttribute(document, 'svg', 'preserveAspectRatio', 'xMidYMid', 'none')
-
-      section.content = xmlSerializer.serializeToString(document.documentElement)
     })
 
     this.defer.unpacked.resolve(this)
@@ -144,12 +140,16 @@ export class Book {
     }
 
     await Promise.all(promises)
-    console.log('resources loaded')
+    console.log('---------- resources loaded')
 
     this.defer.dumped.resolve(this)
   }
 
   destroy() {
     this.spine.destroy()
+
+    if (this.cachePath) {
+      _fs.remove(this.cachePath)
+    }
   }
 }

@@ -1,8 +1,7 @@
 import { type PropType, defineComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { NScrollbar } from 'naive-ui'
+import { NInput, NScrollbar } from 'naive-ui'
 import type { Book, PaginationRenderer, TocItem } from '@preload/epub'
 import SVGIcon from '@/components/SVGIcon'
-import Search from '@/components/Search'
 import './index.scss'
 
 type SideBarKey = 'navigation' | 'search' | 'highlight' | 'note'
@@ -10,7 +9,7 @@ type SideBarKey = 'navigation' | 'search' | 'highlight' | 'note'
 type SideBarItem = {
   label: string
   header?: () => JSX.Element
-  content: () => JSX.Element | null
+  content: () => JSX.Element
 }
 
 const sideBarProps = {
@@ -121,63 +120,136 @@ export default defineComponent({
 
     const sideBarKeys: SideBarKey[] = ['navigation', 'search', 'highlight', 'note']
 
-    const sideBarItems: Record<SideBarKey, SideBarItem> = {
+    const createNavigationContent = () => {
+      const generateNode = (items: TocItem[], deep = 0) =>
+        items.map(item => (
+          <div
+            style={`padding-left: ${deep * 4}px`}
+            onClick={event => {
+              props.renderer?.display(item.href)
+              event.stopPropagation()
+            }}
+          >
+            <div class="navigation-item">{item.label}</div>
+            {item.subitems.length ? <div>{generateNode(item.subitems, deep + 1)}</div> : null}
+          </div>
+        ))
+
+      return {
+        content: () => (
+          <NScrollbar class="navigation-content">
+            {generateNode(props.book?.navigation.list || [])}
+          </NScrollbar>
+        )
+      }
+    }
+
+    const createSearchContent = () => {
+      const searchResult = ref<Range[][]>([])
+      const indexMap: Map<number, number> = new Map()
+
+      let generator: Generator<{ index: number; data: Range[] }, void, unknown>
+
+      const handleSearch = (content: string) => {
+        searchResult.value = []
+        indexMap.clear()
+
+        if (generator) {
+          generator.return()
+        }
+
+        if (props.renderer) {
+          generator = props.renderer.search(content, 100)
+          let result = generator.next()
+
+          const task = () => {
+            requestAnimationFrame(() => {
+              if (!result.done) {
+                if (result.value.data.length) {
+                  const index = indexMap.get(result.value.index)
+                  if (index) {
+                    searchResult.value[index].push(...result.value.data)
+                  } else {
+                    searchResult.value.push([...result.value.data])
+                  }
+                }
+
+                result = generator.next()
+
+                task()
+              }
+            })
+          }
+
+          task()
+        }
+      }
+
+      const splitResult = (range: Range, index: number) => {
+        const text = range.startContainer.textContent as string
+        const size = 8
+        const left = range.startOffset > size ? range.startOffset - size : 0
+        const right = text.length - range.endOffset > size ? range.endOffset + size : text.length
+
+        return (
+          <div onClick={() => props.renderer?.display(index)}>
+            {text.slice(left, range.startOffset)}
+            <b>{text.slice(range.startOffset, range.endOffset)}</b>
+            {text.slice(range.endOffset, right)}
+          </div>
+        )
+      }
+
+      return {
+        header: () => (
+          <div class="search-header">
+            <NInput size="small" onInput={handleSearch} />
+            <div class="result">
+              {searchResult.value.length
+                ? `找到 ${searchResult.value.reduce(
+                    (prev, ranges) => prev + ranges.length,
+                    0
+                  )} 个结果`
+                : null}
+            </div>
+          </div>
+        ),
+        content: () => (
+          <NScrollbar class="search-content">
+            {searchResult.value.map((ranges, index) => (
+              <div>{ranges.map(range => splitResult(range, index))}</div>
+            ))}
+          </NScrollbar>
+        )
+      }
+    }
+
+    const crateHighlightContent = () => ({
+      content: () => <div>hello</div>
+    })
+
+    const crateNoteContent = () => ({
+      content: () => <div>hello</div>
+    })
+
+    const sideBarItems = reactive<Record<SideBarKey, SideBarItem>>({
       navigation: {
         label: '导航',
-        content() {
-          const navigation = props.book?.navigation
-
-          if (!navigation) {
-            return null
-          }
-
-          const redirectPage = (item: TocItem) => {
-            props.renderer?.display(item.href)
-          }
-
-          const generateNode = (items: TocItem[], deep = 0) =>
-            items.map(item => (
-              <div
-                style={`padding-left: ${deep * 4}px`}
-                onClick={event => {
-                  redirectPage(item)
-                  event.stopPropagation()
-                }}
-              >
-                <div class="navigation-item">{item.label}</div>
-                {item.subitems.length ? <div>{generateNode(item.subitems, deep + 1)}</div> : null}
-              </div>
-            ))
-
-          return <NScrollbar class="navigation-content">{generateNode(navigation.list)}</NScrollbar>
-        }
+        ...createNavigationContent()
       },
       search: {
         label: '查找',
-        header() {
-          return (
-            <div class="search-header">
-              <Search size="small" />
-            </div>
-          )
-        },
-        content() {
-          return <NScrollbar class="search-content"></NScrollbar>
-        }
+        ...createSearchContent()
       },
       highlight: {
         label: '高亮',
-        content() {
-          return <div>hello</div>
-        }
+        ...crateHighlightContent()
       },
       note: {
         label: '笔记',
-        content() {
-          return <div>hello</div>
-        }
+        ...crateNoteContent()
       }
-    }
+    })
 
     const switchSideBar = (key: SideBarKey) => {
       if (sideBarData.show && key === sideBarData.key) {

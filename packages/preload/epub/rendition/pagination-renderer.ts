@@ -34,6 +34,11 @@ export type LocationData = {
   href: string
 }
 
+export type SearchData = {
+  seq: number
+  data: Map<number, Range[]>
+}
+
 export class PaginationRenderer {
   stage = new Stage()
 
@@ -63,6 +68,8 @@ export class PaginationRenderer {
 
   location: Location
 
+  searchData: SearchData
+
   readonly hooks: Readonly<{
     location: Hook<(data: LocationData) => void>
   }> = {
@@ -91,6 +98,10 @@ export class PaginationRenderer {
         }
       }
     )
+    this.searchData = {
+      seq: 0,
+      data: new Map()
+    }
 
     Object.assign(this.options, options)
   }
@@ -207,6 +218,45 @@ export class PaginationRenderer {
     }
   }
 
+  *search(keyword: string, max = 100, index?: number) {
+    this.searchData.seq += 1
+    this.searchData.data.clear()
+
+    if (!keyword) {
+      return
+    }
+
+    keyword = keyword.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+
+    const sections =
+      typeof index === 'number' ? [this.book.spine.sections[index]] : this.book.spine.sections
+    const seq = this.searchData.seq
+
+    for (const section of sections) {
+      const generator = section.search(keyword, max)
+      let result = generator.next()
+
+      while (!result.done) {
+        yield {
+          index: section.index,
+          data: result.value
+        }
+
+        if (seq !== this.searchData.seq) {
+          return
+        } else if (result.value.length) {
+          if (this.searchData.data.has(section.index)) {
+            void (this.searchData.data.get(section.index) as Range[]).push(...result.value)
+          } else {
+            this.searchData.data.set(section.index, [...result.value])
+          }
+        }
+
+        result = generator.next()
+      }
+    }
+  }
+
   async setView(section: Section) {
     const view = new View(section)
 
@@ -238,12 +288,12 @@ export class PaginationRenderer {
       content.getTextHorizontalStartRange(element, start, end) ||
       content.getNodeContentsRange(element)
 
-    // range.collapse(true)
+    range.collapse(true)
 
     this.location.range = range
     this.location.cfi = range ? CFI.generate(view.section.cfiBase, range) : ''
 
-    console.log(element, range, this.location.cfi)
+    console.log(this.location.cfi)
   }
 
   initViewContent(view: View) {
@@ -345,6 +395,9 @@ export class PaginationRenderer {
     content.setStyle('padding-bottom', `${verticalPadding}px`, true)
     content.setStyle('column-gap', `${gap}px`, true)
     content.setStyle('column-width', `${columnWidth}px`, true)
+
+    // NOTE
+    view.setSize(0, height)
 
     view.setSize(content.textWidth + gap, height)
   }

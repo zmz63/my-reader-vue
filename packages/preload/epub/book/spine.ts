@@ -11,7 +11,7 @@ export class Spine {
   hrefMap: Record<string, number> = {}
 
   readonly hooks: Readonly<{
-    serialize: Hook<(content: string, section: Section) => void>
+    serialize: Hook<(section: Section) => void>
   }> = {
     serialize: new Hook()
   }
@@ -71,7 +71,7 @@ export class Spine {
       const index = item.index
       const manifestItem = manifest[item.idref]
       const href = container.resolve(manifestItem.href)
-      const content = await archive.getText(href)
+      const document = await archive.getDocument(href)
 
       const section = new Section(
         inst,
@@ -81,7 +81,7 @@ export class Spine {
         manifestItem.type,
         item.properties,
         CFI.generateBase(spineNodeIndex, index, item.id),
-        content
+        document
       )
 
       inst.sections[index] = section
