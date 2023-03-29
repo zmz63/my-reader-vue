@@ -1,6 +1,7 @@
+import _path from 'path/posix'
 import { Hook } from '@common/hook'
 import { Queue } from '@common/queue'
-import { type Book, CFI, type CFIPath, Content, type Section } from '..'
+import { type Book, CFI, type CFIPath, Content, Searcher, type Section } from '..'
 import { Stage } from './stage'
 import { View } from './view'
 import { Views } from './views'
@@ -34,11 +35,6 @@ export type LocationData = {
   href: string
 }
 
-export type SearchData = {
-  seq: number
-  data: Map<number, Range[]>
-}
-
 export class PaginationRenderer {
   stage = new Stage()
 
@@ -47,6 +43,8 @@ export class PaginationRenderer {
   views: Views
 
   queue: Queue
+
+  searcher: Searcher
 
   options: PaginationOptions = {
     layout: 'relowable',
@@ -68,8 +66,6 @@ export class PaginationRenderer {
 
   location: Location
 
-  searchData: SearchData
-
   readonly hooks: Readonly<{
     location: Hook<(data: LocationData) => void>
   }> = {
@@ -80,6 +76,7 @@ export class PaginationRenderer {
     this.book = book
     this.views = new Views(this.stage.container)
     this.queue = new Queue(this)
+    this.searcher = new Searcher(this.book.spine, this.views)
     this.location = new Proxy<Location>(
       { range: null, cfi: '' },
       {
@@ -98,10 +95,6 @@ export class PaginationRenderer {
         }
       }
     )
-    this.searchData = {
-      seq: 0,
-      data: new Map()
-    }
 
     Object.assign(this.options, options)
   }
@@ -119,7 +112,7 @@ export class PaginationRenderer {
     // TODO
   }
 
-  async display(target?: number | string) {
+  async display(target?: number | string, range?: Range) {
     await this.book.unpacked
 
     let section: Section | undefined
@@ -142,8 +135,7 @@ export class PaginationRenderer {
     }
 
     if (!section) {
-      // TODO
-      throw new Error()
+      return
     }
 
     let view = this.views.find(section)
@@ -157,8 +149,9 @@ export class PaginationRenderer {
       this.moveTo(range)
       this.location.cfi = cfi
       this.location.range = range
-    }
-    if (id) {
+
+      return
+    } else if (id) {
       const node = (view.content as Content).document.querySelector(`#${id}`)
 
       if (node) {
@@ -167,15 +160,31 @@ export class PaginationRenderer {
         this.moveTo(range)
         this.location.range = range
         this.location.cfi = CFI.generate(view.section.cfiBase, range)
+
+        return
       }
-    } else {
-      this.stage.scrollTo(0, 0)
-      this.updateLocation(view)
+    } else if (range) {
+      const contentRange = view.rangeToRange(range)
+
+      if (contentRange) {
+        this.moveTo(contentRange)
+        this.location.range = contentRange
+        this.location.cfi = CFI.generate(view.section.cfiBase, range)
+
+        return
+      }
     }
+
+    this.stage.scrollTo(0, 0)
+    this.updateLocation(view)
   }
 
   async prev() {
     let view = this.views.get(0)
+
+    if (!view) {
+      return
+    }
 
     if (this.stage.x > -this.viewData.pageWidth * 0.5) {
       const prev = view.section.prev()
@@ -195,11 +204,11 @@ export class PaginationRenderer {
   }
 
   async next() {
-    if (!this.location) {
+    let view = this.views.get(0)
+
+    if (!view) {
       return
     }
-
-    let view = this.views.get(0)
 
     if (
       this.stage.containerWidth + this.stage.x <
@@ -218,45 +227,6 @@ export class PaginationRenderer {
     }
   }
 
-  *search(keyword: string, max = 100, index?: number) {
-    this.searchData.seq += 1
-    this.searchData.data.clear()
-
-    if (!keyword) {
-      return
-    }
-
-    keyword = keyword.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
-
-    const sections =
-      typeof index === 'number' ? [this.book.spine.sections[index]] : this.book.spine.sections
-    const seq = this.searchData.seq
-
-    for (const section of sections) {
-      const generator = section.search(keyword, max)
-      let result = generator.next()
-
-      while (!result.done) {
-        yield {
-          index: section.index,
-          data: result.value
-        }
-
-        if (seq !== this.searchData.seq) {
-          return
-        } else if (result.value.length) {
-          if (this.searchData.data.has(section.index)) {
-            void (this.searchData.data.get(section.index) as Range[]).push(...result.value)
-          } else {
-            this.searchData.data.set(section.index, [...result.value])
-          }
-        }
-
-        result = generator.next()
-      }
-    }
-  }
-
   async setView(section: Section) {
     const view = new View(section)
 
@@ -264,9 +234,19 @@ export class PaginationRenderer {
 
     await view.render()
 
+    view.hooks.anchorClick.register(href => {
+      if (href.startsWith('book-cache:///')) {
+        const path = _path.relative(this.book.cachePath, href.slice('book-cache:///'.length))
+
+        this.display(path)
+      }
+    })
+
     this.initViewContent(view)
 
     this.stage.setSize(view.width, this.stage.height)
+
+    this.searcher.mark(view)
 
     return view
   }

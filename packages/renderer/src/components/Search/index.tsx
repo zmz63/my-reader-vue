@@ -9,6 +9,10 @@ const searchBoxProps = {
   width: {
     type: [Number, String] as PropType<number | string>,
     default: '100%'
+  },
+  placeholder: {
+    type: String,
+    default: ''
   }
 } as const
 

@@ -1,6 +1,16 @@
-import { type PropType, defineComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import {
+  type PropType,
+  type Raw,
+  defineComponent,
+  markRaw,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref
+} from 'vue'
 import { NInput, NScrollbar } from 'naive-ui'
-import type { Book, PaginationRenderer, TocItem } from '@preload/epub'
+import { clamp, debounce } from 'lodash'
+import type { Book, PaginationRenderer, SearchResult, TocItem } from '@preload/epub'
 import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
 
@@ -145,12 +155,12 @@ export default defineComponent({
     }
 
     const createSearchContent = () => {
-      const searchResult = ref<Range[][]>([])
+      const searchResult = ref<[number, Raw<Range>[]][]>([])
       const indexMap: Map<number, number> = new Map()
 
-      let generator: Generator<{ index: number; data: Range[] }, void, unknown>
+      let generator: Generator<SearchResult, void, unknown>
 
-      const handleSearch = (content: string) => {
+      const handleSearch = debounce((content: string) => {
         searchResult.value = []
         indexMap.clear()
 
@@ -159,18 +169,20 @@ export default defineComponent({
         }
 
         if (props.renderer) {
-          generator = props.renderer.search(content, 100)
+          generator = props.renderer.searcher.search(content, 100)
           let result = generator.next()
 
           const task = () => {
             requestAnimationFrame(() => {
               if (!result.done) {
-                if (result.value.data.length) {
-                  const index = indexMap.get(result.value.index)
-                  if (index) {
-                    searchResult.value[index].push(...result.value.data)
+                for (const [index, ranges] of result.value) {
+                  if (indexMap.has(index)) {
+                    searchResult.value[indexMap.get(index) as number][1].push(
+                      ...ranges.map(range => markRaw(range))
+                    )
                   } else {
-                    searchResult.value.push([...result.value.data])
+                    indexMap.set(index, searchResult.value.length)
+                    searchResult.value.push([index, ranges.map(range => markRaw(range))])
                   }
                 }
 
@@ -183,19 +195,26 @@ export default defineComponent({
 
           task()
         }
-      }
+      }, 300)
 
       const splitResult = (range: Range, index: number) => {
+        if (range.endOffset <= range.startOffset) {
+          return
+        }
+
         const text = range.startContainer.textContent as string
-        const size = 8
-        const left = range.startOffset > size ? range.startOffset - size : 0
-        const right = text.length - range.endOffset > size ? range.endOffset + size : text.length
+        const size = clamp(4 * (4 - Math.log(range.endOffset - range.startOffset)), 1, 12)
+        const offsetLeft = Math.round(size / 3)
+        const offsetRight = Math.round((size * 2) / 3)
+        const left = range.startOffset > offsetLeft ? range.startOffset - offsetLeft : 0
+        const right =
+          text.length - range.endOffset > offsetRight ? range.endOffset + offsetRight : text.length
 
         return (
-          <div onClick={() => props.renderer?.display(index)}>
-            {text.slice(left, range.startOffset)}
+          <div class="result-item" onClick={() => props.renderer?.display(index, range)}>
+            {`${left > 0 ? '…' : ''}${text.slice(left, range.startOffset)}`}
             <b>{text.slice(range.startOffset, range.endOffset)}</b>
-            {text.slice(range.endOffset, right)}
+            {`${text.slice(range.endOffset, right)}${right < text.length ? '…' : ''}`}
           </div>
         )
       }
@@ -203,11 +222,11 @@ export default defineComponent({
       return {
         header: () => (
           <div class="search-header">
-            <NInput size="small" onInput={handleSearch} />
+            <NInput size="small" placeholder="搜索" onInput={handleSearch} />
             <div class="result">
               {searchResult.value.length
                 ? `找到 ${searchResult.value.reduce(
-                    (prev, ranges) => prev + ranges.length,
+                    (prev, [_, ranges]) => prev + ranges.length,
                     0
                   )} 个结果`
                 : null}
@@ -216,7 +235,7 @@ export default defineComponent({
         ),
         content: () => (
           <NScrollbar class="search-content">
-            {searchResult.value.map((ranges, index) => (
+            {searchResult.value.map(([index, ranges]) => (
               <div>{ranges.map(range => splitResult(range, index))}</div>
             ))}
           </NScrollbar>

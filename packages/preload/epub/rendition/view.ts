@@ -1,3 +1,4 @@
+import { Highlight, Mark, Pane } from 'marks-pane'
 import { Defer } from '@common/defer'
 import { Hook } from '@common/hook'
 import type { Section } from '..'
@@ -19,6 +20,10 @@ export class View {
   writingMode = ''
 
   content: Content | null = null
+
+  pane: Pane
+
+  marks: Map<Range, Mark> = new Map()
 
   loaded: Promise<this>
 
@@ -48,11 +53,14 @@ export class View {
     this.wrapper = this.createWrapper()
     this.iframe = this.createIframe()
 
+    this.pane = new Pane(this.wrapper, this.wrapper)
+
     this.observer = new ResizeObserver(entries => {
       if (entries[0]) {
         const { width, height } = entries[0].contentRect
         console.log('resize observer')
         this.hooks.resize.trigger(width, height)
+        this.pane.render()
       }
     })
 
@@ -151,6 +159,78 @@ export class View {
     return this.loaded
   }
 
+  rangeToRange(range: Range) {
+    if (this.content) {
+      if (range.commonAncestorContainer.getRootNode() === this.content.document) {
+        return range
+      } else if (range.commonAncestorContainer.getRootNode() === this.section.document) {
+        const contentRange = this.content.document.createRange()
+
+        const map = (node: Node) => {
+          const indexes: number[] = []
+          let currentNode = node
+
+          while (
+            currentNode &&
+            currentNode.parentNode &&
+            currentNode.parentNode.nodeType !== Node.DOCUMENT_NODE
+          ) {
+            const index = Array.prototype.indexOf.call(
+              currentNode.parentNode.childNodes,
+              currentNode
+            )
+            indexes.push(index)
+            currentNode = currentNode.parentNode
+          }
+
+          currentNode = (this.content as Content).root
+          for (let i = indexes.length - 1; i >= 0; i--) {
+            currentNode = currentNode.childNodes.item(indexes[i])
+          }
+
+          return currentNode
+        }
+
+        try {
+          contentRange.setStart(map(range.startContainer), range.startOffset)
+          contentRange.setEnd(map(range.endContainer), range.endOffset)
+        } catch (error) {
+          console.log('rangeToRange error', error)
+          return null
+        }
+
+        return contentRange
+      }
+    }
+
+    return null
+  }
+
+  mark(range: Range, className: string) {
+    if (this.content) {
+      let contentRange: Range | null = range
+
+      if (range.commonAncestorContainer.getRootNode() !== this.content.document) {
+        contentRange = this.rangeToRange(range)
+      }
+
+      if (contentRange) {
+        const mark = new Highlight(contentRange, className)
+        this.pane.addMark(mark)
+        this.marks.set(range, mark)
+      }
+    }
+  }
+
+  unMark(range: Range) {
+    const mark = this.marks.get(range)
+
+    if (mark) {
+      this.pane.removeMark(mark)
+      this.marks.delete(range)
+    }
+  }
+
   hide() {
     this.hidden = true
 
@@ -200,6 +280,8 @@ export class View {
   }
 
   destroy() {
+    this.pane.element.remove()
+    this.marks.clear()
     this.observer.disconnect()
     this.content?.destroy()
   }

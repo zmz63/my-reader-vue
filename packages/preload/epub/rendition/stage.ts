@@ -62,8 +62,8 @@ export class Stage {
 
     container.style.width = '0px'
     container.style.height = '0px'
-    container.style.wordSpacing = '0'
-    container.style.lineHeight = '0'
+    container.style.wordSpacing = '0px'
+    container.style.lineHeight = '0px'
     container.style.verticalAlign = 'top'
     container.style.position = 'relative'
     container.style.overflow = 'hidden'

@@ -5,7 +5,7 @@ export function indexOfNode(node: Node, nodeType: number) {
   let i = -1
   for (const child of children) {
     if (child.nodeType === nodeType) {
-      i++
+      i += 1
       if (child === node) {
         return i
       }
@@ -21,7 +21,7 @@ export function getNodeByIndex(parent: ParentNode, index: number, nodeType: numb
   let i = -1
   for (const child of children) {
     if (child.nodeType === nodeType) {
-      i++
+      i += 1
       if (i === index) {
         return child
       } else if (i > index) {

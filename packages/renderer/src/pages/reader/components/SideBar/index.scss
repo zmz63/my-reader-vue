@@ -64,12 +64,26 @@
   .search-header {
     flex-shrink: 0;
     padding: 0 12px;
-    padding-bottom: 24px;
+
+    .result {
+      display: flex;
+      height: 24px;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: var(--font-size-tiny);
+    }
   }
 
   .search-content {
     box-sizing: border-box;
-    padding: 0 12px;
+
+    .result-item {
+      padding: 4px 12px;
+
+      &:hover {
+        background-color: rgb(207 207 207 / 36.3%);
+      }
+    }
   }
 
   .tag {

@@ -89,38 +89,6 @@ export class Section {
     return null
   }
 
-  *search(keyword: string, max: number) {
-    const treeWalker = this.document.createTreeWalker(this.document.body, NodeFilter.SHOW_TEXT, {
-      acceptNode: node =>
-        node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
-    })
-
-    let ranges: Range[] = []
-
-    let node: Node | null
-    while ((node = treeWalker.nextNode())) {
-      const result = (node.textContent as string).matchAll(new RegExp(keyword, 'g'))
-      for (const match of result) {
-        if (match.index !== undefined) {
-          const range = this.document.createRange()
-          range.setStart(node, match.index)
-          range.setEnd(node, match.index + keyword.length)
-
-          ranges.push(range)
-
-          if (ranges.length >= max) {
-            const result = ranges
-            ranges = []
-
-            yield result
-          }
-        }
-      }
-    }
-
-    yield ranges
-  }
-
   destroy() {
     if (this.blobUrl) {
       URL.revokeObjectURL(this.blobUrl)
