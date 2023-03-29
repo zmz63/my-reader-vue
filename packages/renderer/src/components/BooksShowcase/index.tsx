@@ -7,7 +7,7 @@ import BookCards from '../BookCards'
 import BookList from '@/components/BookList'
 import './index.scss'
 
-export type DisplayMode = 'card' | 'list'
+export type DisplayMode = 'list' | 'card'
 
 const booksShowcaseProps = {
   list: {
@@ -21,7 +21,7 @@ export default defineComponent({
   setup(props, { slots }) {
     const router = useRouter()
 
-    const displayMode = ref<DisplayMode>('card')
+    const displayMode = ref<DisplayMode>('list')
 
     const switchDisplayMode = (mode: DisplayMode) => {
       if (mode === displayMode.value) {
@@ -42,10 +42,10 @@ export default defineComponent({
 
     const booksRenderer = () => {
       switch (displayMode.value) {
-        case 'card':
-          return <BookCards list={props.list} onOpen={openBook} />
         case 'list':
           return <BookList list={props.list} onOpen={openBook} />
+        case 'card':
+          return <BookCards list={props.list} onOpen={openBook} />
         default:
           break
       }
@@ -56,16 +56,6 @@ export default defineComponent({
         <div class="books-showcase-header">
           <div class="slot-wrapper">{slots.header ? slots.header() : null}</div>
           <div class="switch-wrapper">
-            <NButton text focusable={false} onClick={() => switchDisplayMode('card')}>
-              <SVGIcon
-                size={24}
-                name={
-                  displayMode.value === 'card'
-                    ? 'ic_fluent_textbox_align_bottom_rotate_90_24_filled'
-                    : 'ic_fluent_textbox_align_bottom_rotate_90_24_regular'
-                }
-              />
-            </NButton>
             <NButton text focusable={false} onClick={() => switchDisplayMode('list')}>
               <SVGIcon
                 size={24}
@@ -73,6 +63,16 @@ export default defineComponent({
                   displayMode.value === 'list'
                     ? 'ic_fluent_apps_list_24_filled'
                     : 'ic_fluent_apps_list_24_regular'
+                }
+              />
+            </NButton>
+            <NButton text focusable={false} onClick={() => switchDisplayMode('card')}>
+              <SVGIcon
+                size={24}
+                name={
+                  displayMode.value === 'card'
+                    ? 'ic_fluent_textbox_align_bottom_rotate_90_24_filled'
+                    : 'ic_fluent_textbox_align_bottom_rotate_90_24_regular'
                 }
               />
             </NButton>

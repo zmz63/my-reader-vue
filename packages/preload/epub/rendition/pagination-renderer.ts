@@ -68,8 +68,10 @@ export class PaginationRenderer {
 
   readonly hooks: Readonly<{
     location: Hook<(data: LocationData) => void>
+    select: Hook<(view: View, section: Selection) => void>
   }> = {
-    location: new Hook()
+    location: new Hook(),
+    select: new Hook()
   }
 
   constructor(book: Book, options?: Partial<PaginationOptions>) {
@@ -240,6 +242,12 @@ export class PaginationRenderer {
 
         this.display(path)
       }
+    })
+    view.hooks.select.register(selection => {
+      // console.log(selection)
+      // const cfi = CFI.generate(section.cfiBase, selection.getRangeAt(0))
+      // console.log(cfi, CFI.parse(cfi))
+      this.hooks.select.trigger(view, selection)
     })
 
     this.initViewContent(view)

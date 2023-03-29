@@ -155,7 +155,10 @@ export default defineComponent({
     }
 
     const createSearchContent = () => {
+      const keyword = ref('')
+
       const searchResult = ref<[number, Raw<Range>[]][]>([])
+
       const indexMap: Map<number, number> = new Map()
 
       let generator: Generator<SearchResult, void, unknown>
@@ -222,11 +225,16 @@ export default defineComponent({
       return {
         header: () => (
           <div class="search-header">
-            <NInput size="small" placeholder="搜索" onInput={handleSearch} />
+            <NInput
+              size="small"
+              placeholder="搜索"
+              v-model:value={keyword.value}
+              onInput={handleSearch}
+            />
             <div class="result">
               {searchResult.value.length
                 ? `找到 ${searchResult.value.reduce(
-                    (prev, [_, ranges]) => prev + ranges.length,
+                    (prev, [, ranges]) => prev + ranges.length,
                     0
                   )} 个结果`
                 : null}

@@ -1,4 +1,4 @@
-import { Highlight, Mark, Pane } from 'marks-pane'
+import { Highlight, type Mark, Pane } from 'marks-pane'
 import { Defer } from '@common/defer'
 import { Hook } from '@common/hook'
 import type { Section } from '..'
@@ -149,6 +149,7 @@ export class View {
         const selection = document.getSelection()
 
         if (selection) {
+          console.log('onselectionchange')
           this.hooks.select.trigger(selection)
         }
       }

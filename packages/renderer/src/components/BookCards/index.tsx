@@ -37,7 +37,7 @@ export default defineComponent({
               }}
             </Image>
             <div class="title-wrapper" onClick={() => emit('open', item.rowid)}>
-              <div class="title">{item.title}</div>
+              <div class="ellipsis title">{item.title}</div>
             </div>
           </div>
         ))}

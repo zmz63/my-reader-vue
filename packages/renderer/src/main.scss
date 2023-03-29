@@ -10,6 +10,12 @@ body {
   background-color: var(--app-color);
 }
 
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .book-mark-highlight {
   &-search {
     fill: rgb(255 208 0);

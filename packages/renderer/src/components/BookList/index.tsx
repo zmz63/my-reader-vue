@@ -38,11 +38,13 @@ export default defineComponent({
             </Image>
             <div class="meta-wrapper">
               <div class="top">
-                <div class="text title" onClick={() => emit('open', item.rowid)}>
+                <div class="ellipsis title" onClick={() => emit('open', item.rowid)}>
                   {item.title}
                 </div>
-                <div class="text creator">{item.creator ? item.creator : '佚名'}</div>
-                <div class="text publisher">{item.publisher ? item.publisher : '未知出版社'}</div>
+                <div class="ellipsis creator">{item.creator ? item.creator : '佚名'}</div>
+                <div class="ellipsis publisher">
+                  {item.publisher ? item.publisher : '未知出版社'}
+                </div>
                 <div class="description">{item.description ? item.description : '暂无简介'}</div>
               </div>
               <div class="bottom">

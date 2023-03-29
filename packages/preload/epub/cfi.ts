@@ -45,8 +45,7 @@ export class CFI {
   }
 
   static parsePath(fragment: string) {
-    const ranges = fragment.split(',')
-    const parts = ranges[0].split(':')
+    const parts = fragment.split(':')
 
     const path: CFIPath = {
       steps: this.parseSteps(parts[0])
@@ -91,11 +90,24 @@ export class CFI {
     const parts = fragment.slice(8, fragment.length - 1).split('!')
 
     const base = this.parseBase(parts[0])
-    const path = this.parsePath(parts[1])
+    const ranges = parts[1].split(',')
 
-    return {
-      base,
-      path
+    if (ranges.length === 3) {
+      const startPath = this.parsePath(ranges[0] + ranges[1])
+      const endPath = this.parsePath(ranges[0] + ranges[2])
+
+      return {
+        base,
+        path: startPath,
+        endPath
+      }
+    } else {
+      const path = this.parsePath(ranges[0])
+
+      return {
+        base,
+        path
+      }
     }
   }
 
@@ -173,19 +185,57 @@ export class CFI {
   }
 
   static generate(base: string, range: Range) {
-    const path = this.generatePath(
-      range.startContainer,
-      range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : undefined
-    )
+    if (range.collapsed) {
+      const path = this.generatePath(
+        range.startContainer,
+        range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : undefined
+      )
 
-    const fragments = []
+      const fragments = []
 
-    fragments.push('epubcfi(')
-    fragments.push(base)
-    fragments.push('!')
-    fragments.push(this.pathToString(path))
-    fragments.push(')')
+      fragments.push('epubcfi(')
+      fragments.push(base)
+      fragments.push('!')
+      fragments.push(this.pathToString(path))
+      fragments.push(')')
 
-    return fragments.join('')
+      return fragments.join('')
+    } else {
+      const startPath = this.generatePath(
+        range.startContainer,
+        range.startContainer.nodeType === Node.TEXT_NODE ? range.startOffset : undefined
+      )
+      const endPath = this.generatePath(
+        range.endContainer,
+        range.endContainer.nodeType === Node.TEXT_NODE ? range.endOffset : undefined
+      )
+
+      const startFragment = this.pathToString(startPath)
+      const endFragment = this.pathToString(endPath)
+      let index = 0
+      const length = Math.min(startFragment.length, endFragment.length)
+      while (index < length) {
+        if (startFragment[index] !== endFragment[index]) {
+          index -= 1
+          break
+        } else {
+          index += 1
+        }
+      }
+
+      const fragments = []
+
+      fragments.push('epubcfi(')
+      fragments.push(base)
+      fragments.push('!')
+      fragments.push(startFragment.slice(0, index))
+      fragments.push(',')
+      fragments.push(startFragment.slice(index))
+      fragments.push(',')
+      fragments.push(endFragment.slice(index))
+      fragments.push(')')
+
+      return fragments.join('')
+    }
   }
 }

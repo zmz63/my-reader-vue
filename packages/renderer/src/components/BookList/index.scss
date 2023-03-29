@@ -13,6 +13,7 @@
 
     .meta-wrapper {
       display: flex;
+      overflow: hidden;
       flex-direction: column;
       flex-grow: 1;
       justify-content: space-between;
@@ -29,18 +30,13 @@
         justify-content: flex-end;
       }
 
-      .text {
-        overflow: hidden;
-        cursor: pointer;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
       .title {
+        width: 100%;
         font-size: var(--font-size-huge);
       }
 
       .creator {
+        width: 100%;
         color: var(--text-color-3);
 
         &:hover {
@@ -50,6 +46,7 @@
       }
 
       .publisher {
+        width: 100%;
         color: var(--text-color-3);
 
         &:hover {

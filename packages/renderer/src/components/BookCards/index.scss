@@ -22,12 +22,9 @@
       justify-content: center;
 
       .title {
-        overflow: hidden;
         padding-top: 12px;
         cursor: pointer;
         font-size: var(--font-size-huge);
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
     }
 
@@ -43,12 +40,7 @@
         box-shadow: var(--box-shadow-1);
         cursor: pointer;
         object-fit: cover;
-        transition: transform 0.3s ease-in-out;
         -webkit-user-drag: none;
-
-        &:hover {
-          transform: scale(1.03);
-        }
       }
 
       .cover-placeholder {
@@ -60,11 +52,6 @@
         box-shadow: var(--box-shadow-1);
         color: var(--text-color-1);
         cursor: pointer;
-        transition: transform 0.3s ease-in-out;
-
-        &:hover {
-          transform: scale(1.03);
-        }
 
         .cover-title {
           padding: 20px;

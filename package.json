@@ -23,6 +23,7 @@
     "@typescript-eslint/parser": "^5.43.0",
     "@vitejs/plugin-vue-jsx": "^2.1.1",
     "better-sqlite3": "^8.2.0",
+    "date-fns": "^2.29.3",
     "electron": "^20.3.12",
     "electron-builder": "^23.6.0",
     "eslint": "^8.27.0",

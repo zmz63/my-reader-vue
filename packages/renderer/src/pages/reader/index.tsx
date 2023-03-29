@@ -16,7 +16,11 @@ export default defineComponent({
 
     const layoutStore = useLayoutStore()
 
+    const pageRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
+
     const containerRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
+
+    const isFullScreen = ref(false)
 
     const { path, id } = route.query as Partial<{ path: string; id: string }>
 
@@ -28,6 +32,18 @@ export default defineComponent({
       location: {} as Partial<LocationData>,
       chapter: ''
     })
+
+    const handleFullScreen = async () => {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen()
+        isFullScreen.value = false
+      } else {
+        await pageRef.value.requestFullscreen({
+          navigationUI: 'hide'
+        })
+        isFullScreen.value = true
+      }
+    }
 
     const handleUpdateLocation = (location: LocationData) => {
       if (bookData.id && location.cfi !== bookData.location.cfi) {
@@ -130,9 +146,9 @@ export default defineComponent({
 
           layoutStore.topBarSlot = () => (
             <div class="top-bar-slot">
-              <div class="title">{bookData.metadata.title}</div>
+              <div class="ellipsis">{bookData.metadata.title}</div>
               <div class="divider">-</div>
-              <div class="creator">{bookData.metadata.creator}</div>
+              <div class="ellipsis">{bookData.metadata.creator}</div>
             </div>
           )
         }
@@ -195,7 +211,7 @@ export default defineComponent({
     }
 
     return () => (
-      <div class="reader-page">
+      <div ref={pageRef} class="reader-page">
         <SideBar
           book={bookData.book}
           renderer={bookData.renderer}
@@ -221,6 +237,22 @@ export default defineComponent({
               </NButton>
               <NButton class="button" quaternary size="small" focusable={false}>
                 <SVGIcon size={24} name="ic_fluent_settings_24_filled" />
+              </NButton>
+              <NButton
+                class="button"
+                quaternary
+                size="small"
+                focusable={false}
+                onClick={handleFullScreen}
+              >
+                <SVGIcon
+                  size={24}
+                  name={
+                    isFullScreen.value
+                      ? 'ic_fluent_arrow_minimize_24_filled'
+                      : 'ic_fluent_arrow_expand_24_filled'
+                  }
+                />
               </NButton>
             </div>
           </div>

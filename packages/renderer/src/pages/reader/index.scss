@@ -114,19 +114,7 @@
   height: 100%;
   align-items: center;
 
-  .title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .divider {
     margin: 0 4px;
-  }
-
-  .creator {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 }
