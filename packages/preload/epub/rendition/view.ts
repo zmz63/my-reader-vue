@@ -160,6 +160,22 @@ export class View {
     return this.loaded
   }
 
+  rangeToViewportRect(range: Range) {
+    if (this.content && range.commonAncestorContainer.getRootNode() === this.content.document) {
+      const rect = range.getBoundingClientRect()
+      const containerRect = this.wrapper.getBoundingClientRect()
+
+      return new DOMRect(
+        rect.x + containerRect.x,
+        rect.y + containerRect.y,
+        rect.width,
+        rect.height
+      )
+    }
+
+    return null
+  }
+
   rangeToRange(range: Range) {
     if (this.content) {
       if (range.commonAncestorContainer.getRootNode() === this.content.document) {

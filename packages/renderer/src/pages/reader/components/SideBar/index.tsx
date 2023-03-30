@@ -133,14 +133,16 @@ export default defineComponent({
     const createNavigationContent = () => {
       const generateNode = (items: TocItem[], deep = 0) =>
         items.map(item => (
-          <div
-            style={`padding-left: ${deep * 4}px`}
-            onClick={event => {
-              props.renderer?.display(item.href)
-              event.stopPropagation()
-            }}
-          >
-            <div class="navigation-item">{item.label}</div>
+          <div style={`padding-left: ${deep * 4}px`}>
+            <div
+              class="navigation-item"
+              onClick={event => {
+                props.renderer?.display(item.href)
+                event.stopPropagation()
+              }}
+            >
+              {item.label}
+            </div>
             {item.subitems.length ? <div>{generateNode(item.subitems, deep + 1)}</div> : null}
           </div>
         ))
@@ -309,17 +311,16 @@ export default defineComponent({
           onMouseup={handleMouseup}
         />
         <div class="content-wrapper">
-          {sideBarData.key ? (
+          {sideBarData.key && (
             <>
               <div class="content-header">
                 <div class="label">{sideBarItems[sideBarData.key].label}</div>
-                {sideBarItems[sideBarData.key].header
-                  ? (sideBarItems[sideBarData.key].header as () => JSX.Element)()
-                  : null}
+                {sideBarItems[sideBarData.key].header &&
+                  (sideBarItems[sideBarData.key].header as () => JSX.Element)()}
               </div>
               <div class="content-view">{sideBarItems[sideBarData.key].content()}</div>
             </>
-          ) : null}
+          )}
         </div>
       </div>
     )

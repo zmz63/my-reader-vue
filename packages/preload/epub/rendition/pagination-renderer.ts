@@ -69,9 +69,11 @@ export class PaginationRenderer {
   readonly hooks: Readonly<{
     location: Hook<(data: LocationData) => void>
     select: Hook<(view: View, section: Selection) => void>
+    cancelSelect: Hook<(view: View, section: Selection) => void>
   }> = {
     location: new Hook(),
-    select: new Hook()
+    select: new Hook(),
+    cancelSelect: new Hook()
   }
 
   constructor(book: Book, options?: Partial<PaginationOptions>) {
@@ -244,10 +246,11 @@ export class PaginationRenderer {
       }
     })
     view.hooks.select.register(selection => {
-      // console.log(selection)
-      // const cfi = CFI.generate(section.cfiBase, selection.getRangeAt(0))
-      // console.log(cfi, CFI.parse(cfi))
-      this.hooks.select.trigger(view, selection)
+      if (selection.isCollapsed) {
+        this.hooks.cancelSelect.trigger(view, selection)
+      } else {
+        this.hooks.select.trigger(view, selection)
+      }
     })
 
     this.initViewContent(view)
@@ -276,7 +279,7 @@ export class PaginationRenderer {
       content.getTextHorizontalStartRange(element, start, end) ||
       content.getNodeContentsRange(element)
 
-    range.collapse(true)
+    range.collapse(false)
 
     this.location.range = range
     this.location.cfi = range ? CFI.generate(view.section.cfiBase, range) : ''
@@ -313,6 +316,10 @@ export class PaginationRenderer {
       'max-height': `${100 - 25 / 6}vh`,
       'page-break-inside': 'avoid',
       'break-inside': 'avoid'
+    })
+
+    content.addStylesheetRule('*::selection', {
+      'background-color': 'pink'
     })
 
     this.updateViewLayout(view)

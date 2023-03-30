@@ -68,7 +68,7 @@ export class CFI {
     }
 
     if (currentNode) {
-      range.selectNodeContents(currentNode)
+      range.setStart(currentNode, path.offset ? path.offset : 0)
     } else {
       range.selectNodeContents(document.body)
     }

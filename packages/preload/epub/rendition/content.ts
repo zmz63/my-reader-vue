@@ -74,11 +74,11 @@ export class Content {
           while (left < right) {
             const middle = Math.floor((left + right) / 2)
             range = this.document.createRange()
-            range.setStart(node, left)
-            range.setEnd(node, middle)
+            range.setStart(node, middle)
+            range.setEnd(node, right)
 
             const rect = range.getBoundingClientRect()
-            if (rect.right < start) {
+            if (rect.left < start) {
               left = middle + 1
             } else {
               right = middle - 1
@@ -88,7 +88,7 @@ export class Content {
 
         return range
       } else if (rect.left > end) {
-        return null
+        break
       }
     }
 

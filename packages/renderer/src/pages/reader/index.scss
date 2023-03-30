@@ -3,6 +3,11 @@
   width: 100%;
   height: 100%;
 
+  .popover-content {
+    display: flex;
+    gap: 8px;
+  }
+
   &-container {
     position: absolute;
     z-index: 1;
@@ -67,11 +72,6 @@
         justify-content: flex-end;
         padding: 0 16px;
         gap: 8px;
-      }
-
-      .button {
-        padding: 0 2px;
-        color: var(--text-color-3);
       }
     }
 

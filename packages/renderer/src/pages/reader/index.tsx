@@ -1,7 +1,8 @@
 import { type Raw, defineComponent, markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton } from 'naive-ui'
-import type { Book, LocationData, Metadata, PaginationRenderer, TocItem } from '@preload/epub'
+import { NButton, NPopover } from 'naive-ui'
+import { debounce } from 'lodash'
+import type { Book, LocationData, Metadata, PaginationRenderer, TocItem, View } from '@preload/epub'
 import type { BookData } from '@preload/channel/db'
 import { useLayoutStore } from '@/stores/layout'
 import SVGIcon from '@/components/SVGIcon'
@@ -45,6 +46,57 @@ export default defineComponent({
       }
     }
 
+    const popoverData = reactive({
+      show: false,
+      placement: 'bottom' as 'bottom' | 'top',
+      x: 0,
+      y: 0
+    })
+
+    let currentSelection: Selection | null = null
+
+    const handleSelect = debounce((view: View, selection: Selection) => {
+      const range = selection.getRangeAt(0)
+      const rect = view.rangeToViewportRect(range)
+      console.log(view, range, rect)
+
+      if (rect) {
+        const pageRect = pageRef.value.getBoundingClientRect()
+
+        currentSelection = selection
+        popoverData.show = true
+        popoverData.x = rect.x + rect.width / 2
+
+        if (rect.bottom + 100 >= pageRect.bottom) {
+          if (rect.top - 100 <= pageRect.top) {
+            popoverData.y = rect.y + rect.height / 2
+            popoverData.placement = 'bottom'
+          } else {
+            popoverData.y = rect.top
+            popoverData.placement = 'top'
+          }
+        } else {
+          popoverData.y = rect.bottom
+          popoverData.placement = 'bottom'
+        }
+        if (rect.right + 50 >= pageRect.right) {
+          popoverData.placement += '-end'
+        } else if (rect.left - 50 <= pageRect.left) {
+          popoverData.placement += '-start'
+        }
+        // view.mark(range, 'book-mark-highlight-search')
+      }
+    }, 500)
+
+    const handleCancelSelect = () => {
+      if (currentSelection) {
+        currentSelection.empty()
+        currentSelection = null
+      }
+
+      popoverData.show = false
+    }
+
     const handleUpdateLocation = (location: LocationData) => {
       if (bookData.id && location.cfi !== bookData.location.cfi) {
         dbChannel.updateBook(bookData.id, {
@@ -73,6 +125,8 @@ export default defineComponent({
       }
 
       bookData.location = location
+
+      handleCancelSelect()
     }
 
     const updateAccessTime = () => {
@@ -171,6 +225,9 @@ export default defineComponent({
         bookData.renderer.display(location)
 
         bookData.renderer.hooks.location.register(handleUpdateLocation)
+        bookData.renderer.hooks.select.register(handleSelect)
+        bookData.renderer.hooks.cancelSelect.register(handleCancelSelect)
+        bookData.renderer.stage.hooks.resize.register(handleCancelSelect)
 
         updateAccessTime()
       } else {
@@ -202,7 +259,7 @@ export default defineComponent({
       }
     }
 
-    const handleSideTranslate = (value: number) => {
+    const handleSideBarTranslate = (value: number) => {
       if (value) {
         containerRef.value.style.width = `calc(100% - ${value}px)`
       } else {
@@ -212,10 +269,28 @@ export default defineComponent({
 
     return () => (
       <div ref={pageRef} class="reader-page">
+        <NPopover
+          to={pageRef.value}
+          show={popoverData.show}
+          x={popoverData.x}
+          y={popoverData.y}
+          flip={false}
+          trigger="manual"
+          placement={popoverData.placement}
+        >
+          <div class="popover-content">
+            <NButton text focusable={false}>
+              <SVGIcon size={26} name="ic_fluent_note_edit_24_filled" />
+            </NButton>
+            <NButton text focusable={false}>
+              <SVGIcon size={26} name="ic_fluent_highlight_24_filled" />
+            </NButton>
+          </div>
+        </NPopover>
         <SideBar
           book={bookData.book}
           renderer={bookData.renderer}
-          onTranslate={handleSideTranslate}
+          onTranslate={handleSideBarTranslate}
         />
         <div ref={containerRef} class="reader-page-container">
           <div class="top-bar">
@@ -223,9 +298,7 @@ export default defineComponent({
             <div class="center">{bookData.chapter}</div>
             <div class="right">
               <NButton
-                class="button"
-                quaternary
-                size="small"
+                text
                 focusable={false}
                 onClick={() =>
                   router.replace({
@@ -235,16 +308,10 @@ export default defineComponent({
               >
                 <SVGIcon size={24} name="ic_fluent_home_24_filled" />
               </NButton>
-              <NButton class="button" quaternary size="small" focusable={false}>
+              <NButton text focusable={false}>
                 <SVGIcon size={24} name="ic_fluent_settings_24_filled" />
               </NButton>
-              <NButton
-                class="button"
-                quaternary
-                size="small"
-                focusable={false}
-                onClick={handleFullScreen}
-              >
+              <NButton text focusable={false} onClick={handleFullScreen}>
                 <SVGIcon
                   size={24}
                   name={

@@ -40,7 +40,7 @@ export default defineComponent({
 
     return () => (
       <div onClick={() => emit('click')}>
-        {state.value === 0 ? (slots.placeholder ? slots.placeholder() : null) : null}
+        {state.value === 0 ? slots.placeholder && slots.placeholder() : null}
         <img
           class={props.imageClass}
           src={url.value}
@@ -49,11 +49,7 @@ export default defineComponent({
           onError={handleError}
         />
         {state.value === 2
-          ? slots.error
-            ? slots.error()
-            : slots.placeholder
-            ? slots.placeholder()
-            : null
+          ? (slots.error && slots.error()) || (slots.placeholder && slots.placeholder())
           : null}
       </div>
     )
