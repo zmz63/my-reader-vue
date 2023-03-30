@@ -58,7 +58,9 @@ export class View {
     this.observer = new ResizeObserver(entries => {
       if (entries[0]) {
         const { width, height } = entries[0].contentRect
-        console.log('resize observer')
+        this.width = width
+        this.height = height
+        console.log('view resize', width, height)
         this.hooks.resize.trigger(width, height)
         this.pane.render()
       }
@@ -70,8 +72,6 @@ export class View {
   private createWrapper() {
     const wrapper = document.createElement('div')
 
-    wrapper.classList.add('epub-view-wrapper')
-
     wrapper.style.width = '0px'
     wrapper.style.height = '0px'
     wrapper.style.position = 'relative'
@@ -82,8 +82,6 @@ export class View {
 
   private createIframe() {
     const iframe = document.createElement('iframe')
-
-    iframe.classList.add('epub-view')
 
     iframe.style.overflow = 'hidden'
     iframe.style.border = 'none'
@@ -272,7 +270,6 @@ export class View {
       this.wrapper.style.width = `${width}px`
       this.iframe.style.width = `${width}px`
     } else {
-      this.width = 0
       this.wrapper.style.width = ''
       this.iframe.style.width = ''
     }
@@ -282,7 +279,6 @@ export class View {
       this.wrapper.style.height = `${height}px`
       this.iframe.style.height = `${height}px`
     } else {
-      this.height = 0
       this.wrapper.style.height = ''
       this.iframe.style.height = ''
     }

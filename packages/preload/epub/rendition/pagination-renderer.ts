@@ -70,10 +70,14 @@ export class PaginationRenderer {
     location: Hook<(data: LocationData) => void>
     select: Hook<(view: View, section: Selection) => void>
     cancelSelect: Hook<(view: View, section: Selection) => void>
+    beforeRender: Hook<() => void>
+    rendered: Hook<() => void>
   }> = {
     location: new Hook(),
     select: new Hook(),
-    cancelSelect: new Hook()
+    cancelSelect: new Hook(),
+    beforeRender: new Hook(),
+    rendered: new Hook()
   }
 
   constructor(book: Book, options?: Partial<PaginationOptions>) {
@@ -232,6 +236,8 @@ export class PaginationRenderer {
   }
 
   async setView(section: Section) {
+    this.hooks.beforeRender.trigger()
+
     const view = new View(section)
 
     this.views.set(0, view)
@@ -253,11 +259,13 @@ export class PaginationRenderer {
       }
     })
 
-    this.initViewContent(view)
+    const [width, height] = this.initViewContent(view)
 
-    this.stage.setSize(view.width, this.stage.height)
+    this.stage.setSize(width, height)
 
     this.searcher.mark(view)
+
+    this.hooks.rendered.trigger()
 
     return view
   }
@@ -289,7 +297,7 @@ export class PaginationRenderer {
 
   initViewContent(view: View) {
     if (!view.content) {
-      return
+      return [0, 0]
     }
 
     const content = view.content
@@ -322,7 +330,7 @@ export class PaginationRenderer {
       'background-color': 'pink'
     })
 
-    this.updateViewLayout(view)
+    return this.updateViewLayout(view)
   }
 
   moveTo(range: Range) {
@@ -361,9 +369,9 @@ export class PaginationRenderer {
 
     this.updateViewData()
 
-    this.updateViewLayout(view)
+    const [width, height] = this.updateViewLayout(view)
 
-    this.stage.setSize(view.width, this.stage.height)
+    this.stage.setSize(width, height)
 
     if (this.location.range) {
       this.moveTo(this.location.range)
@@ -372,7 +380,7 @@ export class PaginationRenderer {
 
   updateViewLayout(view: View) {
     if (view.hidden || !view.content) {
-      return
+      return [0, 0]
     }
 
     const content = view.content
@@ -391,10 +399,14 @@ export class PaginationRenderer {
     content.setStyle('column-gap', `${gap}px`, true)
     content.setStyle('column-width', `${columnWidth}px`, true)
 
+    const width = content.textWidth + gap
+
     // NOTE
     view.setSize(0, height)
 
-    view.setSize(content.textWidth + gap, height)
+    view.setSize(width, height)
+
+    return [width, height]
   }
 
   setSpread(spread: boolean, minSpreadWidth = 800, gap = 0) {

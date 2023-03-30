@@ -8,6 +8,13 @@
     gap: 8px;
   }
 
+  &-loading-mask {
+    position: absolute;
+    z-index: 111;
+    width: 100%;
+    height: 100%;
+  }
+
   &-container {
     position: absolute;
     z-index: 1;
@@ -83,9 +90,9 @@
       height: 38%;
       align-items: center;
       background-color: #fafafa;
-      box-shadow: var(--box-shadow-1);
+      box-shadow: var(--box-shadow-3);
       cursor: pointer;
-      opacity: 0.2;
+      opacity: 0.6;
       transition: opacity 0.3s ease-in-out;
       translate: 0 -50%;
 

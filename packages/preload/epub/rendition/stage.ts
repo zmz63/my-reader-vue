@@ -33,17 +33,18 @@ export class Stage {
     this.observer = new ResizeObserver(entries => {
       if (entries[0]) {
         const { width, height } = entries[0].contentRect
-        this.width = width
-        this.height = height
-        this.hooks.resize.trigger(width, height)
+        if (Math.round(width) !== this.width || Math.round(height) !== this.height) {
+          this.width = width
+          this.height = height
+          console.log('stage resize', width, height)
+          this.hooks.resize.trigger(width, height)
+        }
       }
     })
   }
 
   private createWrapper() {
     const wrapper = document.createElement('div')
-
-    wrapper.classList.add('epub-wrapper')
 
     wrapper.style.height = '100%'
     wrapper.style.width = '100%'
@@ -57,8 +58,6 @@ export class Stage {
 
   private createContainer() {
     const container = document.createElement('div')
-
-    container.classList.add('epub-container')
 
     container.style.width = '0px'
     container.style.height = '0px'

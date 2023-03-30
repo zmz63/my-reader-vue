@@ -105,7 +105,9 @@ export class Searcher {
 
             n += 1
 
-            if (n >= max) {
+            if (seq !== this.seq) {
+              return
+            } else if (n >= max) {
               yield result
 
               n = 0
@@ -116,7 +118,9 @@ export class Searcher {
       }
     }
 
-    if (result.size) {
+    if (seq !== this.seq) {
+      return
+    } else if (result.size) {
       yield result
     }
   }

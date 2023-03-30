@@ -165,9 +165,15 @@ export default defineComponent({
 
       let generator: Generator<SearchResult, void, unknown>
 
+      let taskHandle: number | null = null
+
       const handleSearch = debounce((content: string) => {
         searchResult.value = []
         indexMap.clear()
+
+        if (taskHandle !== null) {
+          cancelAnimationFrame(taskHandle)
+        }
 
         if (generator) {
           generator.return()
@@ -178,7 +184,9 @@ export default defineComponent({
           let result = generator.next()
 
           const task = () => {
-            requestAnimationFrame(() => {
+            taskHandle = requestAnimationFrame(() => {
+              taskHandle = null
+
               if (!result.done) {
                 for (const [index, ranges] of result.value) {
                   if (indexMap.has(index)) {
