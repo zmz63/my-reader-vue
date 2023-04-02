@@ -79,13 +79,6 @@ export class Book {
 
         await archive.opened
 
-        for (const key of Object.keys(archive.directories)) {
-          const directory = _path.join(this.cachePath, key)
-          if (!_fs.existsSync(directory)) {
-            _fs.mkdirsSync(directory)
-          }
-        }
-
         this.dump(archive)
         this.unpack(archive)
       }

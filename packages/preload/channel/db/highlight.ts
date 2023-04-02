@@ -1,15 +1,14 @@
 import { type BookMeta, invokeDB } from '.'
 
 export type HighlightData = {
-  bookId: BookMeta['rowid']
+  id: number | bigint
+  bookId: BookMeta['id']
   section: number
   location: string
   createTime: number
 }
 
-const HIGHLIGHT_KEYS = ['bookId', 'section', 'location', 'createTime']
-
-export async function insertHighlight(highlight: HighlightData) {
+export async function insertHighlight(highlight: Omit<HighlightData, 'id'>) {
   const keys = Object.keys(highlight)
 
   const result = await invokeDB(
@@ -18,19 +17,19 @@ export async function insertHighlight(highlight: HighlightData) {
     [highlight]
   )
 
-  return { rowid: result.lastInsertRowid }
+  return { id: result.lastInsertRowid }
 }
 
 export function deleteHighlight(id: number | bigint) {
-  return invokeDB('run', `DELETE FROM highlights WHERE rowid = ?`, [id])
+  return invokeDB('run', `DELETE FROM highlights WHERE id = ?`, [id])
 }
 
 export function getHighlightList(bookId: number | bigint, section?: number) {
-  return invokeDB<HighlightData & { rowid: number | bigint }>(
+  return invokeDB<HighlightData>(
     'all',
-    `SELECT rowid, ${HIGHLIGHT_KEYS.join(', ')} FROM highlights (WHERE bookId = ?${
-      section !== undefined ? ', section = ?' : ''
-    }) ORDER BY rowid DESC`,
+    `SELECT * FROM highlights WHERE bookId = ?${
+      section !== undefined ? ' AND section = ?' : ''
+    } ORDER BY id DESC`,
     [bookId, section]
   )
 }

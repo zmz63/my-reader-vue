@@ -21,12 +21,12 @@ export default defineComponent({
     return () => (
       <div class="book-list">
         {props.list.map(item => (
-          <div class="list-item" key={item.rowid.toString()}>
+          <div class="list-item" key={item.id.toString()}>
             <Image
               class="cover-wrapper"
               imageClass="cover"
               data={item.cover}
-              onClick={() => emit('open', item.rowid)}
+              onClick={() => emit('open', item.id)}
             >
               {{
                 placeholder: () => (
@@ -38,7 +38,7 @@ export default defineComponent({
             </Image>
             <div class="meta-wrapper">
               <div class="top">
-                <div class="ellipsis title" onClick={() => emit('open', item.rowid)}>
+                <div class="ellipsis title" onClick={() => emit('open', item.id)}>
                   {item.title}
                 </div>
                 <div class="ellipsis creator">{item.creator ? item.creator : '佚名'}</div>

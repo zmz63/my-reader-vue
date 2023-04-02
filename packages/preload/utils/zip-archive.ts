@@ -10,8 +10,6 @@ export class ZipArchive {
 
   files: ZipEntries = {}
 
-  directories: ZipEntries = {}
-
   buffers: Record<string, Buffer> = {}
 
   domParser = new DOMParser()
@@ -46,8 +44,6 @@ export class ZipArchive {
       zipFile.on('entry', entry => {
         if (!/\/$/.test(entry.fileName)) {
           this.files[entry.fileName] = entry
-        } else {
-          this.directories[entry.fileName] = entry
         }
       })
 
@@ -63,7 +59,7 @@ export class ZipArchive {
     }
   }
 
-  async dump(key: string, dumpPath: string, assert = false) {
+  async dump(key: string, dumpPath: string, assert = true) {
     const path = _path.join(dumpPath, key)
 
     if (assert) {

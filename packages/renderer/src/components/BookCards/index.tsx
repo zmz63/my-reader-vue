@@ -21,12 +21,12 @@ export default defineComponent({
     return () => (
       <div class="book-cards-wrapper">
         {props.list.map(item => (
-          <div class="card-item" key={item.rowid.toString()}>
+          <div class="card-item" key={item.id.toString()}>
             <Image
               class="cover-wrapper"
               imageClass="cover"
               data={item.cover}
-              onClick={() => emit('open', item.rowid)}
+              onClick={() => emit('open', item.id)}
             >
               {{
                 placeholder: () => (
@@ -36,7 +36,7 @@ export default defineComponent({
                 )
               }}
             </Image>
-            <div class="title-wrapper" onClick={() => emit('open', item.rowid)}>
+            <div class="title-wrapper" onClick={() => emit('open', item.id)}>
               <div class="ellipsis title">{item.title}</div>
             </div>
           </div>

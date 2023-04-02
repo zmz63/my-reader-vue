@@ -2,6 +2,7 @@ export default {
   version: 1,
   sentences: [
     `CREATE TABLE IF NOT EXISTS books (
+      id INTEGER,
       md5 TEXT NOT NULL,
       size INTEGER NOT NULL,
       createTime INTEGER NOT NULL,
@@ -15,7 +16,8 @@ export default {
       publisher TEXT,
       identifier TEXT UNIQUE,
       location TEXT,
-      accessTime INTEGER
+      accessTime INTEGER,
+      PRIMARY KEY (id)
     );`
   ]
 }

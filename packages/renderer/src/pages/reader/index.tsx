@@ -6,8 +6,7 @@ import {
   onMounted,
   reactive,
   ref,
-  watch,
-  watchEffect
+  watch
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton, NPopover, NSpin } from 'naive-ui'
@@ -42,7 +41,7 @@ export default defineComponent({
       metadata: {} as Partial<Metadata>,
       location: {} as Partial<LocationData>,
       chapter: '',
-      highlights: [] as (HighlightData & { rowid: number | bigint })[]
+      highlights: [] as HighlightData[]
     })
 
     const handleFullScreen = async () => {
@@ -67,7 +66,6 @@ export default defineComponent({
 
     const handleSelect = debounce((view: View, selection: Selection) => {
       console.log(selection.focusNode, selection.focusOffset)
-      // const range = selection.getRangeAt(0)
       if (!view.content || !selection.focusNode) {
         return
       }
@@ -82,7 +80,7 @@ export default defineComponent({
         selectionData = {
           view,
           selection,
-          range
+          range: selection.getRangeAt(0)
         }
 
         popoverData.show = true
@@ -121,12 +119,20 @@ export default defineComponent({
         try {
           const result = await dbChannel.getHighlightList(bookData.id, index)
 
-          if (bookData.renderer && bookData.renderer.views.indexOf(view) === -1) {
+          console.log('list', result)
+
+          await view.loaded
+
+          await new Promise(resolve => requestAnimationFrame(resolve))
+
+          if (!bookData.renderer || bookData.renderer.views.indexOf(view) === -1) {
             return
           }
 
           for (const item of result) {
             const range = view.cfiToRange(item.location)
+
+            console.log(range)
 
             if (range) {
               view.mark(range, 'book-mark-highlight-search')
@@ -142,27 +148,6 @@ export default defineComponent({
       }
     }
 
-    watch(
-      () => displayData.highlight,
-      show => {
-        if (bookData.renderer) {
-          bookData.renderer.views.forEach(view => {
-            if (show) {
-              updateHighlights(view)
-            } else {
-              for (const [index, ranges] of highlightMap) {
-                for (const range of ranges) {
-                  view.unMark(range)
-                }
-
-                highlightMap.delete(index)
-              }
-            }
-          })
-        }
-      }
-    )
-
     const addHighlight = async () => {
       if (bookData.id && selectionData) {
         const { view, range } = selectionData
@@ -175,7 +160,7 @@ export default defineComponent({
         }
         const result = await dbChannel.insertHighlight(highlightData)
 
-        bookData.highlights.push({ rowid: result.rowid, ...highlightData })
+        bookData.highlights.push({ id: result.id, ...highlightData })
 
         view.mark(range, 'book-mark-highlight-search')
 
@@ -188,9 +173,33 @@ export default defineComponent({
       }
     }
 
-    const removeHighlight = () => {
-      //
+    const removeHighlight = (view: View) => {
+      const index = view.section.index
+      const ranges = highlightMap.get(index)
+
+      if (ranges) {
+        for (const range of ranges) {
+          view.unMark(range)
+        }
+      }
+
+      highlightMap.delete(index)
     }
+
+    watch(
+      () => displayData.highlight,
+      show => {
+        if (bookData.renderer) {
+          bookData.renderer.views.forEach(view => {
+            if (show) {
+              updateHighlights(view)
+            } else {
+              removeHighlight(view)
+            }
+          })
+        }
+      }
+    )
 
     const addNote = () => {
       // if (selectionData) {
@@ -240,11 +249,13 @@ export default defineComponent({
 
     let spinTaskHandle: NodeJS.Timeout | null = null
 
-    const handleBeforeRender = () => {
+    const handleBeforeRender = (view: View) => {
       spinTaskHandle = setTimeout(() => {
         spinTaskHandle = null
         isLoading.value = true
       }, 200)
+
+      updateHighlights(view)
     }
 
     const handleRendered = () => {
@@ -253,6 +264,10 @@ export default defineComponent({
       }
 
       isLoading.value = false
+    }
+
+    const handleBeforeUnload = (view: View) => {
+      removeHighlight(view)
     }
 
     const updateAccessTime = () => {
@@ -281,7 +296,7 @@ export default defineComponent({
 
         const { title, creator, description, date, publisher, identifier } = book.package.metadata
 
-        const bookData: BookData = {
+        const bookData: Omit<BookData, 'id'> = {
           md5: preloadUtil.md5(file),
           size: file.byteLength,
           createTime: Math.floor(Date.now() / 1000),
@@ -306,7 +321,7 @@ export default defineComponent({
         const result = await dbChannel.insertBook(bookData)
 
         return {
-          id: result.rowid,
+          id: result.id,
           book,
           location: result.location
         }
@@ -362,6 +377,7 @@ export default defineComponent({
           bookData.renderer.hooks.cancelSelect.register(handleCancelSelect)
           bookData.renderer.hooks.beforeRender.register(handleBeforeRender)
           bookData.renderer.hooks.rendered.register(handleRendered)
+          bookData.renderer.hooks.beforeUnload.register(handleBeforeUnload)
           bookData.renderer.stage.hooks.resize.register(handleCancelSelect)
 
           updateAccessTime()

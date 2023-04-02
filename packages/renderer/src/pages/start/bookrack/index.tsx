@@ -38,7 +38,7 @@ export default defineComponent({
 
           const { title, creator, description, date, publisher, identifier } = book.package.metadata
 
-          const bookData: BookData = {
+          const bookData: Omit<BookData, 'id'> = {
             md5: preloadUtil.md5(file),
             size: file.byteLength,
             createTime: Math.floor(Date.now() / 1000),

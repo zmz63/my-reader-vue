@@ -90,8 +90,8 @@ export default defineComponent({
                         {recentBooks[phase as keyof typeof recentBooks].map(item => (
                           <div
                             class="book-item"
-                            onClick={() => openBook(item.rowid)}
-                            key={item.rowid.toString()}
+                            onClick={() => openBook(item.id)}
+                            key={item.id.toString()}
                           >
                             <div class="ellipsis title">{item.title}</div>
                             <div class="ellipsis creator">{item.creator}</div>

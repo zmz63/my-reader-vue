@@ -1,10 +1,11 @@
 import { invokeDB } from '.'
 
-export type BookMeta = {
-  rowid: number | bigint
+export type BookData = {
+  id: number | bigint
   md5: string
   size: number
   createTime: number
+  file?: Buffer | null
   path?: string
   location?: string
   accessTime?: number
@@ -17,11 +18,10 @@ export type BookMeta = {
   identifier?: string
 }
 
-export type BookData = {
-  file?: Buffer | null
-} & Omit<BookMeta, 'rowid'>
+export type BookMeta = Omit<BookData, 'file'>
 
 const BOOK_META_KEYS = [
+  'id',
   'path',
   'location',
   'accessTime',
@@ -34,10 +34,10 @@ const BOOK_META_KEYS = [
   'identifier'
 ]
 
-export async function insertBook(book: BookData) {
-  const target = await invokeDB<Pick<BookMeta, 'rowid' | 'location'> | undefined>(
+export async function insertBook(book: Omit<BookData, 'id'>) {
+  const target = await invokeDB<Pick<BookMeta, 'id' | 'location'> | undefined>(
     'get',
-    'SELECT rowid, location, accessTime FROM books WHERE (md5 = ? AND (title = ? OR creator = ?)) OR identifier = ?',
+    'SELECT id, location, accessTime FROM books WHERE (md5 = ? AND (title = ? OR creator = ?)) OR identifier = ?',
     [book.md5, book.title, book.creator, book.identifier]
   )
 
@@ -48,22 +48,22 @@ export async function insertBook(book: BookData) {
   const keys = Object.keys(book)
 
   if (book.path) {
-    const target = await invokeDB<Pick<BookMeta, 'rowid'> | undefined>(
+    const target = await invokeDB<Pick<BookMeta, 'id'> | undefined>(
       'get',
-      'SELECT rowid FROM books WHERE path = ?',
+      'SELECT id FROM books WHERE path = ?',
       [book.path]
     )
 
     if (target) {
       await invokeDB(
         'run',
-        `REPLACE books rowid = ?, (${keys.join(', ')}) VALUES (${keys
+        `REPLACE books id = ?, (${keys.join(', ')}) VALUES (${keys
           .map(key => `$${key}`)
           .join(', ')})`,
-        [target.rowid, book]
+        [target.id, book]
       )
 
-      return { rowid: target.rowid }
+      return { id: target.id }
     }
   }
 
@@ -73,40 +73,40 @@ export async function insertBook(book: BookData) {
     [book]
   )
 
-  return { rowid: result.lastInsertRowid }
+  return { id: result.lastInsertRowid }
 }
 
-export function updateBook(id: number | bigint, book: Partial<BookData>) {
+export function updateBook(id: number | bigint, book: Partial<Omit<BookData, 'id'>>) {
   const keys = Object.keys(book)
 
   return invokeDB(
     'run',
-    `UPDATE books SET ${keys.map(key => `${key} = $${key}`).join(', ')} WHERE rowid = ?`,
+    `UPDATE books SET ${keys.map(key => `${key} = $${key}`).join(', ')} WHERE id = ?`,
     [book, id]
   )
 }
 
 export function deleteBook(id: number | bigint) {
-  return invokeDB('run', `DELETE FROM books WHERE rowid = ?`, [id])
+  return invokeDB('run', `DELETE FROM books WHERE id = ?`, [id])
 }
 
 export function getBookById(id: number | bigint) {
-  return invokeDB<BookData | undefined>('get', 'SELECT * FROM books WHERE rowid = ?', [id])
+  return invokeDB<BookData | undefined>('get', 'SELECT * FROM books WHERE id = ?', [id])
 }
 
 export function getBookMetaList(size = 20, offset = 0, order: 'DESC' | 'ASC' = 'DESC') {
   return invokeDB<BookMeta>(
     'all',
-    `SELECT rowid, ${BOOK_META_KEYS.join(
+    `SELECT ${BOOK_META_KEYS.join(
       ', '
-    )} FROM books ORDER BY rowid ${order} LIMIT ${size} OFFSET ${offset}`
+    )} FROM books ORDER BY id ${order} LIMIT ${size} OFFSET ${offset}`
   )
 }
 
 export function getRecentBookMetaList() {
   return invokeDB<BookMeta>(
     'all',
-    `SELECT rowid, ${BOOK_META_KEYS.join(
+    `SELECT ${BOOK_META_KEYS.join(
       ', '
     )} FROM books WHERE accessTime IS NOT NULL ORDER BY accessTime DESC LIMIT 20`
   )
@@ -115,7 +115,7 @@ export function getRecentBookMetaList() {
 export function getBookMetaListByTitle(title: string, size = 20, fuzzy = true) {
   return invokeDB<BookMeta>(
     'all',
-    `SELECT rowid, ${BOOK_META_KEYS.join(', ')} FROM books WHERE title ${
+    `SELECT ${BOOK_META_KEYS.join(', ')} FROM books WHERE title ${
       fuzzy ? 'LIKE' : '='
     } ? LIMIT ${size}`,
     [fuzzy ? `%${title}%` : title]
@@ -125,7 +125,7 @@ export function getBookMetaListByTitle(title: string, size = 20, fuzzy = true) {
 export function getBookMetaListByCreator(creator: string, size = 20, fuzzy = true) {
   return invokeDB<BookMeta>(
     'all',
-    `SELECT rowid, ${BOOK_META_KEYS.join(', ')} FROM books WHERE creator ${
+    `SELECT ${BOOK_META_KEYS.join(', ')} FROM books WHERE creator ${
       fuzzy ? 'LIKE' : '='
     } ? LIMIT ${size}`,
     [fuzzy ? `%${creator}%` : creator]
@@ -135,7 +135,7 @@ export function getBookMetaListByCreator(creator: string, size = 20, fuzzy = tru
 export function getBookMetaListByPublisher(publisher: string, size = 20, fuzzy = true) {
   return invokeDB<BookMeta>(
     'all',
-    `SELECT rowid, ${BOOK_META_KEYS.join(', ')} FROM books WHERE publisher ${
+    `SELECT ${BOOK_META_KEYS.join(', ')} FROM books WHERE publisher ${
       fuzzy ? 'LIKE' : '='
     } ? LIMIT ${size}`,
     [fuzzy ? `%${publisher}%` : publisher]

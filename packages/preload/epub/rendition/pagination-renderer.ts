@@ -72,12 +72,14 @@ export class PaginationRenderer {
     cancelSelect: Hook<(view: View, section: Selection) => void>
     beforeRender: Hook<(view: View) => void>
     rendered: Hook<(view: View) => void>
+    beforeUnload: Hook<(view: View) => void>
   }> = {
     location: new Hook(),
     select: new Hook(),
     cancelSelect: new Hook(),
     beforeRender: new Hook(),
-    rendered: new Hook()
+    rendered: new Hook(),
+    beforeUnload: new Hook()
   }
 
   constructor(book: Book, options?: Partial<PaginationOptions>) {
@@ -241,6 +243,7 @@ export class PaginationRenderer {
     const view = new View(section)
 
     this.hooks.beforeRender.trigger(view)
+    this.hooks.beforeUnload.trigger(this.views.get(0))
 
     this.views.set(0, view)
 

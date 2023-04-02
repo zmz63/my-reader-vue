@@ -58,7 +58,7 @@ export class CFI {
     return path
   }
 
-  static pathToRange(path: CFIPath, document: Document) {
+  static pathToRange(path: CFIPath, document: Document, endPath?: CFIPath) {
     const root = document.documentElement
     const range = document.createRange()
     let currentNode: Node | null = root
@@ -69,6 +69,17 @@ export class CFI {
 
     if (currentNode) {
       range.setStart(currentNode, path.offset ? path.offset : 0)
+
+      if (endPath) {
+        currentNode = root
+        for (const step of endPath.steps) {
+          currentNode = getNodeByIndex(currentNode as ParentNode, step.index, step.type)
+        }
+
+        if (currentNode) {
+          range.setEnd(currentNode, endPath.offset ? endPath.offset : 0)
+        }
+      }
     } else {
       range.selectNodeContents(document.body)
     }

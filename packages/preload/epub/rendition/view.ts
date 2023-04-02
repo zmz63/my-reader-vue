@@ -164,17 +164,17 @@ export class View {
     }
   }
 
-  cfiPathToRange(path: CFIPath) {
+  cfiPathToRange(path: CFIPath, endPath?: CFIPath) {
     if (this.content) {
-      return CFI.pathToRange(path, this.content.document)
+      return CFI.pathToRange(path, this.content.document, endPath)
     }
   }
 
   cfiToRange(cfi: string) {
     if (this.content) {
-      const { path } = CFI.parse(cfi)
+      const { path, endPath } = CFI.parse(cfi)
 
-      return CFI.pathToRange(path, this.content.document)
+      return CFI.pathToRange(path, this.content.document, endPath)
     }
   }
 
