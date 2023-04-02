@@ -1,7 +1,7 @@
 import { Highlight, type Mark, Pane } from 'marks-pane'
 import { Defer } from '@common/defer'
 import { Hook } from '@common/hook'
-import type { Section } from '..'
+import { CFI, type CFIPath, type Section } from '..'
 import { Content } from './content'
 
 export class View {
@@ -158,6 +158,32 @@ export class View {
     return this.loaded
   }
 
+  rangeToCFI(range: Range) {
+    if (this.content && range.commonAncestorContainer.getRootNode() === this.content.document) {
+      return CFI.generate(this.section.cfiBase, range)
+    }
+  }
+
+  cfiPathToRange(path: CFIPath) {
+    if (this.content) {
+      return CFI.pathToRange(path, this.content.document)
+    }
+  }
+
+  cfiToRange(cfi: string) {
+    if (this.content) {
+      const { path } = CFI.parse(cfi)
+
+      return CFI.pathToRange(path, this.content.document)
+    }
+  }
+
+  querySelector(selectors: string) {
+    if (this.content) {
+      return this.content.document.querySelector(selectors)
+    }
+  }
+
   rangeToViewportRect(range: Range) {
     if (this.content && range.commonAncestorContainer.getRootNode() === this.content.document) {
       const rect = range.getBoundingClientRect()
@@ -170,8 +196,6 @@ export class View {
         rect.height
       )
     }
-
-    return null
   }
 
   rangeToRange(range: Range) {
@@ -206,19 +230,12 @@ export class View {
           return currentNode
         }
 
-        try {
-          contentRange.setStart(map(range.startContainer), range.startOffset)
-          contentRange.setEnd(map(range.endContainer), range.endOffset)
-        } catch (error) {
-          console.log('rangeToRange error', error)
-          return null
-        }
+        contentRange.setStart(map(range.startContainer), range.startOffset)
+        contentRange.setEnd(map(range.endContainer), range.endOffset)
 
         return contentRange
       }
     }
-
-    return null
   }
 
   mark(range: Range, className: string) {
@@ -226,7 +243,7 @@ export class View {
       let contentRange: Range | null = range
 
       if (range.commonAncestorContainer.getRootNode() !== this.content.document) {
-        contentRange = this.rangeToRange(range)
+        contentRange = this.rangeToRange(range) || null
       }
 
       if (contentRange) {

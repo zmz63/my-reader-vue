@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Sqlite3 from 'better-sqlite3'
 import v1 from './schemas/v1'
+import v2 from './schemas/v2'
 
 export type DBPayload = {
   source: string
@@ -9,7 +10,7 @@ export type DBPayload = {
 
 const DATABASE_PATH = './temp/books.db'
 
-const SCHEMAS = [v1]
+const SCHEMAS = [v1, v2]
 
 const SCHEMA_VERSION = SCHEMAS.length
 
@@ -19,11 +20,16 @@ export class Server {
   version = 0
 
   constructor() {
-    this.db = new Sqlite3(DATABASE_PATH)
+    this.db = new Sqlite3(DATABASE_PATH, {
+      verbose(message) {
+        console.log(message)
+      }
+    })
 
     this.db.pragma('journal_mode = WAL')
     this.db.pragma('synchronous = FULL')
     this.db.pragma('fullfsync = ON')
+    this.db.pragma('foreign_keys = ON')
 
     this.version = this.db.pragma('user_version', { simple: true })
 

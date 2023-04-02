@@ -24,15 +24,15 @@ export default defineComponent({
     const isEmpty = ref(true)
 
     const getRecentBookList = async () => {
-      const list = await dbChannel.getRecentBookMetaList()
+      const result = await dbChannel.getRecentBookMetaList()
 
-      if (list.length) {
+      if (result.length) {
         isEmpty.value = false
       } else {
         isEmpty.value = true
       }
 
-      console.log('list', list)
+      console.log('list', result)
 
       const now = new Date()
       const day = startOfDay(now)
@@ -40,8 +40,8 @@ export default defineComponent({
       const month = startOfMonth(now)
       const year = startOfYear(now)
 
-      for (const book of list) {
-        const date = new Date(book.accessTime || now)
+      for (const book of result) {
+        const date = new Date((book.accessTime as number) * 1000 || now)
 
         if (date > day) {
           recentBooks.day.push(book)
@@ -98,7 +98,7 @@ export default defineComponent({
                             <div class="time">123</div>
                             <div class="progress">123</div>
                             <div class="ellipsis date">
-                              {format(item.accessTime as number, 'yyyy/MM/dd HH:mm')}
+                              {format((item.accessTime as number) * 1000, 'yyyy/MM/dd HH:mm')}
                             </div>
                           </div>
                         ))}

@@ -10,11 +10,11 @@ export default defineComponent({
     const bookList = ref<BookMeta[]>([])
 
     const updateBookList = async () => {
-      const list = await dbChannel.getBookMetaList()
+      const result = await dbChannel.getBookMetaList()
 
-      console.log('list', list)
+      console.log('list', result)
 
-      bookList.value = list
+      bookList.value = result
     }
 
     updateBookList()

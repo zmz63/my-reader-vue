@@ -70,8 +70,8 @@ export class PaginationRenderer {
     location: Hook<(data: LocationData) => void>
     select: Hook<(view: View, section: Selection) => void>
     cancelSelect: Hook<(view: View, section: Selection) => void>
-    beforeRender: Hook<() => void>
-    rendered: Hook<() => void>
+    beforeRender: Hook<(view: View) => void>
+    rendered: Hook<(view: View) => void>
   }> = {
     location: new Hook(),
     select: new Hook(),
@@ -152,22 +152,24 @@ export class PaginationRenderer {
     }
 
     if (path) {
-      const range = CFI.pathToRange(path, (view.content as Content).document)
+      const range = view.cfiPathToRange(path)
 
-      this.moveTo(range)
-      this.location.cfi = cfi
-      this.location.range = range
+      if (range) {
+        this.moveTo(range)
+        this.location.cfi = cfi
+        this.location.range = range
 
-      return
+        return
+      }
     } else if (id) {
-      const node = (view.content as Content).document.querySelector(`#${id}`)
+      const node = view.querySelector(`#${id}`)
 
       if (node) {
         const range = (view.content as Content).getNodeContentsRange(node)
 
         this.moveTo(range)
         this.location.range = range
-        this.location.cfi = CFI.generate(view.section.cfiBase, range)
+        this.location.cfi = view.rangeToCFI(range) as string
 
         return
       }
@@ -177,7 +179,7 @@ export class PaginationRenderer {
       if (contentRange) {
         this.moveTo(contentRange)
         this.location.range = contentRange
-        this.location.cfi = CFI.generate(view.section.cfiBase, range)
+        this.location.cfi = view.rangeToCFI(range) as string
 
         return
       }
@@ -236,9 +238,9 @@ export class PaginationRenderer {
   }
 
   async setView(section: Section) {
-    this.hooks.beforeRender.trigger()
-
     const view = new View(section)
+
+    this.hooks.beforeRender.trigger(view)
 
     this.views.set(0, view)
 
@@ -265,7 +267,7 @@ export class PaginationRenderer {
 
     this.searcher.mark(view)
 
-    this.hooks.rendered.trigger()
+    this.hooks.rendered.trigger(view)
 
     return view
   }
@@ -290,7 +292,7 @@ export class PaginationRenderer {
     range.collapse(false)
 
     this.location.range = range
-    this.location.cfi = range ? CFI.generate(view.section.cfiBase, range) : ''
+    this.location.cfi = range ? (view.rangeToCFI(range) as string) : ''
 
     console.log(this.location.cfi)
   }

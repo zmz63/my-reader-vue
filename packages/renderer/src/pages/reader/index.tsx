@@ -1,9 +1,19 @@
-import { type Raw, defineComponent, markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import {
+  type Raw,
+  defineComponent,
+  markRaw,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+  watchEffect
+} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton, NPopover, NSpin } from 'naive-ui'
 import { debounce } from 'lodash'
 import type { Book, LocationData, Metadata, PaginationRenderer, TocItem, View } from '@preload/epub'
-import type { BookData } from '@preload/channel/db'
+import type { BookData, HighlightData } from '@preload/channel/db'
 import { useLayoutStore } from '@/stores/layout'
 import SVGIcon from '@/components/SVGIcon'
 import SideBar from './components/SideBar'
@@ -26,13 +36,13 @@ export default defineComponent({
     const isLoading = ref(true)
 
     const bookData = reactive({
+      id: null as number | bigint | null,
       book: null as Raw<Book> | null,
       renderer: null as Raw<PaginationRenderer> | null,
-      id: null as number | bigint | null,
       metadata: {} as Partial<Metadata>,
       location: {} as Partial<LocationData>,
       chapter: '',
-      hightLights: new Map<number, Raw<Range>[]>()
+      highlights: [] as (HighlightData & { rowid: number | bigint })[]
     })
 
     const handleFullScreen = async () => {
@@ -49,7 +59,6 @@ export default defineComponent({
 
     const popoverData = reactive({
       show: false,
-      placement: 'bottom' as 'bottom' | 'top',
       x: 0,
       y: 0
     })
@@ -57,12 +66,19 @@ export default defineComponent({
     let selectionData: { view: View; selection: Selection; range: Range } | null = null
 
     const handleSelect = debounce((view: View, selection: Selection) => {
-      const range = selection.getRangeAt(0)
+      console.log(selection.focusNode, selection.focusOffset)
+      // const range = selection.getRangeAt(0)
+      if (!view.content || !selection.focusNode) {
+        return
+      }
+
+      const range = view.content.document.createRange()
+      range.setStart(selection.focusNode, selection.focusOffset)
+      range.collapse(true)
+
       const rect = view.rangeToViewportRect(range)
 
       if (rect) {
-        const pageRect = pageRef.value.getBoundingClientRect()
-
         selectionData = {
           view,
           selection,
@@ -70,25 +86,8 @@ export default defineComponent({
         }
 
         popoverData.show = true
-        popoverData.x = rect.x + rect.width / 2
-
-        if (rect.bottom + 100 >= pageRect.bottom) {
-          if (rect.top - 100 <= pageRect.top) {
-            popoverData.y = rect.y + rect.height / 2
-            popoverData.placement = 'bottom'
-          } else {
-            popoverData.y = rect.top
-            popoverData.placement = 'top'
-          }
-        } else {
-          popoverData.y = rect.bottom
-          popoverData.placement = 'bottom'
-        }
-        if (rect.right + 50 >= pageRect.right) {
-          popoverData.placement += '-end'
-        } else if (rect.left - 50 <= pageRect.left) {
-          popoverData.placement += '-start'
-        }
+        popoverData.x = rect.x
+        popoverData.y = rect.y + rect.height / 2
       }
     }, 500)
 
@@ -101,38 +100,110 @@ export default defineComponent({
       popoverData.show = false
     }
 
-    const addHightLight = () => {
-      if (selectionData) {
+    const displayData = reactive({
+      highlight: false,
+      note: false
+    })
+
+    const highlightMap = new Map<number, Range[]>()
+
+    const updateHighlights = async (view: View) => {
+      if (bookData.id) {
+        const index = view.section.index
+
+        if (highlightMap.has(index)) {
+          return
+        }
+
+        const ranges: Range[] = []
+        highlightMap.set(index, ranges)
+
+        try {
+          const result = await dbChannel.getHighlightList(bookData.id, index)
+
+          if (bookData.renderer && bookData.renderer.views.indexOf(view) === -1) {
+            return
+          }
+
+          for (const item of result) {
+            const range = view.cfiToRange(item.location)
+
+            if (range) {
+              view.mark(range, 'book-mark-highlight-search')
+              ranges.push(range)
+            }
+          }
+        } catch {
+          for (const range of ranges) {
+            view.unMark(range)
+          }
+          highlightMap.delete(index)
+        }
+      }
+    }
+
+    watch(
+      () => displayData.highlight,
+      show => {
+        if (bookData.renderer) {
+          bookData.renderer.views.forEach(view => {
+            if (show) {
+              updateHighlights(view)
+            } else {
+              for (const [index, ranges] of highlightMap) {
+                for (const range of ranges) {
+                  view.unMark(range)
+                }
+
+                highlightMap.delete(index)
+              }
+            }
+          })
+        }
+      }
+    )
+
+    const addHighlight = async () => {
+      if (bookData.id && selectionData) {
         const { view, range } = selectionData
+
+        const highlightData = {
+          bookId: bookData.id,
+          section: view.section.index,
+          location: view.rangeToCFI(range) as string,
+          createTime: Math.floor(Date.now() / 1000)
+        }
+        const result = await dbChannel.insertHighlight(highlightData)
+
+        bookData.highlights.push({ rowid: result.rowid, ...highlightData })
 
         view.mark(range, 'book-mark-highlight-search')
 
-        const marks = bookData.hightLights.get(view.section.index)
-        if (marks) {
-          marks.push(range)
-        } else {
-          bookData.hightLights.set(view.section.index, [range])
+        const ranges = highlightMap.get(view.section.index)
+        if (ranges) {
+          ranges.push(range)
         }
 
         handleCancelSelect()
       }
     }
 
+    const removeHighlight = () => {
+      //
+    }
+
     const addNote = () => {
-      if (selectionData) {
-        const { view, range } = selectionData
-
-        view.mark(range, 'book-mark-highlight-search')
-
-        const marks = bookData.hightLights.get(view.section.index)
-        if (marks) {
-          marks.push(range)
-        } else {
-          bookData.hightLights.set(view.section.index, [range])
-        }
-
-        handleCancelSelect()
-      }
+      // if (selectionData) {
+      //   const { view, range } = selectionData
+      //   view.mark(range, 'book-mark-highlight-search')
+      //   const marks = bookData.highlights.get(view.section.index)
+      //   if (marks) {
+      //     marks.push(range)
+      //   } else {
+      //     bookData.highlights.set(view.section.index, [range])
+      //   }
+      //   handleCancelSelect()
+      // }
     }
 
     const handleUpdateLocation = (location: LocationData) => {
@@ -186,9 +257,8 @@ export default defineComponent({
 
     const updateAccessTime = () => {
       if (bookData.id) {
-        const time = Date.now()
         dbChannel.updateBook(bookData.id, {
-          accessTime: time
+          accessTime: Math.floor(Date.now() / 1000)
         })
       }
     }
@@ -235,17 +305,10 @@ export default defineComponent({
 
         const result = await dbChannel.insertBook(bookData)
 
-        if (typeof result === 'object') {
-          return {
-            id: result.rowid,
-            book,
-            location: result.location
-          }
-        } else {
-          return {
-            id: result,
-            book
-          }
+        return {
+          id: result.rowid,
+          book,
+          location: result.location
         }
       } else if (id) {
         const result = await dbChannel.getBookById(BigInt(id))
@@ -352,12 +415,11 @@ export default defineComponent({
           show={popoverData.show}
           x={popoverData.x}
           y={popoverData.y}
-          flip={false}
           trigger="manual"
-          placement={popoverData.placement}
+          placement="bottom"
         >
           <div class="popover-content">
-            <NButton text focusable={false} onClick={addHightLight}>
+            <NButton text focusable={false} onClick={addHighlight}>
               <SVGIcon size={26} name="ic_fluent_highlight_24_filled" />
             </NButton>
             <NButton text focusable={false} onClick={addNote}>

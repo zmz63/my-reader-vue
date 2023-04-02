@@ -18,7 +18,7 @@ export class Views {
     return this.views
   }
 
-  indexOf(view: View, index: number) {
+  indexOf(view: View, index?: number) {
     return this.views.indexOf(view, index)
   }
 

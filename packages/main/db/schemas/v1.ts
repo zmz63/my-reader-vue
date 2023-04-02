@@ -1,7 +1,7 @@
 export default {
   version: 1,
   sentences: [
-    `CREATE TABLE books (
+    `CREATE TABLE IF NOT EXISTS books (
       md5 TEXT NOT NULL,
       size INTEGER NOT NULL,
       createTime INTEGER NOT NULL,
