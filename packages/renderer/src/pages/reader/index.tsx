@@ -77,6 +77,15 @@ export default defineComponent({
               </NButton>
             )}
           />
+          <TextHover
+            text="复制文本"
+            placement="right-start"
+            content={() => (
+              <NButton text focusable={false} onClick={() => copyText()}>
+                <SVGIcon size={26} name="ic_fluent_copy_24_filled" />
+              </NButton>
+            )}
+          />
         </div>
       )
     }, 500)
@@ -88,6 +97,20 @@ export default defineComponent({
       }
 
       layoutStore.popoverData.show = false
+    }
+
+    const copyText = (range?: Range) => {
+      if (range) {
+        appChannel.copyText(range.toString())
+
+        layoutStore.popoverData.show = false
+      } else if (selectionData) {
+        const { selection } = selectionData
+
+        appChannel.copyText(selection.toString())
+
+        handleCancelSelect()
+      }
     }
 
     const highlightData = reactive({
@@ -141,6 +164,15 @@ export default defineComponent({
             content={() => (
               <NButton text focusable={false} onClick={() => removeHighlight(view, range)}>
                 <SVGIcon size={26} name="ic_fluent_delete_24_filled" />
+              </NButton>
+            )}
+          />
+          <TextHover
+            text="复制文本"
+            placement="right-start"
+            content={() => (
+              <NButton text focusable={false} onClick={() => copyText(range)}>
+                <SVGIcon size={26} name="ic_fluent_copy_24_filled" />
               </NButton>
             )}
           />
