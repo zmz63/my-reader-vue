@@ -59,7 +59,7 @@ export class Content {
   getTextHorizontalStartRange(element: Element, start: number, end: number) {
     const treeWalker = this.document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
       acceptNode: node =>
-        node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+        (node.textContent as string).trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
     })
 
     let node: Node | null

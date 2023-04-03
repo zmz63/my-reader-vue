@@ -18,10 +18,22 @@ body {
   white-space: nowrap;
 }
 
-.book-mark-highlight {
+.book-mark {
   &-search {
     fill: rgb(255 208 0);
-    fill-opacity: 0.5;
+    fill-opacity: 0.6;
     mix-blend-mode: multiply;
+  }
+
+  &-highlight {
+    cursor: pointer;
+    fill: rgb(0 255 136);
+    fill-opacity: 0.3;
+    mix-blend-mode: multiply;
+    pointer-events: fill;
+
+    &:hover {
+      fill-opacity: 0.6;
+    }
   }
 }

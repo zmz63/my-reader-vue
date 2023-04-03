@@ -1,21 +1,13 @@
-import {
-  type Raw,
-  defineComponent,
-  markRaw,
-  onBeforeUnmount,
-  onMounted,
-  reactive,
-  ref,
-  watch
-} from 'vue'
+import { type Raw, defineComponent, markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NPopover, NSpin } from 'naive-ui'
+import { NButton, NSpin } from 'naive-ui'
 import { debounce } from 'lodash'
 import type { Book, LocationData, Metadata, PaginationRenderer, TocItem, View } from '@preload/epub'
 import type { BookData, HighlightData } from '@preload/channel/db'
 import { useLayoutStore } from '@/stores/layout'
 import SVGIcon from '@/components/SVGIcon'
-import SideBar from './components/SideBar'
+import TextHover from '@/components/TextHover'
+import SideBar, { type HighlightDisplayData } from './components/SideBar'
 import './index.scss'
 
 export default defineComponent({
@@ -40,8 +32,7 @@ export default defineComponent({
       renderer: null as Raw<PaginationRenderer> | null,
       metadata: {} as Partial<Metadata>,
       location: {} as Partial<LocationData>,
-      chapter: '',
-      highlights: [] as HighlightData[]
+      chapter: ''
     })
 
     const handleFullScreen = async () => {
@@ -56,37 +47,38 @@ export default defineComponent({
       }
     }
 
-    const popoverData = reactive({
-      show: false,
-      x: 0,
-      y: 0
-    })
-
     let selectionData: { view: View; selection: Selection; range: Range } | null = null
 
     const handleSelect = debounce((view: View, selection: Selection) => {
-      console.log(selection.focusNode, selection.focusOffset)
       if (!view.content || !selection.focusNode) {
         return
       }
 
-      const range = view.content.document.createRange()
-      range.setStart(selection.focusNode, selection.focusOffset)
-      range.collapse(true)
+      const range = selection.getRangeAt(0)
+      const [x, y] = view.getMousePoint()
 
-      const rect = view.rangeToViewportRect(range)
-
-      if (rect) {
-        selectionData = {
-          view,
-          selection,
-          range: selection.getRangeAt(0)
-        }
-
-        popoverData.show = true
-        popoverData.x = rect.x
-        popoverData.y = rect.y + rect.height / 2
+      selectionData = {
+        view,
+        selection,
+        range
       }
+
+      layoutStore.popoverData.show = true
+      layoutStore.popoverData.x = x
+      layoutStore.popoverData.y = y
+      layoutStore.popoverData.content = () => (
+        <div class="popover-content">
+          <TextHover
+            text="添加高亮"
+            placement="right-start"
+            content={() => (
+              <NButton text focusable={false} onClick={addHighlight}>
+                <SVGIcon size={26} name="ic_fluent_highlight_24_filled" />
+              </NButton>
+            )}
+          />
+        </div>
+      )
     }, 500)
 
     const handleCancelSelect = () => {
@@ -95,17 +87,78 @@ export default defineComponent({
         selectionData = null
       }
 
-      popoverData.show = false
+      layoutStore.popoverData.show = false
     }
 
-    const displayData = reactive({
-      highlight: false,
-      note: false
+    const highlightData = reactive({
+      show: true,
+      list: [] as HighlightData[],
+      all: false
     })
+
+    const highlightIdMap = new Map<Range, number | bigint>()
 
     const highlightMap = new Map<number, Range[]>()
 
-    const updateHighlights = async (view: View) => {
+    const removeHighlight = async (view: View, target: Range) => {
+      const index = view.section.index
+      const ranges = highlightMap.get(index)
+
+      if (ranges) {
+        for (const range of ranges) {
+          if (range === target) {
+            const id = highlightIdMap.get(range) as number | bigint
+
+            await dbChannel.deleteHighlight(id)
+
+            view.unMark(range)
+            highlightIdMap.delete(range)
+
+            for (let i = 0; i < highlightData.list.length; i++) {
+              if (highlightData.list[i].id === id) {
+                highlightData.list.splice(i, 1)
+                break
+              }
+            }
+
+            layoutStore.popoverData.show = false
+
+            break
+          }
+        }
+      }
+    }
+
+    const handleClickHighligh = (event: MouseEvent, view: View, range: Range) => {
+      layoutStore.popoverData.show = true
+      layoutStore.popoverData.x = event.x
+      layoutStore.popoverData.y = event.y
+      layoutStore.popoverData.content = () => (
+        <div class="popover-content">
+          <TextHover
+            text="删除高亮"
+            placement="right-start"
+            content={() => (
+              <NButton text focusable={false} onClick={() => removeHighlight(view, range)}>
+                <SVGIcon size={26} name="ic_fluent_delete_24_filled" />
+              </NButton>
+            )}
+          />
+        </div>
+      )
+
+      event.stopPropagation()
+    }
+
+    const getHighlights = async (index?: number) => {
+      if (bookData.id) {
+        const result = await dbChannel.getHighlightList(bookData.id, index)
+
+        highlightData.list = result
+      }
+    }
+
+    const updateHighlights = async (view: View, list?: HighlightData[]) => {
       if (bookData.id) {
         const index = view.section.index
 
@@ -117,9 +170,11 @@ export default defineComponent({
         highlightMap.set(index, ranges)
 
         try {
-          const result = await dbChannel.getHighlightList(bookData.id, index)
+          if (!list) {
+            list = await dbChannel.getHighlightList(bookData.id, index)
+          }
 
-          console.log('list', result)
+          console.log('list', list)
 
           await view.loaded
 
@@ -129,19 +184,19 @@ export default defineComponent({
             return
           }
 
-          for (const item of result) {
+          for (const item of list) {
             const range = view.cfiToRange(item.location)
 
-            console.log(range)
-
             if (range) {
-              view.mark(range, 'book-mark-highlight-search')
+              view.mark(range, 'book-mark-highlight', [['click', handleClickHighligh]])
               ranges.push(range)
+              highlightIdMap.set(range, item.id)
             }
           }
         } catch {
           for (const range of ranges) {
             view.unMark(range)
+            highlightIdMap.delete(range)
           }
           highlightMap.delete(index)
         }
@@ -150,69 +205,44 @@ export default defineComponent({
 
     const addHighlight = async () => {
       if (bookData.id && selectionData) {
-        const { view, range } = selectionData
+        const { view, selection, range } = selectionData
+        const location = view.rangeToCFI(range) as string
 
-        const highlightData = {
+        const data = {
           bookId: bookData.id,
           section: view.section.index,
-          location: view.rangeToCFI(range) as string,
+          fragment: selection.toString().slice(0, 64).trim(),
+          location,
           createTime: Math.floor(Date.now() / 1000)
         }
-        const result = await dbChannel.insertHighlight(highlightData)
+        const result = await dbChannel.insertHighlight(data)
 
-        bookData.highlights.push({ id: result.id, ...highlightData })
+        highlightData.list.unshift({ id: result.id, ...data })
 
-        view.mark(range, 'book-mark-highlight-search')
+        view.mark(range, 'book-mark-highlight', [['click', handleClickHighligh]])
 
         const ranges = highlightMap.get(view.section.index)
         if (ranges) {
           ranges.push(range)
+          highlightIdMap.set(range, result.id)
         }
 
         handleCancelSelect()
       }
     }
 
-    const removeHighlight = (view: View) => {
+    const clearHighlight = (view: View) => {
       const index = view.section.index
       const ranges = highlightMap.get(index)
 
       if (ranges) {
         for (const range of ranges) {
           view.unMark(range)
+          highlightIdMap.delete(range)
         }
       }
 
       highlightMap.delete(index)
-    }
-
-    watch(
-      () => displayData.highlight,
-      show => {
-        if (bookData.renderer) {
-          bookData.renderer.views.forEach(view => {
-            if (show) {
-              updateHighlights(view)
-            } else {
-              removeHighlight(view)
-            }
-          })
-        }
-      }
-    )
-
-    const addNote = () => {
-      // if (selectionData) {
-      //   const { view, range } = selectionData
-      //   view.mark(range, 'book-mark-highlight-search')
-      //   const marks = bookData.highlights.get(view.section.index)
-      //   if (marks) {
-      //     marks.push(range)
-      //   } else {
-      //     bookData.highlights.set(view.section.index, [range])
-      //   }
-      //   handleCancelSelect()
-      // }
     }
 
     const handleUpdateLocation = (location: LocationData) => {
@@ -247,15 +277,44 @@ export default defineComponent({
       handleCancelSelect()
     }
 
+    const handleHighlighChange = (data: Partial<HighlightDisplayData>) => {
+      if (data.all !== undefined) {
+        if (data.all) {
+          getHighlights()
+        } else if (bookData.renderer) {
+          bookData.renderer.views.forEach(view => getHighlights(view.section.index))
+        }
+      }
+
+      if (data.show !== undefined) {
+        if (bookData.renderer) {
+          bookData.renderer.views.forEach(view => {
+            if (data.show) {
+              updateHighlights(view)
+            } else {
+              clearHighlight(view)
+            }
+          })
+        }
+      }
+
+      Object.assign(highlightData, data)
+    }
+
     let spinTaskHandle: NodeJS.Timeout | null = null
 
-    const handleBeforeRender = (view: View) => {
+    const handleBeforeRender = async (view: View) => {
       spinTaskHandle = setTimeout(() => {
         spinTaskHandle = null
         isLoading.value = true
       }, 200)
 
-      updateHighlights(view)
+      if (highlightData.show && !highlightData.all) {
+        await getHighlights(view.section.index)
+        updateHighlights(view, highlightData.list)
+      } else if (highlightData.show) {
+        updateHighlights(view)
+      }
     }
 
     const handleRendered = () => {
@@ -267,7 +326,7 @@ export default defineComponent({
     }
 
     const handleBeforeUnload = (view: View) => {
-      removeHighlight(view)
+      clearHighlight(view)
     }
 
     const updateAccessTime = () => {
@@ -355,6 +414,8 @@ export default defineComponent({
     const deferBook = openBook()
 
     onMounted(async () => {
+      layoutStore.popoverData.to = pageRef.value
+
       try {
         const result = await deferBook
 
@@ -381,6 +442,10 @@ export default defineComponent({
           bookData.renderer.stage.hooks.resize.register(handleCancelSelect)
 
           updateAccessTime()
+
+          if (highlightData.all) {
+            getHighlights()
+          }
         } else {
           router.replace({
             name: 'START'
@@ -426,57 +491,57 @@ export default defineComponent({
     return () => (
       <div ref={pageRef} class="reader-page">
         {isLoading.value && <NSpin class="reader-page-loading-mask" size="large" />}
-        <NPopover
-          to={pageRef.value}
-          show={popoverData.show}
-          x={popoverData.x}
-          y={popoverData.y}
-          trigger="manual"
-          placement="bottom"
-        >
-          <div class="popover-content">
-            <NButton text focusable={false} onClick={addHighlight}>
-              <SVGIcon size={26} name="ic_fluent_highlight_24_filled" />
-            </NButton>
-            <NButton text focusable={false} onClick={addNote}>
-              <SVGIcon size={26} name="ic_fluent_note_edit_24_filled" />
-            </NButton>
-          </div>
-        </NPopover>
         <SideBar
           book={bookData.book}
           renderer={bookData.renderer}
+          highlight={highlightData}
           onTranslate={handleSideBarTranslate}
+          onHighlightChange={handleHighlighChange}
         />
         <div ref={containerRef} class="reader-page-container">
           <div class="top-bar">
             <div class="left"></div>
             <div class="center">{bookData.chapter}</div>
             <div class="right">
-              <NButton
-                text
-                focusable={false}
-                onClick={() =>
-                  router.replace({
-                    name: 'START'
-                  })
-                }
-              >
-                <SVGIcon size={24} name="ic_fluent_home_24_filled" />
-              </NButton>
-              <NButton text focusable={false}>
-                <SVGIcon size={24} name="ic_fluent_settings_24_filled" />
-              </NButton>
-              <NButton text focusable={false} onClick={handleFullScreen}>
-                <SVGIcon
-                  size={24}
-                  name={
-                    isFullScreen.value
-                      ? 'ic_fluent_arrow_minimize_24_filled'
-                      : 'ic_fluent_arrow_expand_24_filled'
-                  }
-                />
-              </NButton>
+              <TextHover
+                text="返回首页"
+                content={() => (
+                  <NButton
+                    text
+                    focusable={false}
+                    onClick={() =>
+                      router.replace({
+                        name: 'START'
+                      })
+                    }
+                  >
+                    <SVGIcon size={24} name="ic_fluent_home_24_filled" />
+                  </NButton>
+                )}
+              />
+              <TextHover
+                text="设置"
+                content={() => (
+                  <NButton text focusable={false}>
+                    <SVGIcon size={24} name="ic_fluent_settings_24_filled" />
+                  </NButton>
+                )}
+              />
+              <TextHover
+                text={isFullScreen.value ? '取消全屏' : '全屏'}
+                content={() => (
+                  <NButton text focusable={false} onClick={handleFullScreen}>
+                    <SVGIcon
+                      size={24}
+                      name={
+                        isFullScreen.value
+                          ? 'ic_fluent_arrow_minimize_24_filled'
+                          : 'ic_fluent_arrow_expand_24_filled'
+                      }
+                    />
+                  </NButton>
+                )}
+              />
             </div>
           </div>
           <div class="arrow prev" onClick={prevPage}>

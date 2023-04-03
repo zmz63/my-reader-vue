@@ -16,8 +16,16 @@
     flex-direction: column;
 
     .content-header {
+      display: flex;
+      flex-direction: column;
       flex-shrink: 0;
       box-shadow: 0 0 6px -4px;
+
+      &.row {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
 
       .label {
         display: flex;
@@ -75,14 +83,52 @@
   }
 
   .search-content {
-    box-sizing: border-box;
-
     .result-item {
       padding: 4px 12px;
       cursor: pointer;
 
       &:hover {
         background-color: rgb(207 207 207 / 36.3%);
+      }
+    }
+  }
+
+  .highlight-header {
+    display: flex;
+    height: 36px;
+    box-sizing: border-box;
+    padding-top: 6px;
+    padding-right: 8px;
+    gap: 6px;
+
+    .icon-button {
+      padding: 0 2px;
+    }
+  }
+
+  .highlight-content {
+    .highlight-item {
+      display: flex;
+      flex-direction: column;
+      padding: 4px 12px;
+      gap: 4px;
+
+      &:hover {
+        background-color: rgb(207 207 207 / 36.3%);
+      }
+
+      .fragment {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        cursor: pointer;
+        -webkit-line-clamp: 3;
+        text-overflow: ellipsis;
+      }
+
+      .date {
+        align-self: flex-end;
+        color: var(--text-color-3);
       }
     }
   }
@@ -116,10 +162,6 @@
 
     &:nth-child(3) {
       top: 104px;
-    }
-
-    &:nth-child(4) {
-      top: 138px;
     }
   }
 }

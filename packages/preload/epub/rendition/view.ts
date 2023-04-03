@@ -1,7 +1,6 @@
-import { Highlight, type Mark, Pane } from 'marks-pane'
 import { Defer } from '@common/defer'
 import { Hook } from '@common/hook'
-import { CFI, type CFIPath, type Section } from '..'
+import { CFI, type CFIPath, Highlight, type Mark, Pane, type Section } from '..'
 import { Content } from './content'
 
 export class View {
@@ -14,6 +13,8 @@ export class View {
   width = 0
 
   height = 0
+
+  mousePoint: [number, number] = [0, 0]
 
   hidden = false
 
@@ -152,6 +153,10 @@ export class View {
         }
       }
 
+      document.onmousemove = event => {
+        this.mousePoint = [event.x, event.y]
+      }
+
       this.defer.loaded.resolve(this)
     }
 
@@ -182,6 +187,16 @@ export class View {
     if (this.content) {
       return this.content.document.querySelector(selectors)
     }
+  }
+
+  pointToViewportPoint(x: number, y: number) {
+    const rect = this.wrapper.getBoundingClientRect()
+
+    return [x + rect.x, y + rect.y] as [number, number]
+  }
+
+  getMousePoint() {
+    return this.pointToViewportPoint(...this.mousePoint)
   }
 
   rangeToViewportRect(range: Range) {
@@ -238,7 +253,11 @@ export class View {
     }
   }
 
-  mark(range: Range, className: string) {
+  mark<T extends keyof SVGElementEventMap>(
+    range: Range,
+    className: string,
+    listeners?: [T, (event: SVGElementEventMap[T], view: View, range: Range) => void][]
+  ) {
     if (this.content) {
       let contentRange: Range | null = range
 
@@ -249,6 +268,16 @@ export class View {
       if (contentRange) {
         const mark = new Highlight(contentRange, className)
         this.pane.addMark(mark)
+        if (listeners) {
+          for (const [type, listener] of listeners) {
+            void (mark.element as SVGElement).addEventListener(
+              type,
+              (event: SVGElementEventMap[T]) => {
+                listener(event, this, range)
+              }
+            )
+          }
+        }
         this.marks.set(range, mark)
       }
     }

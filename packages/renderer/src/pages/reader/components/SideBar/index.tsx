@@ -8,18 +8,28 @@ import {
   reactive,
   ref
 } from 'vue'
-import { NInput, NScrollbar } from 'naive-ui'
+import { NButton, NInput, NScrollbar } from 'naive-ui'
 import { clamp, debounce } from 'lodash'
 import type { Book, PaginationRenderer, SearchResult, TocItem } from '@preload/epub'
+import type { HighlightData } from '@preload/channel/db'
 import SVGIcon from '@/components/SVGIcon'
+import TextHover from '@/components/TextHover'
 import './index.scss'
+import { format } from 'date-fns'
 
-type SideBarKey = 'navigation' | 'search' | 'highlight' | 'note'
+type SideBarKey = 'navigation' | 'search' | 'highlight'
 
 type SideBarItem = {
   label: string
+  row?: boolean
   header?: () => JSX.Element
   content: () => JSX.Element
+}
+
+export type HighlightDisplayData = {
+  show: boolean
+  list: HighlightData[]
+  all: boolean
 }
 
 const sideBarProps = {
@@ -30,14 +40,21 @@ const sideBarProps = {
   renderer: {
     type: [Object, null] as PropType<PaginationRenderer | null>,
     required: true
+  },
+  highlight: {
+    type: Object as PropType<HighlightDisplayData>,
+    required: true
   }
-}
+} as const
 
 export default defineComponent({
   props: sideBarProps,
   emits: {
     translate(value: number) {
       return typeof value === 'number'
+    },
+    highlightChange(value: Partial<HighlightDisplayData>) {
+      return typeof value === 'object'
     }
   },
   setup(props, { emit }) {
@@ -66,6 +83,7 @@ export default defineComponent({
       if (event.clientX < 200) {
         if (event.clientX < 100) {
           sideBarData.show = false
+          sideBarData.key = ''
         }
         translate(200)
       } else if (window.innerWidth - event.clientX < 600) {
@@ -128,7 +146,7 @@ export default defineComponent({
       key: '' as SideBarKey | ''
     })
 
-    const sideBarKeys: SideBarKey[] = ['navigation', 'search', 'highlight', 'note']
+    const sideBarKeys: SideBarKey[] = ['navigation', 'search', 'highlight']
 
     const createNavigationContent = () => {
       const generateNode = (items: TocItem[], deep = 0) =>
@@ -262,11 +280,65 @@ export default defineComponent({
     }
 
     const crateHighlightContent = () => ({
-      content: () => <div>hello</div>
-    })
-
-    const crateNoteContent = () => ({
-      content: () => <div>hello</div>
+      row: true,
+      header: () => (
+        <div class="highlight-header">
+          <TextHover
+            text={props.highlight.all ? '全部' : '本章'}
+            content={() => (
+              <NButton
+                class="icon-button"
+                quaternary
+                size="tiny"
+                focusable={false}
+                onClick={() => emit('highlightChange', { all: !props.highlight.all })}
+              >
+                <SVGIcon
+                  size={18}
+                  name={
+                    props.highlight.all
+                      ? 'ic_fluent_filter_dismiss_24_filled'
+                      : 'ic_fluent_filter_24_filled'
+                  }
+                />
+              </NButton>
+            )}
+          />
+          <TextHover
+            text={props.highlight.show ? '显示高亮' : '隐藏高亮'}
+            content={() => (
+              <NButton
+                class="icon-button"
+                quaternary
+                size="tiny"
+                focusable={false}
+                onClick={() => emit('highlightChange', { show: !props.highlight.show })}
+              >
+                <SVGIcon
+                  size={18}
+                  name={
+                    props.highlight.show
+                      ? 'ic_fluent_eye_show_24_filled'
+                      : 'ic_fluent_eye_hide_24_filled'
+                  }
+                />
+              </NButton>
+            )}
+          />
+        </div>
+      ),
+      content: () => (
+        <NScrollbar class="highlight-content">
+          {props.highlight.list.map(item => (
+            <div class="highlight-item">
+              <div class="fragment" onClick={() => props.renderer?.display(item.location)}>
+                {item.fragment}
+              </div>
+              <div class="ellipsis date">{format(item.createTime * 1000, 'yyyy-MM-dd HH:mm')}</div>
+            </div>
+          ))}
+        </NScrollbar>
+      )
     })
 
     const sideBarItems = reactive<Record<SideBarKey, SideBarItem>>({
@@ -281,10 +353,6 @@ export default defineComponent({
       highlight: {
         label: '高亮',
         ...crateHighlightContent()
-      },
-      note: {
-        label: '笔记',
-        ...crateNoteContent()
       }
     })
 
@@ -303,12 +371,18 @@ export default defineComponent({
     return () => (
       <div ref={sideBarRef} class="reader-page-side-bar">
         {sideBarKeys.map(key => (
-          <div
-            class={`tag${key === sideBarData.key ? ' active' : ''}`}
-            onClick={() => switchSideBar(key)}
-          >
-            <SVGIcon size={18} name={`ic_fluent_${key}_24_filled`} />
-          </div>
+          <TextHover
+            text={sideBarItems[key].label}
+            placement="right"
+            content={() => (
+              <div
+                class={`tag${key === sideBarData.key ? ' active' : ''}`}
+                onClick={() => switchSideBar(key)}
+              >
+                <SVGIcon size={18} name={`ic_fluent_${key}_24_filled`} />
+              </div>
+            )}
+          />
         ))}
         <div
           ref={dividerRef}
@@ -321,7 +395,7 @@ export default defineComponent({
         <div class="content-wrapper">
           {sideBarData.key && (
             <>
-              <div class="content-header">
+              <div class={`content-header${sideBarItems[sideBarData.key].row ? ' row' : ''}`}>
                 <div class="label">{sideBarItems[sideBarData.key].label}</div>
                 {sideBarItems[sideBarData.key].header &&
                   (sideBarItems[sideBarData.key].header as () => JSX.Element)()}

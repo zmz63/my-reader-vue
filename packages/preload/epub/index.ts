@@ -1,5 +1,6 @@
 export * from './book'
 export * from './rendition'
 export * from './cfi'
+export * from './mark'
 export * from './searcher'
 export * from './util'

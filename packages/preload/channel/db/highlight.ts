@@ -4,6 +4,7 @@ export type HighlightData = {
   id: number | bigint
   bookId: BookMeta['id']
   section: number
+  fragment: string
   location: string
   createTime: number
 }
@@ -25,11 +26,17 @@ export function deleteHighlight(id: number | bigint) {
 }
 
 export function getHighlightList(bookId: number | bigint, section?: number) {
-  return invokeDB<HighlightData>(
-    'all',
-    `SELECT * FROM highlights WHERE bookId = ?${
-      section !== undefined ? ' AND section = ?' : ''
-    } ORDER BY id DESC`,
-    [bookId, section]
-  )
+  if (section !== undefined) {
+    return invokeDB<HighlightData>(
+      'all',
+      'SELECT * FROM highlights WHERE bookId = ? AND section = ? ORDER BY id DESC',
+      [bookId, section]
+    )
+  } else {
+    return invokeDB<HighlightData>(
+      'all',
+      'SELECT * FROM highlights WHERE bookId = ? ORDER BY id DESC',
+      [bookId]
+    )
+  }
 }

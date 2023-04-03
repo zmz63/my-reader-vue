@@ -33,7 +33,6 @@
     "fs-extra": "^11.1.0",
     "lodash": "^4.17.21",
     "magic-string": "^0.30.0",
-    "marks-pane": "^1.0.9",
     "naive-ui": "^2.34.3",
     "pinia": "^2.0.29",
     "prettier": "^2.7.1",

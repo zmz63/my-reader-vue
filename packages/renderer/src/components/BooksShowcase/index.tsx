@@ -3,7 +3,8 @@ import { useRouter } from 'vue-router'
 import { NButton, NScrollbar } from 'naive-ui'
 import type { BookMeta } from '@preload/channel/db'
 import SVGIcon from '@/components/SVGIcon'
-import BookCards from '../BookCards'
+import TextHover from '@/components/TextHover'
+import BookCards from '@/components/BookCards'
 import BookList from '@/components/BookList'
 import './index.scss'
 
@@ -56,26 +57,36 @@ export default defineComponent({
         <div class="books-showcase-header">
           <div class="slot-wrapper">{slots.header && slots.header()}</div>
           <div class="switch-wrapper">
-            <NButton text focusable={false} onClick={() => switchDisplayMode('list')}>
-              <SVGIcon
-                size={24}
-                name={
-                  displayMode.value === 'list'
-                    ? 'ic_fluent_apps_list_24_filled'
-                    : 'ic_fluent_apps_list_24_regular'
-                }
-              />
-            </NButton>
-            <NButton text focusable={false} onClick={() => switchDisplayMode('card')}>
-              <SVGIcon
-                size={24}
-                name={
-                  displayMode.value === 'card'
-                    ? 'ic_fluent_textbox_align_bottom_rotate_90_24_filled'
-                    : 'ic_fluent_textbox_align_bottom_rotate_90_24_regular'
-                }
-              />
-            </NButton>
+            <TextHover
+              text="列表"
+              content={() => (
+                <NButton text focusable={false} onClick={() => switchDisplayMode('list')}>
+                  <SVGIcon
+                    size={24}
+                    name={
+                      displayMode.value === 'list'
+                        ? 'ic_fluent_apps_list_24_filled'
+                        : 'ic_fluent_apps_list_24_regular'
+                    }
+                  />
+                </NButton>
+              )}
+            />
+            <TextHover
+              text="卡片"
+              content={() => (
+                <NButton text focusable={false} onClick={() => switchDisplayMode('card')}>
+                  <SVGIcon
+                    size={24}
+                    name={
+                      displayMode.value === 'card'
+                        ? 'ic_fluent_textbox_align_bottom_rotate_90_24_filled'
+                        : 'ic_fluent_textbox_align_bottom_rotate_90_24_regular'
+                    }
+                  />
+                </NButton>
+              )}
+            />
           </div>
         </div>
         <NScrollbar class="books-showcase-body">

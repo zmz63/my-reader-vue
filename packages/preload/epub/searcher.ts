@@ -23,7 +23,7 @@ export class Searcher {
 
       if (ranges) {
         for (const range of ranges) {
-          view.mark(range, 'book-mark-highlight-search')
+          view.mark(range, 'book-mark-search')
         }
       }
     } else {
@@ -67,7 +67,9 @@ export class Searcher {
         NodeFilter.SHOW_TEXT,
         {
           acceptNode: node =>
-            node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+            (node.textContent as string).trim()
+              ? NodeFilter.FILTER_ACCEPT
+              : NodeFilter.FILTER_REJECT
         }
       )
 
@@ -87,7 +89,7 @@ export class Searcher {
 
             this.views.forEach(view => {
               if (section === view.section) {
-                view.mark(range, 'book-mark-highlight-search')
+                view.mark(range, 'book-mark-search')
               }
             })
 

@@ -32,12 +32,14 @@
 
       .title {
         width: 100%;
+        cursor: pointer;
         font-size: var(--font-size-huge);
       }
 
       .creator {
         width: 100%;
         color: var(--text-color-3);
+        cursor: pointer;
 
         &:hover {
           color: var(--text-color-2);
@@ -48,6 +50,7 @@
       .publisher {
         width: 100%;
         color: var(--text-color-3);
+        cursor: pointer;
 
         &:hover {
           color: var(--text-color-2);

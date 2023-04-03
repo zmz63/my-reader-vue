@@ -33,53 +33,6 @@ module '*.vue' {
   export default module
 }
 
-module 'marks-pane' {
-  export class Pane {
-    target: HTMLElement
-
-    container: HTMLElement
-
-    element: SVGSVGElement
-
-    marks: Mark[]
-
-    constructor(target: HTMLElement, container: HTMLElement)
-
-    addMark(mark: Mark): Mark
-
-    removeMark(mark: Mark): void
-
-    render(): void
-  }
-
-  export class Mark {
-    element: SVGSVGElement
-
-    bind(target: HTMLElement, container: HTMLElement): void
-
-    unbind(): void
-
-    render(): void
-  }
-
-  export class Highlight extends Mark {
-    range: Range
-
-    className: string
-
-    data: Record<string, string>
-
-    attributes: Record<string, string>
-
-    constructor(
-      range: Range,
-      className?: string,
-      data?: Record<string, string>,
-      attributes?: Record<string, string>
-    )
-  }
-}
-
 type Mutable<T> = {
   -readonly [P in keyof T]: T[P]
 }
