@@ -132,7 +132,7 @@ export class Book {
       }
     }
 
-    await Promise.all(promises)
+    await Promise.allSettled(promises)
     console.log('---------- resources loaded')
 
     this.defer.dumped.resolve(this)

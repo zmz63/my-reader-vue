@@ -121,12 +121,36 @@ export class Content {
       return
     }
 
+    const length = stylesheet.cssRules.length
+
     stylesheet.insertRule(
       `${selector}{${Object.entries(rule)
         .map(([key, value]) => `${key}:${value};`)
         .join('')}}`,
-      stylesheet.cssRules.length
+      length
     )
+  }
+
+  removeStylesheetRule(selector: string) {
+    const stylesheet = this.getStylesheetNode().sheet
+
+    if (!stylesheet) {
+      return
+    }
+
+    for (let i = stylesheet.cssRules.length - 1; i >= 0; i--) {
+      const rule = stylesheet.cssRules[i] as CSSStyleRule
+      if (rule.selectorText === selector) {
+        stylesheet.deleteRule(i)
+
+        break
+      }
+    }
+  }
+
+  replaceStylesheetRule(selector: string, rule: Record<string, string>) {
+    this.removeStylesheetRule(selector)
+    this.addStylesheetRule(selector, rule)
   }
 
   destroy() {

@@ -64,6 +64,8 @@ export class PaginationRenderer {
     verticalPadding: 0
   }
 
+  rules: Record<string, Record<string, string>> = {}
+
   location: Location
 
   readonly hooks: Readonly<{
@@ -239,6 +241,16 @@ export class PaginationRenderer {
     }
   }
 
+  setStylesheetRule(selector: string, rule: Record<string, string>) {
+    this.rules[selector] = rule
+
+    this.views.forEach(view => {
+      if (view.content) {
+        view.content.replaceStylesheetRule(selector, rule)
+      }
+    })
+  }
+
   async setView(section: Section) {
     const view = new View(section)
 
@@ -248,6 +260,12 @@ export class PaginationRenderer {
     this.views.set(0, view)
 
     await view.render()
+
+    for (const selector in this.rules) {
+      const rule = this.rules[selector]
+
+      void (view.content as Content).replaceStylesheetRule(selector, rule)
+    }
 
     view.hooks.anchorClick.register(href => {
       if (href.startsWith('book-cache:///')) {
@@ -314,6 +332,7 @@ export class PaginationRenderer {
     content.setStyle('box-sizing', 'border-box', true)
     content.setStyle('max-width', 'inherit', true)
     content.setStyle('column-fill', 'auto', true)
+    content.setStyle('transform-origin', 'top left', true)
 
     content.addStylesheetRule('img', {
       'max-width': '100%',

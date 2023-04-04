@@ -1,0 +1,48 @@
+.reader-page-option-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .option-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .label {
+      flex-shrink: 0;
+    }
+  }
+
+  .option-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .input-box {
+      width: 86px;
+      flex-shrink: 0;
+
+      .n-input-wrapper {
+        padding-right: 0;
+      }
+
+      .unit-selector {
+        width: 46px;
+
+        .n-base-selection-input {
+          padding: 0;
+        }
+
+        .n-base-suffix {
+          right: 0;
+        }
+      }
+
+      .unit {
+        display: flex;
+        width: 46px;
+        justify-content: center;
+      }
+    }
+  }
+}

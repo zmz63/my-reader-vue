@@ -30,34 +30,30 @@ export default defineComponent({
       }
 
       const openBook = async (path: string) => {
-        try {
-          const file = await preloadUtil.openFile(path)
-          const book = new ePub.Book(file, false)
+        const file = await preloadUtil.openFile(path)
+        const book = new ePub.Book(file, false)
 
-          await book.opened
+        await book.opened
 
-          const { title, creator, description, date, publisher, identifier } = book.package.metadata
+        const { title, creator, description, date, publisher, identifier } = book.package.metadata
 
-          const bookData: Omit<BookData, 'id'> = {
-            md5: preloadUtil.md5(file),
-            size: file.byteLength,
-            createTime: Math.floor(Date.now() / 1000),
-            file,
-            title,
-            cover: book.package.cover,
-            creator,
-            description,
-            date,
-            publisher,
-            identifier
-          }
-
-          const result = await dbChannel.insertBook(bookData)
-
-          return result
-        } catch (error) {
-          return error
+        const bookData: Omit<BookData, 'id'> = {
+          md5: preloadUtil.md5(file),
+          size: file.byteLength,
+          createTime: Math.floor(Date.now() / 1000),
+          file,
+          title,
+          cover: book.package.cover,
+          creator,
+          description,
+          date,
+          publisher,
+          identifier
         }
+
+        const result = await dbChannel.insertBook(bookData)
+
+        return result
       }
 
       const promises: Promise<unknown>[] = []
@@ -65,7 +61,7 @@ export default defineComponent({
         promises.push(openBook(path))
       }
 
-      const result = await Promise.all(promises)
+      const result = await Promise.allSettled(promises)
 
       console.log(result)
 

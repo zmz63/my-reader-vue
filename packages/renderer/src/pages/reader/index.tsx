@@ -8,6 +8,7 @@ import { useLayoutStore } from '@/stores/layout'
 import SVGIcon from '@/components/SVGIcon'
 import TextHover from '@/components/TextHover'
 import SideBar, { type HighlightDisplayData } from './components/SideBar'
+import SettingPanel, { type SettingPanelInst } from './components/SettingPanel'
 import './index.scss'
 
 export default defineComponent({
@@ -21,6 +22,8 @@ export default defineComponent({
     const pageRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
 
     const containerRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
+
+    const settingPanelInst = ref<SettingPanelInst>()
 
     const isFullScreen = ref(false)
 
@@ -538,15 +541,7 @@ export default defineComponent({
               <TextHover
                 text="返回首页"
                 content={() => (
-                  <NButton
-                    text
-                    focusable={false}
-                    onClick={() =>
-                      router.replace({
-                        name: 'START'
-                      })
-                    }
-                  >
+                  <NButton text focusable={false} onClick={() => router.replace({ name: 'START' })}>
                     <SVGIcon size={24} name="ic_fluent_home_24_filled" />
                   </NButton>
                 )}
@@ -554,7 +549,7 @@ export default defineComponent({
               <TextHover
                 text="设置"
                 content={() => (
-                  <NButton text focusable={false}>
+                  <NButton text focusable={false} onClick={() => settingPanelInst.value?.show()}>
                     <SVGIcon size={24} name="ic_fluent_settings_24_filled" />
                   </NButton>
                 )}
@@ -583,6 +578,11 @@ export default defineComponent({
             <SVGIcon size={36} name="ic_fluent_ios_arrow_right_24_filled" />
           </div>
         </div>
+        <SettingPanel
+          ref={settingPanelInst}
+          renderer={bookData.renderer}
+          to={pageRef.value || '.app'}
+        />
       </div>
     )
   }
