@@ -10,7 +10,6 @@ export type PaginationOptions = {
   layout: 'relowable' | 'pre-paginated'
   spread: boolean
   minSpreadWidth: number
-  gap: number
 }
 
 export type PaginationViewData = {
@@ -22,6 +21,7 @@ export type PaginationViewData = {
   columnWidth: number
   horizontalPadding: number
   verticalPadding: number
+  scale: number
 }
 
 export type Location = {
@@ -33,6 +33,8 @@ export type LocationData = {
   cfi: string
   index: number
   href: string
+  pages: number
+  percentage: number
 }
 
 export class PaginationRenderer {
@@ -49,8 +51,7 @@ export class PaginationRenderer {
   options: PaginationOptions = {
     layout: 'relowable',
     spread: true,
-    minSpreadWidth: 800,
-    gap: 0
+    minSpreadWidth: 800
   }
 
   viewData: PaginationViewData = {
@@ -61,7 +62,8 @@ export class PaginationRenderer {
     pageWidth: 0,
     columnWidth: 0,
     horizontalPadding: 0,
-    verticalPadding: 0
+    verticalPadding: 0,
+    scale: 1
   }
 
   rules: Record<string, Record<string, string>> = {}
@@ -95,18 +97,19 @@ export class PaginationRenderer {
         get: (target, property, receiver) => Reflect.get(target, property, receiver),
         set: (target, property, value, receiver) => {
           if (property === 'cfi') {
-            const view = this.views.get(0)
-            this.hooks.location.trigger({
-              cfi: value,
-              index: view.section.index,
-              href: view.section.href
-            })
+            this.triggerLocation(value)
           }
 
           return Reflect.set(target, property, value, receiver)
         }
       }
     )
+
+    this.book.spine.hooks.countWords.register(() => {
+      if (this.views.length) {
+        this.triggerLocation()
+      }
+    })
 
     Object.assign(this.options, options)
   }
@@ -160,8 +163,8 @@ export class PaginationRenderer {
 
       if (range) {
         this.moveTo(range)
-        this.location.cfi = cfi
         this.location.range = range
+        this.location.cfi = cfi
 
         return
       }
@@ -241,13 +244,25 @@ export class PaginationRenderer {
     }
   }
 
-  setStylesheetRule(selector: string, rule: Record<string, string>) {
-    this.rules[selector] = rule
+  triggerLocation(cfi?: string) {
+    const view = this.views.get(0)
+    let percentage = -1
 
-    this.views.forEach(view => {
-      if (view.content) {
-        view.content.replaceStylesheetRule(selector, rule)
+    if (this.book.spine.totalWords !== -1) {
+      let currentWords = 0
+      for (let i = 0; i < view.section.index; i++) {
+        currentWords += this.book.spine.sections[i].words
       }
+      currentWords += this.location.range ? view.rangeToWordsOffset(this.location.range) : 0
+      percentage = currentWords / this.book.spine.totalWords
+    }
+
+    this.hooks.location.trigger({
+      cfi: cfi || this.location.cfi,
+      index: view.section.index,
+      href: view.section.href,
+      pages: Math.round(view.width / this.viewData.pageWidth),
+      percentage
     })
   }
 
@@ -373,11 +388,12 @@ export class PaginationRenderer {
       pageWidth: this.stage.width,
       columnWidth: this.stage.width,
       horizontalPadding: 0,
-      verticalPadding: Math.floor(this.stage.height / 48)
+      verticalPadding: Math.floor(this.stage.height / 48),
+      scale: this.viewData.scale
     }
 
     data.divisor = this.options.spread && data.width >= this.options.minSpreadWidth ? 2 : 1
-    data.gap = this.options.gap || Math.floor(data.width / 24)
+    data.gap = Math.floor(data.width / 24)
     if (data.gap % 2 !== 0) {
       data.gap -= 1
     }
@@ -412,16 +428,17 @@ export class PaginationRenderer {
     const { height, gap, columnWidth, pageWidth, horizontalPadding, verticalPadding } =
       this.viewData
 
-    content.setStyle('width', `${pageWidth}px`, true)
-    content.setStyle('height', `${height}px`, true)
-    content.setStyle('min-width', `${pageWidth}px`, true)
-    content.setStyle('min-height', `${height}px`, true)
-    content.setStyle('padding-left', `${horizontalPadding}px`, true)
-    content.setStyle('padding-right', `${horizontalPadding}px`, true)
-    content.setStyle('padding-top', `${verticalPadding}px`, true)
-    content.setStyle('padding-bottom', `${verticalPadding}px`, true)
-    content.setStyle('column-gap', `${gap}px`, true)
-    content.setStyle('column-width', `${columnWidth}px`, true)
+    content.setStyle('transform', `scale(${this.viewData.scale})`, true)
+    content.setStyle('width', `${pageWidth / this.viewData.scale}px`, true)
+    content.setStyle('height', `${height / this.viewData.scale}px`, true)
+    content.setStyle('min-width', `${pageWidth / this.viewData.scale}px`, true)
+    content.setStyle('min-height', `${height / this.viewData.scale}px`, true)
+    content.setStyle('padding-left', `${horizontalPadding / this.viewData.scale}px`, true)
+    content.setStyle('padding-right', `${horizontalPadding / this.viewData.scale}px`, true)
+    content.setStyle('padding-top', `${verticalPadding / this.viewData.scale}px`, true)
+    content.setStyle('padding-bottom', `${verticalPadding / this.viewData.scale}px`, true)
+    content.setStyle('column-gap', `${gap / this.viewData.scale}px`, true)
+    content.setStyle('column-width', `${columnWidth / this.viewData.scale}px`, true)
 
     const width = content.textWidth + gap
 
@@ -433,12 +450,37 @@ export class PaginationRenderer {
     return [width, height]
   }
 
-  setSpread(spread: boolean, minSpreadWidth = 800, gap = 0) {
+  setStylesheetRule(selector: string, rule: Record<string, string>) {
+    this.rules[selector] = rule
+
+    console.log(selector, rule)
+
+    this.views.forEach(view => {
+      if (view.content) {
+        view.content.replaceStylesheetRule(selector, rule)
+      }
+    })
+
+    if (this.views.length) {
+      this.updateStageLayout()
+    }
+  }
+
+  setScale(scale: number) {
+    this.viewData.scale = scale
+
+    if (this.views.length) {
+      this.updateStageLayout()
+    }
+  }
+
+  setSpread(spread: boolean, minSpreadWidth = 800) {
     this.options.spread = spread
     this.options.minSpreadWidth = minSpreadWidth
-    this.options.gap = gap
 
-    this.updateStageLayout()
+    if (this.views.length) {
+      this.updateStageLayout()
+    }
   }
 
   clear() {

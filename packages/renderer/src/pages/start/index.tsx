@@ -1,5 +1,7 @@
 import { type DefineComponent, KeepAlive, defineComponent } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { NButton } from 'naive-ui'
+import TextHover from '@/components/TextHover'
 import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
 
@@ -45,19 +47,32 @@ export default defineComponent({
     return () => (
       <div class="start-page">
         <div class="start-page-side-bar">
-          {startMenuOptions.map(({ name, label, icon, callback }) =>
-            name ? (
-              <RouterLink to={{ name }} class="item" activeClass="active" key={name}>
-                <SVGIcon size={20} name={icon} />
-                <div>{label}</div>
-              </RouterLink>
-            ) : (
-              <div class="item" key={label} onClick={callback}>
-                <SVGIcon size={20} name={icon} />
-                <div>{label}</div>
-              </div>
-            )
-          )}
+          <div class="base">
+            {startMenuOptions.map(({ name, label, icon, callback }) =>
+              name ? (
+                <RouterLink to={{ name }} class="item" activeClass="active" key={name}>
+                  <SVGIcon size={22} name={icon} />
+                  <div>{label}</div>
+                </RouterLink>
+              ) : (
+                <div class="item" key={label} onClick={callback}>
+                  <SVGIcon size={22} name={icon} />
+                  <div>{label}</div>
+                </div>
+              )
+            )}
+          </div>
+          <div class="bottom">
+            <TextHover
+              text="设置"
+              placement="right"
+              content={() => (
+                <NButton class="setting-button" quaternary size="tiny" focusable={false}>
+                  <SVGIcon size={24} name="ic_fluent_settings_24_regular" />
+                </NButton>
+              )}
+            />
+          </div>
         </div>
         <div class="start-page-view">
           <RouterView>

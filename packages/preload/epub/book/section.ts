@@ -21,6 +21,8 @@ export class Section {
 
   blobUrl = ''
 
+  words = -1
+
   constructor(
     spine: Spine,
     index: number,
@@ -53,6 +55,39 @@ export class Section {
     this.content = serializer.serializeToString(this.document.documentElement)
 
     this.blobUrl = URL.createObjectURL(new Blob([this.content], { type: this.type }))
+  }
+
+  countWords(max = 1000) {
+    return new Promise<number>(resolve => {
+      const treeWalker = this.document.createTreeWalker(this.document.body, NodeFilter.SHOW_TEXT)
+
+      let n = 0
+      let words = 0
+      let node: Node | null
+
+      const walk = () => {
+        do {
+          node = treeWalker.nextNode()
+          n += 1
+
+          if (node) {
+            words += (node.textContent as string).length
+
+            if (n >= max) {
+              n = 0
+              requestAnimationFrame(walk)
+
+              break
+            }
+          } else {
+            this.words = words
+            resolve(words)
+          }
+        } while (node)
+      }
+
+      walk()
+    })
   }
 
   prev() {

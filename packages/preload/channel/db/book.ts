@@ -5,10 +5,14 @@ export type BookData = {
   md5: string
   size: number
   createTime: number
+  // record
   file?: Buffer | null
   path?: string
   location?: string
+  percentage?: number
   accessTime?: number
+  readingTime?: number
+  // meta
   title?: string
   cover?: Buffer | null
   creator?: string
@@ -22,9 +26,16 @@ export type BookMeta = Omit<BookData, 'file'>
 
 const BOOK_META_KEYS = [
   'id',
+  'md5',
+  'size',
+  'createTime',
+  // record
   'path',
   'location',
+  'percentage',
   'accessTime',
+  'readingTime',
+  // meta
   'title',
   'cover',
   'creator',
@@ -35,7 +46,9 @@ const BOOK_META_KEYS = [
 ]
 
 export async function insertBook(book: Omit<BookData, 'id'>) {
-  const target = await invokeDB<Pick<BookMeta, 'id' | 'location'> | undefined>(
+  const target = await invokeDB<
+    Pick<BookMeta, 'id' | 'location' | 'percentage' | 'readingTime'> | undefined
+  >(
     'get',
     'SELECT id, location, accessTime FROM books WHERE (md5 = ? AND (title = ? OR creator = ?)) OR identifier = ?',
     [book.md5, book.title, book.creator, book.identifier]

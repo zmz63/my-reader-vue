@@ -1,9 +1,17 @@
 import { defineComponent, reactive, ref } from 'vue'
-import { format, startOfDay, startOfMonth, startOfWeek, startOfYear } from 'date-fns'
+import {
+  format,
+  formatDistance,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  startOfYear
+} from 'date-fns'
+import { zhCN } from 'date-fns/locale'
+import { NCollapse, NCollapseItem, NProgress, NScrollbar } from 'naive-ui'
+import { useRouter } from 'vue-router'
 import type { BookMeta } from '@preload/channel/db'
 import './index.scss'
-import { NCollapse, NCollapseItem, NScrollbar } from 'naive-ui'
-import { useRouter } from 'vue-router'
 
 export default defineComponent({
   setup() {
@@ -95,8 +103,15 @@ export default defineComponent({
                           >
                             <div class="ellipsis title">{item.title}</div>
                             <div class="ellipsis creator">{item.creator}</div>
-                            <div class="time">123</div>
-                            <div class="progress">123</div>
+                            <div class="time">
+                              {formatDistance((item.readingTime || 0) * 1000, 0, { locale: zhCN })}
+                            </div>
+                            <div class="progress">
+                              <NProgress
+                                percentage={(item.percentage || 0) * 100}
+                                showIndicator={false}
+                              />
+                            </div>
                             <div class="ellipsis date">
                               {format((item.accessTime as number) * 1000, 'yyyy/MM/dd HH:mm')}
                             </div>

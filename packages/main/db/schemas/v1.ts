@@ -6,8 +6,14 @@ export default {
       md5 TEXT NOT NULL,
       size INTEGER NOT NULL,
       createTime INTEGER NOT NULL,
-      path TEXT UNIQUE,
+
       file BLOB,
+      path TEXT UNIQUE,
+      location TEXT,
+      percentage INTEGER,
+      accessTime INTEGER,
+      readingTime INTEGER,
+
       title TEXT,
       cover BLOB,
       creator TEXT,
@@ -15,8 +21,7 @@ export default {
       date TEXT,
       publisher TEXT,
       identifier TEXT UNIQUE,
-      location TEXT,
-      accessTime INTEGER,
+
       PRIMARY KEY (id)
     );`
   ]

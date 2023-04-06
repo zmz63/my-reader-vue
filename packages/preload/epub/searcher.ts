@@ -104,18 +104,18 @@ export class Searcher {
             } else {
               this.result.set(index, [range])
             }
-
-            n += 1
-
-            if (seq !== this.seq) {
-              return
-            } else if (n >= max) {
-              yield result
-
-              n = 0
-              result = new Map()
-            }
           }
+        }
+
+        n += 1
+
+        if (seq !== this.seq) {
+          return
+        } else if (n >= max) {
+          yield result
+
+          n = 0
+          result = new Map()
         }
       }
     }

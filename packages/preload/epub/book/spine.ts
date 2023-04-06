@@ -10,10 +10,14 @@ export class Spine {
 
   hrefMap: Record<string, number> = {}
 
+  totalWords = -1
+
   readonly hooks: Readonly<{
     serialize: Hook<(section: Section) => void>
+    countWords: Hook<(words: number) => void>
   }> = {
-    serialize: new Hook()
+    serialize: new Hook(),
+    countWords: new Hook()
   }
 
   get(target?: number | string) {
@@ -67,6 +71,9 @@ export class Spine {
     { spine, manifest, spineNodeIndex }: Package,
     container: Container
   ) {
+    const max = Math.floor(5000 / spine.length)
+    const countWordsQueue: Promise<number>[] = []
+
     for (const item of spine) {
       const index = item.index
       const manifestItem = manifest[item.idref]
@@ -84,11 +91,18 @@ export class Spine {
         document
       )
 
+      countWordsQueue.push(section.countWords(max))
+
       inst.sections[index] = section
 
       inst.hrefMap[href] = index
       inst.hrefMap[href] = index
       inst.hrefMap[href] = index
     }
+
+    Promise.all(countWordsQueue).then(list => {
+      inst.totalWords = list.reduce((prev, value) => prev + value, 0)
+      inst.hooks.countWords.trigger(inst.totalWords)
+    })
   }
 }

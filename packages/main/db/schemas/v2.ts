@@ -9,6 +9,7 @@ export default {
       location TEXT NOT NULL UNIQUE,
       createTime INTEGER NOT NULL,
       PRIMARY KEY (id),
+
       FOREIGN KEY (bookId) REFERENCES books (id) ON DELETE CASCADE ON UPDATE CASCADE
     );`
   ]

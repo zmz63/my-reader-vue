@@ -1,0 +1,30 @@
+.reader-page-option-item {
+  .option-content {
+    .input-box {
+      width: 96px;
+      flex-shrink: 0;
+
+      .n-input-wrapper {
+        padding-right: 0;
+      }
+
+      .unit-selector {
+        width: 46px;
+
+        .n-base-selection-input {
+          padding: 0;
+        }
+
+        .n-base-suffix {
+          right: 0;
+        }
+      }
+
+      .unit {
+        display: flex;
+        width: 46px;
+        justify-content: center;
+      }
+    }
+  }
+}

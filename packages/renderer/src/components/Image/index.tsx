@@ -40,6 +40,7 @@ export default defineComponent({
 
     return () => (
       <div onClick={() => emit('click')}>
+        {slots.default && slots.default()}
         {state.value === 0 ? slots.placeholder && slots.placeholder() : null}
         <img
           class={props.imageClass}

@@ -1,7 +1,9 @@
 import {
   type PropType,
   type Raw,
+  type Ref,
   defineComponent,
+  inject,
   markRaw,
   onBeforeUnmount,
   onMounted,
@@ -10,12 +12,12 @@ import {
 } from 'vue'
 import { NButton, NInput, NScrollbar } from 'naive-ui'
 import { clamp, debounce } from 'lodash'
-import type { Book, PaginationRenderer, SearchResult, TocItem } from '@preload/epub'
+import { format } from 'date-fns'
+import type { PaginationRenderer, SearchResult, TocItem } from '@preload/epub'
 import type { HighlightData } from '@preload/channel/db'
 import SVGIcon from '@/components/SVGIcon'
 import TextHover from '@/components/TextHover'
 import './index.scss'
-import { format } from 'date-fns'
 
 type SideBarKey = 'navigation' | 'search' | 'highlight'
 
@@ -33,10 +35,6 @@ export type HighlightDisplayData = {
 }
 
 const sideBarProps = {
-  book: {
-    type: [Object, null] as PropType<Book | null>,
-    required: true
-  },
   renderer: {
     type: [Object, null] as PropType<PaginationRenderer | null>,
     required: true
@@ -50,9 +48,6 @@ const sideBarProps = {
 export default defineComponent({
   props: sideBarProps,
   emits: {
-    translate(value: number) {
-      return typeof value === 'number'
-    },
     highlightChange(value: Partial<HighlightDisplayData>) {
       return typeof value === 'object'
     }
@@ -61,6 +56,8 @@ export default defineComponent({
     const sideBarRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
 
     const dividerRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
+
+    const containerRef = inject<Ref<HTMLDivElement>>('container') as Ref<HTMLDivElement>
 
     let dragging = false
 
@@ -72,10 +69,10 @@ export default defineComponent({
 
       if (sideBarData.show) {
         sideBarRef.value.style.translate = '0 0'
-        emit('translate', width)
+        containerRef.value.style.width = `calc(100% - ${width}px)`
       } else {
         sideBarRef.value.style.translate = `${-width}px 0`
-        emit('translate', 0)
+        containerRef.value.style.width = '100%'
       }
     }
 
@@ -168,7 +165,7 @@ export default defineComponent({
       return {
         content: () => (
           <NScrollbar class="navigation-content">
-            {generateNode(props.book?.navigation.list || [])}
+            {generateNode(props.renderer?.book.navigation.list || [])}
           </NScrollbar>
         )
       }

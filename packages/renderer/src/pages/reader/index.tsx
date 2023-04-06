@@ -1,4 +1,13 @@
-import { type Raw, defineComponent, markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import {
+  type Raw,
+  defineComponent,
+  markRaw,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  reactive,
+  ref
+} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton, NSpin } from 'naive-ui'
 import { debounce } from 'lodash'
@@ -23,6 +32,8 @@ export default defineComponent({
 
     const containerRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
 
+    provide('container', containerRef)
+
     const settingPanelInst = ref<SettingPanelInst>()
 
     const isFullScreen = ref(false)
@@ -34,8 +45,9 @@ export default defineComponent({
       book: null as Raw<Book> | null,
       renderer: null as Raw<PaginationRenderer> | null,
       metadata: {} as Partial<Metadata>,
-      location: {} as Partial<LocationData>,
-      chapter: ''
+      location: {} as LocationData,
+      chapter: '',
+      readingTime: 0
     })
 
     const handleFullScreen = async () => {
@@ -283,7 +295,8 @@ export default defineComponent({
     const handleUpdateLocation = (location: LocationData) => {
       if (bookData.id && location.cfi !== bookData.location.cfi) {
         dbChannel.updateBook(bookData.id, {
-          location: location.cfi
+          location: location.cfi,
+          percentage: location.percentage
         })
       }
 
@@ -372,10 +385,24 @@ export default defineComponent({
       }
     }
 
+    const updateReadingTime = () => {
+      if (bookData.id) {
+        bookData.readingTime += 1
+
+        dbChannel.updateBook(bookData.id, {
+          readingTime: bookData.readingTime
+        })
+
+        setTimeout(updateReadingTime, 1000)
+      }
+    }
+
     const openBook: () => Promise<{
       id: number | bigint
       book: Book
       location?: string
+      percentage?: number
+      readingTime?: number
     } | null> = async () => {
       const { path, id } = route.query as Partial<{ path: string; id: string }>
       const dumpPath = await preloadUtil.getBookCachePath()
@@ -417,7 +444,9 @@ export default defineComponent({
         return {
           id: result.id,
           book,
-          location: result.location
+          location: result.location,
+          percentage: result.percentage,
+          readingTime: result.readingTime
         }
       } else if (id) {
         const result = await dbChannel.getBookById(BigInt(id))
@@ -438,7 +467,9 @@ export default defineComponent({
           return {
             id: BigInt(id),
             book,
-            location: result.location
+            location: result.location,
+            percentage: result.percentage,
+            readingTime: result.readingTime
           }
         }
       }
@@ -455,11 +486,12 @@ export default defineComponent({
         const result = await deferBook
 
         if (result) {
-          const { id, book, location } = result
+          const { id, book, location, readingTime } = result
 
           bookData.id = id
           bookData.book = markRaw(book)
           bookData.renderer = markRaw(new ePub.PaginationRenderer(bookData.book))
+          bookData.readingTime = readingTime || 0
 
           await bookData.book.opened
 
@@ -477,6 +509,8 @@ export default defineComponent({
           bookData.renderer.stage.hooks.resize.register(handleCancelSelect)
 
           updateAccessTime()
+
+          updateReadingTime()
 
           if (highlightData.all) {
             getHighlights()
@@ -500,6 +534,8 @@ export default defineComponent({
       bookData.renderer = null
       bookData.book = null
 
+      bookData.id = null
+
       layoutStore.topBarSlot = null
     })
 
@@ -515,27 +551,20 @@ export default defineComponent({
       }
     }
 
-    const handleSideBarTranslate = (value: number) => {
-      if (value) {
-        containerRef.value.style.width = `calc(100% - ${value}px)`
-      } else {
-        containerRef.value.style.width = '100%'
-      }
-    }
-
     return () => (
-      <div ref={pageRef} class="reader-page">
+      <div ref={pageRef} class="reader-page" onClick={handleCancelSelect}>
         {isLoading.value && <NSpin class="reader-page-loading-mask" size="large" />}
         <SideBar
-          book={bookData.book}
           renderer={bookData.renderer}
           highlight={highlightData}
-          onTranslate={handleSideBarTranslate}
           onHighlightChange={handleHighlighChange}
         />
         <div ref={containerRef} class="reader-page-container">
           <div class="top-bar">
-            <div class="left"></div>
+            <div class="left">
+              {bookData.location.percentage >= 0 &&
+                `${(bookData.location.percentage * 100).toFixed(2)}%`}
+            </div>
             <div class="center">{bookData.chapter}</div>
             <div class="right">
               <TextHover
@@ -578,11 +607,7 @@ export default defineComponent({
             <SVGIcon size={36} name="ic_fluent_ios_arrow_right_24_filled" />
           </div>
         </div>
-        <SettingPanel
-          ref={settingPanelInst}
-          renderer={bookData.renderer}
-          to={pageRef.value || '.app'}
-        />
+        <SettingPanel ref={settingPanelInst} renderer={bookData.renderer} />
       </div>
     )
   }

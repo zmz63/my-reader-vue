@@ -183,6 +183,32 @@ export class View {
     }
   }
 
+  rangeToWordsOffset(range: Range) {
+    if (this.content && range.commonAncestorContainer.getRootNode() === this.content.document) {
+      const treeWalker = this.content.document.createTreeWalker(
+        this.content.body,
+        NodeFilter.SHOW_TEXT + NodeFilter.SHOW_ELEMENT
+      )
+      const endNode = range.endContainer
+
+      let words = 0
+      let node: Node | null
+      while ((node = treeWalker.nextNode())) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          words += (node.textContent as string).length
+        }
+
+        if (node === endNode) {
+          return words
+        }
+      }
+
+      return words
+    } else {
+      return 0
+    }
+  }
+
   querySelector(selectors: string) {
     if (this.content) {
       return this.content.document.querySelector(selectors)
