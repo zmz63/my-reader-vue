@@ -6,14 +6,16 @@ import {
   onMounted,
   provide,
   reactive,
-  ref
+  ref,
+  watchEffect
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NSpin } from 'naive-ui'
+import { NButton, NPopover, NSpin } from 'naive-ui'
 import { debounce } from 'lodash'
 import type { Book, LocationData, Metadata, PaginationRenderer, TocItem, View } from '@preload/epub'
 import type { BookData, HighlightData } from '@preload/channel/db'
 import { useLayoutStore } from '@/stores/layout'
+import { useBookStore } from '@/stores/book'
 import SVGIcon from '@/components/SVGIcon'
 import TextHover from '@/components/TextHover'
 import SideBar, { type HighlightDisplayData } from './components/SideBar'
@@ -27,6 +29,8 @@ export default defineComponent({
     const router = useRouter()
 
     const layoutStore = useLayoutStore()
+
+    const bookStore = useBookStore()
 
     const pageRef = ref<HTMLDivElement>(undefined as unknown as HTMLDivElement)
 
@@ -62,6 +66,13 @@ export default defineComponent({
       }
     }
 
+    const popoverData = reactive({
+      show: false,
+      x: 0,
+      y: 0,
+      content: null as (() => JSX.Element) | null
+    })
+
     let selectionData: { view: View; selection: Selection; range: Range } | null = null
 
     const handleSelect = debounce((view: View, selection: Selection) => {
@@ -78,13 +89,13 @@ export default defineComponent({
         range
       }
 
-      layoutStore.popoverData.show = true
-      layoutStore.popoverData.x = x
-      layoutStore.popoverData.y = y
-      layoutStore.popoverData.content = () => (
+      popoverData.show = true
+      popoverData.x = x
+      popoverData.y = y
+      popoverData.content = () => (
         <div class="popover-content">
           <TextHover
-            text="添加高亮"
+            text="添加标记"
             placement="right-start"
             content={() => (
               <NButton text focusable={false} onClick={addHighlight}>
@@ -111,14 +122,14 @@ export default defineComponent({
         selectionData = null
       }
 
-      layoutStore.popoverData.show = false
+      popoverData.show = false
     }
 
     const copyText = (range?: Range) => {
       if (range) {
         appChannel.copyText(range.toString())
 
-        layoutStore.popoverData.show = false
+        popoverData.show = false
       } else if (selectionData) {
         const { selection } = selectionData
 
@@ -131,7 +142,7 @@ export default defineComponent({
     const highlightData = reactive({
       show: true,
       list: [] as HighlightData[],
-      all: false
+      all: true
     })
 
     const highlightIdMap = new Map<Range, number | bigint>()
@@ -159,7 +170,7 @@ export default defineComponent({
               }
             }
 
-            layoutStore.popoverData.show = false
+            popoverData.show = false
 
             break
           }
@@ -168,13 +179,13 @@ export default defineComponent({
     }
 
     const handleClickHighligh = (event: MouseEvent, view: View, range: Range) => {
-      layoutStore.popoverData.show = true
-      layoutStore.popoverData.x = event.x
-      layoutStore.popoverData.y = event.y
-      layoutStore.popoverData.content = () => (
+      popoverData.show = true
+      popoverData.x = event.x
+      popoverData.y = event.y
+      popoverData.content = () => (
         <div class="popover-content">
           <TextHover
-            text="删除高亮"
+            text="删除标记"
             placement="right-start"
             content={() => (
               <NButton text focusable={false} onClick={() => removeHighlight(view, range)}>
@@ -220,8 +231,6 @@ export default defineComponent({
           if (!list) {
             list = await dbChannel.getHighlightList(bookData.id, index)
           }
-
-          console.log('list', list)
 
           await view.loaded
 
@@ -385,8 +394,10 @@ export default defineComponent({
       }
     }
 
+    let shouldUpdateReadingTime = true
+
     const updateReadingTime = () => {
-      if (bookData.id) {
+      if (bookData.id && shouldUpdateReadingTime) {
         bookData.readingTime += 1
 
         dbChannel.updateBook(bookData.id, {
@@ -431,14 +442,6 @@ export default defineComponent({
           identifier
         }
 
-        layoutStore.topBarSlot = () => (
-          <div class="top-bar-slot">
-            <div class="ellipsis">{title}</div>
-            <div class="divider">-</div>
-            <div class="ellipsis">{creator}</div>
-          </div>
-        )
-
         const result = await dbChannel.insertBook(bookData)
 
         return {
@@ -456,14 +459,6 @@ export default defineComponent({
             path: dumpPath
           })
 
-          layoutStore.topBarSlot = () => (
-            <div class="top-bar-slot">
-              <div class="ellipsis">{result.title}</div>
-              <div class="divider">-</div>
-              <div class="ellipsis">{result.creator}</div>
-            </div>
-          )
-
           return {
             id: BigInt(id),
             book,
@@ -480,8 +475,6 @@ export default defineComponent({
     const deferBook = openBook()
 
     onMounted(async () => {
-      layoutStore.popoverData.to = pageRef.value
-
       try {
         const result = await deferBook
 
@@ -494,6 +487,10 @@ export default defineComponent({
           bookData.readingTime = readingTime || 0
 
           await bookData.book.opened
+
+          const { title, creator } = book.package.metadata
+
+          bookStore.setBookMeta(title || '', creator || '')
 
           bookData.metadata = bookData.book.package.metadata
 
@@ -536,7 +533,21 @@ export default defineComponent({
 
       bookData.id = null
 
-      layoutStore.topBarSlot = null
+      shouldUpdateReadingTime = false
+
+      bookStore.clearBookMeta()
+    })
+
+    watchEffect(() => {
+      if (bookData.renderer && layoutStore.theme.common) {
+        bookData.renderer.setStylesheetRule('*::selection', {
+          'background-color': `${layoutStore.theme.common.placeholderColor} !important` || ''
+        })
+        bookData.renderer.setStylesheetRule('body', {
+          'background-color': layoutStore.theme.common.bodyColor || '',
+          'color': layoutStore.theme.common.textColor2 || ''
+        })
+      }
     })
 
     const prevPage = async () => {
@@ -553,6 +564,16 @@ export default defineComponent({
 
     return () => (
       <div ref={pageRef} class="reader-page" onClick={handleCancelSelect}>
+        <NPopover
+          to={pageRef.value}
+          show={popoverData.show}
+          x={popoverData.x}
+          y={popoverData.y}
+          trigger="manual"
+          placement="bottom"
+        >
+          {popoverData.content && popoverData.content()}
+        </NPopover>
         {isLoading.value && <NSpin class="reader-page-loading-mask" size="large" />}
         <SideBar
           renderer={bookData.renderer}

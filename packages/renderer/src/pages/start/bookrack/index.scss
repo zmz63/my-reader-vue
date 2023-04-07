@@ -7,4 +7,13 @@
     justify-content: space-between;
     gap: 32px;
   }
+
+  &-empty {
+    display: flex;
+    height: 64px;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color-3);
+    font-size: var(--font-size-large);
+  }
 }

@@ -1,0 +1,18 @@
+.setting-page {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+
+  &-option-group {
+    .title {
+      font-size: var(--font-size-large);
+      font-weight: var(--font-weight-strong);
+    }
+  }
+
+  &-option-item {
+    .label {
+      color: var(--text-color-2);
+    }
+  }
+}

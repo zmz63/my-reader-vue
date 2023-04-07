@@ -91,12 +91,12 @@ export default defineComponent({
     }
 
     const handleMouseenter = () => {
-      dividerRef.value.style.backgroundColor = '#999'
+      dividerRef.value.style.backgroundColor = ''
     }
 
     const handleMouseleave = () => {
       if (!dragging) {
-        dividerRef.value.style.backgroundColor = ''
+        dividerRef.value.style.backgroundColor = 'transparent'
       }
     }
 
@@ -105,7 +105,7 @@ export default defineComponent({
 
       document.addEventListener('mousemove', handleMousemove)
 
-      dividerRef.value.style.backgroundColor = '#999'
+      dividerRef.value.style.backgroundColor = ''
 
       for (const item of document.querySelectorAll('iframe')) {
         item.style.pointerEvents = 'none'
@@ -123,7 +123,7 @@ export default defineComponent({
         }
 
         if (event.currentTarget !== dividerRef.value) {
-          dividerRef.value.style.backgroundColor = ''
+          dividerRef.value.style.backgroundColor = 'transparent'
         } else {
           event.stopPropagation()
         }
@@ -302,7 +302,7 @@ export default defineComponent({
             )}
           />
           <TextHover
-            text={props.highlight.show ? '显示高亮' : '隐藏高亮'}
+            text={props.highlight.show ? '显示标记' : '隐藏标记'}
             content={() => (
               <NButton
                 class="icon-button"
@@ -348,7 +348,7 @@ export default defineComponent({
         ...createSearchContent()
       },
       highlight: {
-        label: '高亮',
+        label: '标记',
         ...crateHighlightContent()
       }
     })
@@ -384,6 +384,9 @@ export default defineComponent({
         <div
           ref={dividerRef}
           class="divider"
+          style={{
+            'background-color': 'transparent'
+          }}
           onMouseenter={handleMouseenter}
           onMouseleave={handleMouseleave}
           onMousedown={handleMousedown}

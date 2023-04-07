@@ -3,10 +3,19 @@
   height: 100%;
   padding: 16px;
 
+  &-empty {
+    display: flex;
+    height: 64px;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color-3);
+    font-size: var(--font-size-large);
+  }
+
   &-header {
     display: grid;
     padding: 4px 8px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 16px;
     gap: 8px;
     grid-template-columns: 2.5fr 2fr 1.5fr 2fr 2fr;
@@ -19,9 +28,10 @@
     cursor: pointer;
     gap: 8px;
     grid-template-columns: 2.5fr 2fr 1.5fr 2fr 2fr;
+    transition: background-color 0.3s linear;
 
     &:hover {
-      background-color: rgb(230 230 230);
+      background-color: var(--hover-color);
     }
   }
 }

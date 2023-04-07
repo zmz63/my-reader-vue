@@ -89,9 +89,13 @@ export default defineComponent({
             />
           </div>
         </div>
-        <NScrollbar class="books-showcase-body">
-          <div class="books-container">{booksRenderer()}</div>
-        </NScrollbar>
+        {props.list.length ? (
+          <NScrollbar class="books-showcase-body">
+            <div class="books-container">{booksRenderer()}</div>
+          </NScrollbar>
+        ) : (
+          slots.empty && slots.empty()
+        )}
       </div>
     )
   }

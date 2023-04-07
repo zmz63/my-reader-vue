@@ -83,8 +83,6 @@ export class Book {
         this.unpack(archive)
       }
 
-      console.log(this)
-
       await this.dumped
       await this.unpacked
       await archive.close()

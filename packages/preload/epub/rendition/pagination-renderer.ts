@@ -329,8 +329,6 @@ export class PaginationRenderer {
 
     this.location.range = range
     this.location.cfi = range ? (view.rangeToCFI(range) as string) : ''
-
-    console.log(this.location.cfi)
   }
 
   initViewContent(view: View) {
@@ -363,10 +361,6 @@ export class PaginationRenderer {
       'max-height': `${100 - 25 / 6}vh`,
       'page-break-inside': 'avoid',
       'break-inside': 'avoid'
-    })
-
-    content.addStylesheetRule('*::selection', {
-      'background-color': 'pink'
     })
 
     return this.updateViewLayout(view)
@@ -452,8 +446,6 @@ export class PaginationRenderer {
 
   setStylesheetRule(selector: string, rule: Record<string, string>) {
     this.rules[selector] = rule
-
-    console.log(selector, rule)
 
     this.views.forEach(view => {
       if (view.content) {

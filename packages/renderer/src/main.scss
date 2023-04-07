@@ -1,8 +1,13 @@
 :root {
   --app-color: #fafafa;
   --top-bar-color: #f0f0f0;
-  --hover-color: #c6c6c6;
 
+  &[theme="dark"] {
+    --app-color: #202020;
+    --top-bar-color: #2c2c2c;
+  }
+
+  transition: background-color 0.2s linear;
   user-select: none;
 }
 

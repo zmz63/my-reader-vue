@@ -40,8 +40,6 @@ export default defineComponent({
         isEmpty.value = true
       }
 
-      console.log('list', result)
-
       const now = new Date()
       const day = startOfDay(now)
       const week = startOfWeek(now)
@@ -78,17 +76,17 @@ export default defineComponent({
 
     return () => (
       <div class="recent-page">
-        {isEmpty.value ? (
-          <div>hello</div>
-        ) : (
-          <>
-            <div class="recent-page-header">
-              <div class="title">标题</div>
-              <div class="creator">作者</div>
-              <div class="time">阅读时长</div>
-              <div class="progress">进度</div>
-              <div class="date">日期</div>
-            </div>
+        <>
+          <div class="recent-page-header">
+            <div class="title">标题</div>
+            <div class="creator">作者</div>
+            <div class="time">阅读时长</div>
+            <div class="progress">进度</div>
+            <div class="date">日期</div>
+          </div>
+          {isEmpty.value ? (
+            <div class="recent-page-empty">还没有看过书, 快找本书看吧~</div>
+          ) : (
             <NScrollbar>
               <NCollapse defaultExpandedNames={phases}>
                 {phases.map((phase, index) =>
@@ -123,8 +121,8 @@ export default defineComponent({
                 )}
               </NCollapse>
             </NScrollbar>
-          </>
-        )}
+          )}
+        </>
       </div>
     )
   }

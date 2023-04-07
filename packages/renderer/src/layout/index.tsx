@@ -1,13 +1,13 @@
 import { defineComponent, onBeforeMount, onUnmounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { NButton } from 'naive-ui'
-import { useLayoutStore } from '@/stores/layout'
+import { useBookStore } from '@/stores/book'
 import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
 
 export default defineComponent({
   setup() {
-    const layoutStore = useLayoutStore()
+    const bookStore = useBookStore()
 
     const isOnTop = ref(false)
     const isMaximized = ref(false)
@@ -35,7 +35,17 @@ export default defineComponent({
     return () => (
       <div class="layout">
         <div class="layout-top-bar">
-          <div class="left">{layoutStore.topBarSlot && layoutStore.topBarSlot()}</div>
+          <div class="left">
+            {bookStore.bookMeta ? (
+              <div class="top-bar-slot">
+                <div class="ellipsis">{bookStore.bookMeta.title}</div>
+                <div class="divider">-</div>
+                <div class="ellipsis">{bookStore.bookMeta.creator}</div>
+              </div>
+            ) : (
+              <div class="title">EPub Reader</div>
+            )}
+          </div>
           <div class="right">
             <div class="divider" />
             <div class="button-wrapper">

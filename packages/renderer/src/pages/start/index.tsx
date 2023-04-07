@@ -1,4 +1,4 @@
-import { type DefineComponent, KeepAlive, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { NButton } from 'naive-ui'
 import TextHover from '@/components/TextHover'
@@ -30,16 +30,16 @@ export default defineComponent({
       {
         name: 'START_RECENT',
         label: '最近',
-        icon: 'ic_fluent_clock_24_regular'
+        icon: 'ic_fluent_clock_24_filled'
       },
       {
         name: 'START_BOOKRACK',
         label: '书架',
-        icon: 'ic_fluent_library_24_regular'
+        icon: 'ic_fluent_library_24_filled'
       },
       {
         label: '打开',
-        icon: 'ic_fluent_folder_open_24_regular',
+        icon: 'ic_fluent_folder_open_24_filled',
         callback: openBook
       }
     ]
@@ -51,12 +51,12 @@ export default defineComponent({
             {startMenuOptions.map(({ name, label, icon, callback }) =>
               name ? (
                 <RouterLink to={{ name }} class="item" activeClass="active" key={name}>
-                  <SVGIcon size={22} name={icon} />
+                  <SVGIcon size={26} name={icon} />
                   <div>{label}</div>
                 </RouterLink>
               ) : (
                 <div class="item" key={label} onClick={callback}>
-                  <SVGIcon size={22} name={icon} />
+                  <SVGIcon size={26} name={icon} />
                   <div>{label}</div>
                 </div>
               )
@@ -67,21 +67,27 @@ export default defineComponent({
               text="设置"
               placement="right"
               content={() => (
-                <NButton class="setting-button" quaternary size="tiny" focusable={false}>
-                  <SVGIcon size={24} name="ic_fluent_settings_24_regular" />
+                <NButton
+                  class="setting-button"
+                  quaternary
+                  focusable={false}
+                  onClick={() => router.push({ name: 'START_SETTING' })}
+                >
+                  <SVGIcon size={26} name="ic_fluent_settings_24_regular" />
                 </NButton>
               )}
             />
           </div>
         </div>
         <div class="start-page-view">
-          <RouterView>
+          {/* <RouterView>
             {({ Component }: { Component: DefineComponent }) => (
               <KeepAlive>
                 <Component />
               </KeepAlive>
             )}
-          </RouterView>
+          </RouterView> */}
+          <RouterView />
         </div>
       </div>
     )

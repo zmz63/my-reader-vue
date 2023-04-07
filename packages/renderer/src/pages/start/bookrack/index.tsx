@@ -12,8 +12,6 @@ export default defineComponent({
     const updateBookList = async () => {
       const result = await dbChannel.getBookMetaList()
 
-      console.log('list', result)
-
       bookList.value = result
     }
 
@@ -61,13 +59,9 @@ export default defineComponent({
         promises.push(openBook(path))
       }
 
-      const result = await Promise.allSettled(promises)
-
-      console.log(result)
+      await Promise.allSettled(promises)
 
       updateBookList()
-
-      // TODO
     }
 
     return () => (
@@ -79,7 +73,8 @@ export default defineComponent({
                 <Search width={368} />
                 <NButton onClick={importBooks}>导入</NButton>
               </div>
-            )
+            ),
+            empty: () => <div class="bookrack-page-empty">书架上还没有书, 快导入几本书试试吧~</div>
           }}
         </BooksShowcase>
       </div>

@@ -24,12 +24,7 @@ app.whenReady().then(() => {
   })
 
   app.on('web-contents-created', (_, contents) => {
-    // contents.on('will-navigate', (event, url) => {
-    //   console.log('$$$', url)
-    // })
-
     contents.setWindowOpenHandler(({ url }) => {
-      console.log('###', url)
       shell.openExternal(url)
 
       return { action: 'deny' }

@@ -1,8 +1,10 @@
-import { type PropType, defineComponent, reactive, ref, watchEffect } from 'vue'
+import { type PropType, defineComponent, reactive, ref, watch, watchEffect } from 'vue'
 import { NInputNumber, NRadio, NRadioGroup, NScrollbar } from 'naive-ui'
 import type { PaginationRenderer } from '@preload/epub'
 import OptionItem from './OptionItem'
 import SliderOptionItem, { type SliderOptionItemData } from './SliderOptionItem'
+import { dark, light } from '@/themes'
+import { useLayoutStore } from '@/stores/layout'
 import './index.scss'
 
 export type SettingPanelInst = {
@@ -20,6 +22,23 @@ export default defineComponent({
   props: settingPanelProps,
   setup(props, { expose }) {
     const show = ref(false)
+
+    const layoutStore = useLayoutStore()
+
+    const theme = ref<'light' | 'dark'>(layoutStore.themeData.mode)
+
+    watchEffect(() => {
+      theme.value = layoutStore.themeData.mode
+    })
+
+    watch(
+      () => theme.value,
+      (value, oldValue) => {
+        if (value !== oldValue) {
+          layoutStore.changeTheme(theme.value)
+        }
+      }
+    )
 
     const setScale = (value: number) => {
       if (props.renderer) {
@@ -96,6 +115,38 @@ export default defineComponent({
         >
           <div class="reader-page-option-group">
             <div class="title">基本设置</div>
+            <OptionItem label="主题">
+              <NRadioGroup class="theme-switch-group" v-model:value={theme.value}>
+                <div class="theme-switch" onClick={() => (theme.value = 'light')}>
+                  <div
+                    class="preview"
+                    style={{
+                      'background-color': light.bodyColor,
+                      'color': light.textColor2
+                    }}
+                  >
+                    Hello World!
+                  </div>
+                  <div class="radio-wrapper">
+                    <NRadio value="light">浅色</NRadio>
+                  </div>
+                </div>
+                <div class="theme-switch" onClick={() => (theme.value = 'dark')}>
+                  <div
+                    class="preview"
+                    style={{
+                      'background-color': dark.bodyColor,
+                      'color': dark.textColor2
+                    }}
+                  >
+                    Hello World!
+                  </div>
+                  <div class="radio-wrapper">
+                    <NRadio value="dark">深色</NRadio>
+                  </div>
+                </div>
+              </NRadioGroup>
+            </OptionItem>
             <SliderOptionItem
               label="整体缩放"
               switch={false}
@@ -103,7 +154,7 @@ export default defineComponent({
                 value: 100,
                 unit: '%'
               }}
-              unit={{ name: '%', default: 100, max: 200, min: 50, step: 10 }}
+              unit={{ name: '%', default: 100, max: 200, min: 70, step: 10 }}
               onChange={({ value }) => setScale(value)}
             />
           </div>
