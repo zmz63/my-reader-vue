@@ -71,7 +71,9 @@ export default defineComponent({
             header: () => (
               <div class="bookrack-page-header">
                 <Search width={368} />
-                <NButton onClick={importBooks}>导入</NButton>
+                <NButton type="primary" onClick={importBooks}>
+                  导入
+                </NButton>
               </div>
             ),
             empty: () => <div class="bookrack-page-empty">书架上还没有书, 快导入几本书试试吧~</div>

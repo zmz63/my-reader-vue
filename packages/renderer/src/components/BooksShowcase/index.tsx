@@ -22,7 +22,9 @@ export default defineComponent({
   setup(props, { slots }) {
     const router = useRouter()
 
-    const displayMode = ref<DisplayMode>('list')
+    const displayMode = ref<DisplayMode>(
+      (localStorage.getItem('SHOWCASE-DISPLAY-MODE') || 'list') as DisplayMode
+    )
 
     const switchDisplayMode = (mode: DisplayMode) => {
       if (mode === displayMode.value) {
@@ -30,6 +32,8 @@ export default defineComponent({
       }
 
       displayMode.value = mode
+
+      localStorage.setItem('SHOWCASE-DISPLAY-MODE', mode)
     }
 
     const openBook = (id: number | bigint) => {

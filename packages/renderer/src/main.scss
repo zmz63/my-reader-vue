@@ -32,10 +32,11 @@ body {
 
   &-highlight {
     cursor: pointer;
-    fill: rgb(0 255 136);
+    fill: rgb(0 102 255);
     fill-opacity: 0.3;
     mix-blend-mode: multiply;
     pointer-events: fill;
+    transition: fill-opacity 0.2s linear;
 
     &:hover {
       fill-opacity: 0.6;

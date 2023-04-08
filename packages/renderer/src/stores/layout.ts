@@ -6,7 +6,7 @@ import { type CustomThemeCommonVars, dark, light } from '@/themes'
 type ThemeMode = 'light' | 'dark'
 
 const initTheme = () => {
-  const mode = 'dark' as ThemeMode
+  const mode = (localStorage.getItem('APP-THEME') || 'light') as ThemeMode
 
   if (mode === 'dark') {
     document.documentElement.setAttribute('theme', 'dark')
@@ -39,6 +39,8 @@ export const useLayoutStore = defineStore('layout', () => {
 
     themeData.mode = mode
     theme.common = themeData.themeMap[mode]
+
+    localStorage.setItem('APP-THEME', mode)
   }
 
   return { theme, themeData, changeTheme }

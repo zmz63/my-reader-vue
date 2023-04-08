@@ -1,10 +1,10 @@
 import { type PropType, defineComponent, reactive, ref, watch, watchEffect } from 'vue'
 import { NInputNumber, NRadio, NRadioGroup, NScrollbar } from 'naive-ui'
 import type { PaginationRenderer } from '@preload/epub'
-import OptionItem from './OptionItem'
-import SliderOptionItem, { type SliderOptionItemData } from './SliderOptionItem'
 import { dark, light } from '@/themes'
 import { useLayoutStore } from '@/stores/layout'
+import OptionItem from './OptionItem'
+import SliderOptionItem, { type SliderOptionItemData } from './SliderOptionItem'
 import './index.scss'
 
 export type SettingPanelInst = {
@@ -26,10 +26,6 @@ export default defineComponent({
     const layoutStore = useLayoutStore()
 
     const theme = ref<'light' | 'dark'>(layoutStore.themeData.mode)
-
-    watchEffect(() => {
-      theme.value = layoutStore.themeData.mode
-    })
 
     watch(
       () => theme.value,

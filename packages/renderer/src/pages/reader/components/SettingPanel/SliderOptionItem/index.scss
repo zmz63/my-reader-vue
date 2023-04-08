@@ -11,6 +11,10 @@
       .unit-selector {
         width: 46px;
 
+        .n-base-selection-label {
+          background-color: transparent;
+        }
+
         .n-base-selection-input {
           padding: 0;
         }

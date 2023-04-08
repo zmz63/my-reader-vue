@@ -302,11 +302,18 @@ export default defineComponent({
     }
 
     const handleUpdateLocation = (location: LocationData) => {
+      console.log(location)
       if (bookData.id && location.cfi !== bookData.location.cfi) {
-        dbChannel.updateBook(bookData.id, {
-          location: location.cfi,
-          percentage: location.percentage
-        })
+        if (location.percentage < 0) {
+          dbChannel.updateBook(bookData.id, {
+            location: location.cfi
+          })
+        } else {
+          dbChannel.updateBook(bookData.id, {
+            location: location.cfi,
+            percentage: location.percentage
+          })
+        }
       }
 
       const navigation = bookData.book?.navigation
