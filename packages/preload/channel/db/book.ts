@@ -107,13 +107,20 @@ export function getBookById(id: number | bigint) {
   return invokeDB<BookData | undefined>('get', 'SELECT * FROM books WHERE id = ?', [id])
 }
 
-export function getBookMetaList(size = 20, offset = 0, order: 'DESC' | 'ASC' = 'DESC') {
-  return invokeDB<BookMeta>(
+export async function getBookMetaList(size = 20, offset = 0, order: 'DESC' | 'ASC' = 'DESC') {
+  const { count } = await invokeDB<{ count: number }>('get', 'SELECT COUNT(id) AS count FROM books')
+
+  const list = await invokeDB<BookMeta>(
     'all',
     `SELECT ${BOOK_META_KEYS.join(
       ', '
     )} FROM books ORDER BY id ${order} LIMIT ${size} OFFSET ${offset}`
   )
+
+  return {
+    data: list,
+    count
+  }
 }
 
 export function getRecentBookMetaList() {

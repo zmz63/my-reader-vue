@@ -1,5 +1,5 @@
-import { defineComponent, ref } from 'vue'
-import { NButton } from 'naive-ui'
+import { defineComponent, reactive, ref } from 'vue'
+import { NButton, NPagination } from 'naive-ui'
 import type { BookData, BookMeta } from '@preload/channel/db'
 import Search from '@/components/Search'
 import BooksShowcase from '@/components/BooksShowcase'
@@ -7,12 +7,27 @@ import './index.scss'
 
 export default defineComponent({
   setup() {
-    const bookList = ref<BookMeta[]>([])
+    const bookList = reactive({
+      data: [] as BookMeta[],
+      count: 0
+    })
 
-    const updateBookList = async () => {
-      const result = await dbChannel.getBookMetaList()
+    const isLoading = ref(true)
 
-      bookList.value = result
+    const pageSize = 10
+
+    const updateBookList = async (page = 1) => {
+      try {
+        isLoading.value = true
+
+        const offset = (page - 1) * pageSize
+        const result = await dbChannel.getBookMetaList(pageSize, offset)
+
+        bookList.data = result.data
+        bookList.count = result.count
+      } finally {
+        isLoading.value = false
+      }
     }
 
     updateBookList()
@@ -66,7 +81,7 @@ export default defineComponent({
 
     return () => (
       <div class="bookrack-page">
-        <BooksShowcase list={bookList.value}>
+        <BooksShowcase list={bookList.data} loading={isLoading.value}>
           {{
             header: () => (
               <div class="bookrack-page-header">
@@ -76,7 +91,18 @@ export default defineComponent({
                 </NButton>
               </div>
             ),
-            empty: () => <div class="bookrack-page-empty">书架上还没有书, 快导入几本书试试吧~</div>
+            empty: () => <div class="bookrack-page-empty">书架上还没有书, 快导入几本书试试吧~</div>,
+            bottom: () =>
+              bookList.count > pageSize && (
+                <div class="pagination-wrapper">
+                  <NPagination
+                    itemCount={bookList.count}
+                    pageSize={pageSize}
+                    pageSlot={5}
+                    onUpdatePage={updateBookList}
+                  />
+                </div>
+              )
           }}
         </BooksShowcase>
       </div>

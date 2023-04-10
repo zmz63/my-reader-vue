@@ -1,5 +1,5 @@
 import { defineComponent, ref, watch } from 'vue'
-import { NButton, NRadio, NRadioGroup, NSwitch } from 'naive-ui'
+import { NButton, NRadio, NRadioGroup } from 'naive-ui'
 import { useLayoutStore } from '@/stores/layout'
 import { dark, light } from '@/themes'
 import './index.scss'
@@ -58,14 +58,14 @@ export default defineComponent({
           </div>
           <div class="setting-page-option-item horizontal">
             <div class="label">控制台</div>
-            <NButton type="primary" size="small">
+            <NButton type="primary" size="small" onClick={appChannel.toggleDevTools}>
               打开
             </NButton>
           </div>
-          <div class="setting-page-option-item horizontal">
+          {/* <div class="setting-page-option-item horizontal">
             <div class="label">打开程序继续上次阅读</div>
             <NSwitch />
-          </div>
+          </div> */}
         </div>
       </div>
     )

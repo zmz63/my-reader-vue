@@ -35,6 +35,10 @@ export function selectSaveFilePath(options: SaveDialogOptions) {
   return ipcRenderer.invoke('app:show-save-dialog', options) as Promise<string | void>
 }
 
+export function toggleDevTools() {
+  ipcRenderer.send('app:toggle-dev-tools')
+}
+
 export function copyText(text: string) {
   clipboard.writeText(text)
 }

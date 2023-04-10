@@ -47,4 +47,6 @@ export function listenAppChannel() {
   ipcMain.on('app:show-item', (_, path: string) => shell.showItemInFolder(path))
 
   ipcMain.on('app:open-path', (_, path: string) => shell.openPath(path))
+
+  ipcMain.on('app:toggle-dev-tools', event => event.sender.toggleDevTools())
 }

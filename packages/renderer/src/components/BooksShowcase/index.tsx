@@ -1,6 +1,6 @@
 import { type PropType, defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NButton, NScrollbar } from 'naive-ui'
+import { NButton, NScrollbar, NSpin } from 'naive-ui'
 import type { BookMeta } from '@preload/channel/db'
 import SVGIcon from '@/components/SVGIcon'
 import TextHover from '@/components/TextHover'
@@ -14,6 +14,10 @@ const booksShowcaseProps = {
   list: {
     type: Array as PropType<BookMeta[]>,
     required: true
+  },
+  loading: {
+    type: Boolean,
+    default: false
   }
 } as const
 
@@ -93,13 +97,16 @@ export default defineComponent({
             />
           </div>
         </div>
-        {props.list.length ? (
+        {props.loading && <NSpin class="books-showcase-loading-mask" size="large" />}
+        {props.list.length || props.loading ? (
           <NScrollbar class="books-showcase-body">
             <div class="books-container">{booksRenderer()}</div>
+            {slots.bottom && slots.bottom()}
           </NScrollbar>
         ) : (
           slots.empty && slots.empty()
         )}
+        <div class="books-showcase-footer">{slots.footer && slots.footer()}</div>
       </div>
     )
   }

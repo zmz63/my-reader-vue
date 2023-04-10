@@ -31,35 +31,43 @@ export default defineComponent({
 
     const isEmpty = ref(true)
 
+    const isLoading = ref(true)
+
     const getRecentBookList = async () => {
-      const result = await dbChannel.getRecentBookMetaList()
+      try {
+        isLoading.value = true
 
-      if (result.length) {
-        isEmpty.value = false
-      } else {
-        isEmpty.value = true
-      }
+        const result = await dbChannel.getRecentBookMetaList()
 
-      const now = new Date()
-      const day = startOfDay(now)
-      const week = startOfWeek(now)
-      const month = startOfMonth(now)
-      const year = startOfYear(now)
-
-      for (const book of result) {
-        const date = new Date((book.accessTime as number) * 1000 || now)
-
-        if (date > day) {
-          recentBooks.day.push(book)
-        } else if (date > week) {
-          recentBooks.week.push(book)
-        } else if (date > month) {
-          recentBooks.month.push(book)
-        } else if (date > year) {
-          recentBooks.year.push(book)
+        if (result.length) {
+          isEmpty.value = false
         } else {
-          recentBooks.ago.push(book)
+          isEmpty.value = true
         }
+
+        const now = new Date()
+        const day = startOfDay(now)
+        const week = startOfWeek(now)
+        const month = startOfMonth(now)
+        const year = startOfYear(now)
+
+        for (const book of result) {
+          const date = new Date((book.accessTime as number) * 1000 || now)
+
+          if (date > day) {
+            recentBooks.day.push(book)
+          } else if (date > week) {
+            recentBooks.week.push(book)
+          } else if (date > month) {
+            recentBooks.month.push(book)
+          } else if (date > year) {
+            recentBooks.year.push(book)
+          } else {
+            recentBooks.ago.push(book)
+          }
+        }
+      } finally {
+        isLoading.value = false
       }
     }
 
@@ -84,7 +92,7 @@ export default defineComponent({
             <div class="progress">进度</div>
             <div class="date">日期</div>
           </div>
-          {isEmpty.value ? (
+          {isEmpty.value && !isLoading.value ? (
             <div class="recent-page-empty">还没有看过书, 快找本书看吧~</div>
           ) : (
             <NScrollbar>

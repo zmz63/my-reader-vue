@@ -112,10 +112,11 @@
 
       .cover-placeholder {
         display: flex;
-        width: 142px;
-        height: 194px;
+        width: 122px;
+        height: 166px;
         justify-content: center;
         border-radius: 4px;
+        background-color: var(--popover-color);
         box-shadow: var(--box-shadow-1);
         color: var(--text-color-1);
         cursor: pointer;

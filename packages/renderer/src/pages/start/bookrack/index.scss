@@ -16,4 +16,11 @@
     color: var(--text-color-3);
     font-size: var(--font-size-large);
   }
+
+  .pagination-wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding: 16px;
+  }
 }
