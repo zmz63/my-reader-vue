@@ -34,7 +34,7 @@ export default defineComponent({
   props: textHoverProps,
   setup(props) {
     return () => (
-      <NPopover to=".app" showArrow={false} raw placement={props.placement}>
+      <NPopover showArrow={false} raw placement={props.placement}>
         {{
           trigger: props.content,
           default: () => <div class="text-hover">{props.text}</div>

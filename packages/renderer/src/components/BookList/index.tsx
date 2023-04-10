@@ -1,5 +1,5 @@
 import { type PropType, defineComponent } from 'vue'
-import { NButton, NProgress } from 'naive-ui'
+import { NButton, NDropdown, NProgress } from 'naive-ui'
 import type { BookMeta } from '@preload/channel/db'
 import Image from '@/components/Image'
 import TextHover from '@/components/TextHover'
@@ -45,15 +45,24 @@ export default defineComponent({
                   <NProgress percentage={(item.percentage || 0) * 100} showIndicator={false} />
                 </div>
               )}
-              <TextHover
-                text="更多"
-                placement="left-start"
-                content={() => (
-                  <NButton class="more-button" text focusable={false}>
-                    <SVGIcon size={24} name="ic_fluent_more_vertical_24_filled" />
-                  </NButton>
-                )}
-              />
+              <NDropdown
+                to={false}
+                placement="bottom-end"
+                options={[
+                  {
+                    label: '删除',
+                    key: 'delete',
+                    icon: () => <SVGIcon size={24} name="ic_fluent_delete_24_filled" />
+                  }
+                ]}
+                onSelect={() => {
+                  // TODO
+                }}
+              >
+                <NButton class="more-button" text focusable={false}>
+                  <SVGIcon size={24} name="ic_fluent_more_vertical_24_filled" />
+                </NButton>
+              </NDropdown>
               <div class="top">
                 <div
                   class="ellipsis title"

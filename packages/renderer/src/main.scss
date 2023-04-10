@@ -28,14 +28,8 @@
     --app-color: #202020;
     --top-bar-color: #2c2c2c;
 
-    .cover,
-    .cover-placeholder {
+    .cover-wrapper {
       opacity: 0.8;
-      transition: opacity 0.3s ease-in-out;
-
-      &:hover {
-        opacity: 1;
-      }
     }
 
     .book-mark {
@@ -54,6 +48,9 @@
 }
 
 body {
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
   padding: 0;
   margin: 0;
   background-color: var(--app-color);
