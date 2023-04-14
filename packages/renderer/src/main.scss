@@ -1,25 +1,3 @@
-.book-mark {
-  &-search {
-    fill: #fd0;
-    fill-opacity: 0.5;
-    mix-blend-mode: multiply;
-    mix-blend-mode: overlay;
-  }
-
-  &-highlight {
-    cursor: pointer;
-    fill: #06f;
-    fill-opacity: 0.3;
-    mix-blend-mode: multiply;
-    pointer-events: fill;
-    transition: fill-opacity 0.2s linear;
-
-    &:hover {
-      fill-opacity: 0.5;
-    }
-  }
-}
-
 :root {
   --app-color: #fafafa;
   --top-bar-color: #f0f0f0;
@@ -27,20 +5,6 @@
   &[theme="dark"] {
     --app-color: #202020;
     --top-bar-color: #2c2c2c;
-
-    .cover-wrapper {
-      opacity: 0.8;
-    }
-
-    .book-mark {
-      &-search {
-        mix-blend-mode: screen;
-      }
-
-      &-highlight {
-        mix-blend-mode: screen;
-      }
-    }
   }
 
   transition: background-color 0.2s linear;
@@ -60,4 +24,34 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.book-mark {
+  &-search {
+    fill: #fd0;
+    fill-opacity: 0.5;
+    mix-blend-mode: multiply;
+    mix-blend-mode: overlay;
+
+    :root[theme="dark"] & {
+      mix-blend-mode: screen;
+    }
+  }
+
+  &-highlight {
+    cursor: pointer;
+    fill: #06f;
+    fill-opacity: 0.3;
+    mix-blend-mode: multiply;
+    pointer-events: fill;
+    transition: fill-opacity 0.2s linear;
+
+    &:hover {
+      fill-opacity: 0.5;
+    }
+
+    :root[theme="dark"] & {
+      mix-blend-mode: screen;
+    }
+  }
 }

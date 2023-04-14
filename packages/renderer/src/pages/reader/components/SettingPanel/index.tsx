@@ -61,7 +61,9 @@ export default defineComponent({
 
     const updateStyles = () => {
       if (props.renderer) {
-        props.renderer.setStylesheetRule('div, span, p', {
+        const ruleId = 'epub-reader-setting-panel'
+
+        props.renderer.setStylesheetRule(`*, #${ruleId}`, {
           ...commonStyles
         })
       }

@@ -1,4 +1,5 @@
 import { type PropType, defineComponent } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { NButton, NDropdown, NProgress } from 'naive-ui'
 import type { BookMeta } from '@preload/channel/db'
 import Image from '@/components/Image'
@@ -18,9 +19,30 @@ export default defineComponent({
   emits: {
     open(id: number | bigint) {
       return typeof id === 'number' || typeof id === 'bigint'
+    },
+    delete(id: number | bigint) {
+      return typeof id === 'number' || typeof id === 'bigint'
     }
   },
   setup(props, { emit }) {
+    const router = useRouter()
+
+    const route = useRoute()
+
+    const handleSearch = (keyword: string) => {
+      if (route.name === 'START_SEARCH') {
+        router.replace({
+          name: 'START_SEARCH',
+          query: { keyword }
+        })
+      } else {
+        router.push({
+          name: 'START_SEARCH',
+          query: { keyword }
+        })
+      }
+    }
+
     return () => (
       <div class="book-list">
         {props.list.map(item => (
@@ -55,8 +77,10 @@ export default defineComponent({
                     icon: () => <SVGIcon size={24} name="ic_fluent_delete_24_filled" />
                   }
                 ]}
-                onSelect={() => {
-                  // TODO
+                onSelect={key => {
+                  if (key === 'delete') {
+                    emit('delete', item.id)
+                  }
                 }}
               >
                 <NButton class="more-button" text focusable={false}>
@@ -77,14 +101,22 @@ export default defineComponent({
                   text="作者"
                   placement="right-start"
                   content={() => (
-                    <div class="ellipsis creator">{item.creator ? item.creator : '佚名'}</div>
+                    <div
+                      class="ellipsis creator"
+                      onClick={() => item.creator && handleSearch(item.creator)}
+                    >
+                      {item.creator ? item.creator : '佚名'}
+                    </div>
                   )}
                 />
                 <TextHover
                   text="出版社"
                   placement="right-start"
                   content={() => (
-                    <div class="ellipsis publisher">
+                    <div
+                      class="ellipsis publisher"
+                      onClick={() => item.publisher && handleSearch(item.publisher)}
+                    >
                       {item.publisher ? item.publisher : '未知出版社'}
                     </div>
                   )}

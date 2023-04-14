@@ -52,12 +52,24 @@
     }
   }
 
-  &-view {
+  &-body {
     z-index: 1;
     display: flex;
     overflow: hidden;
+    flex-direction: column;
     flex-grow: 1;
     background-color: var(--card-color);
     box-shadow: -1px -1px 8px -8px;
+  }
+
+  &-header {
+    flex-shrink: 0;
+    padding: 16px;
+    padding-bottom: 0;
+  }
+
+  &-view {
+    overflow: hidden;
+    flex-grow: 1;
   }
 }

@@ -1,6 +1,8 @@
-import { defineComponent } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { defineComponent, ref, watch } from 'vue'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { NButton } from 'naive-ui'
+import { debounce } from 'lodash'
+import Search from '@/components/Search'
 import TextHover from '@/components/TextHover'
 import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
@@ -8,6 +10,64 @@ import './index.scss'
 export default defineComponent({
   setup() {
     const router = useRouter()
+
+    const route = useRoute()
+
+    const showHeader = ref(true)
+
+    const keyword = ref('')
+
+    watch(
+      () => route.name,
+      (value, oldValue) => {
+        if (value === oldValue) {
+          return
+        }
+
+        if (
+          route.name === 'START_RECENT' ||
+          route.name === 'START_BOOKRACK' ||
+          route.name === 'START_SEARCH'
+        ) {
+          showHeader.value = true
+        } else {
+          showHeader.value = false
+        }
+
+        if (route.name !== 'START_SEARCH') {
+          keyword.value = ''
+        }
+      }
+    )
+
+    watch(
+      () => route.query,
+      () => {
+        if (route.query.keyword) {
+          keyword.value = route.query.keyword as string
+        }
+      }
+    )
+
+    const handleInput = debounce((value: string) => {
+      if (value) {
+        if (route.name === 'START_SEARCH') {
+          router.replace({
+            name: 'START_SEARCH',
+            query: {
+              keyword: value
+            }
+          })
+        } else {
+          router.push({
+            name: 'START_SEARCH',
+            query: { keyword: value }
+          })
+        }
+      } else {
+        router.back()
+      }
+    }, 300)
 
     const openBook = async () => {
       const paths = await appChannel.selectOpenFilePaths({
@@ -20,9 +80,7 @@ export default defineComponent({
 
       router.push({
         name: 'READER',
-        query: {
-          path: paths[0]
-        }
+        query: { path: paths[0] }
       })
     }
 
@@ -79,15 +137,22 @@ export default defineComponent({
             />
           </div>
         </div>
-        <div class="start-page-view">
-          {/* <RouterView>
+        <div class="start-page-body">
+          {showHeader.value && (
+            <div class="start-page-header">
+              <Search width={368} v-model:value={keyword.value} onInput={handleInput} />
+            </div>
+          )}
+          <div class="start-page-view">
+            {/* <RouterView>
             {({ Component }: { Component: DefineComponent }) => (
               <KeepAlive>
                 <Component />
               </KeepAlive>
             )}
           </RouterView> */}
-          <RouterView />
+            <RouterView />
+          </div>
         </div>
       </div>
     )

@@ -31,6 +31,7 @@ export type Location = {
 
 export type LocationData = {
   cfi: string
+  range: Range | null
   index: number
   href: string
   pages: number
@@ -259,6 +260,7 @@ export class PaginationRenderer {
 
     this.hooks.location.trigger({
       cfi: cfi || this.location.cfi,
+      range: this.location.range,
       index: view.section.index,
       href: view.section.href,
       pages: Math.round(view.width / this.viewData.pageWidth),

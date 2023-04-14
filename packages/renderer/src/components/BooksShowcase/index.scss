@@ -13,11 +13,23 @@
   }
 
   &-header {
+    position: relative;
     display: flex;
+    height: 48px;
     flex-shrink: 0;
+    align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    margin: 0 16px;
     gap: 32px;
+
+    &::after {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 1px;
+      background-color: var(--border-color);
+      content: "";
+    }
 
     .slot-wrapper {
       overflow: hidden;

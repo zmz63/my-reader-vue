@@ -132,32 +132,24 @@ export function getRecentBookMetaList() {
   )
 }
 
-export function getBookMetaListByTitle(title: string, size = 20, fuzzy = true) {
-  return invokeDB<BookMeta>(
-    'all',
-    `SELECT ${BOOK_META_KEYS.join(', ')} FROM books WHERE title ${
-      fuzzy ? 'LIKE' : '='
-    } ? LIMIT ${size}`,
-    [fuzzy ? `%${title}%` : title]
-  )
-}
+export async function getBookMetaListByKeyword(
+  keyword: string,
+  size = 20,
+  offset = 0,
+  order: 'DESC' | 'ASC' = 'DESC'
+) {
+  const { count } = await invokeDB<{ count: number }>('get', 'SELECT COUNT(id) AS count FROM books')
 
-export function getBookMetaListByCreator(creator: string, size = 20, fuzzy = true) {
-  return invokeDB<BookMeta>(
+  const list = await invokeDB<BookMeta>(
     'all',
-    `SELECT ${BOOK_META_KEYS.join(', ')} FROM books WHERE creator ${
-      fuzzy ? 'LIKE' : '='
-    } ? LIMIT ${size}`,
-    [fuzzy ? `%${creator}%` : creator]
+    `SELECT ${BOOK_META_KEYS.join(
+      ', '
+    )} FROM books WHERE title LIKE $keyword OR creator LIKE $keyword OR publisher LIKE $keyword ORDER BY id ${order} LIMIT ${size} OFFSET ${offset}`,
+    [{ keyword: `%${keyword}%` }]
   )
-}
 
-export function getBookMetaListByPublisher(publisher: string, size = 20, fuzzy = true) {
-  return invokeDB<BookMeta>(
-    'all',
-    `SELECT ${BOOK_META_KEYS.join(', ')} FROM books WHERE publisher ${
-      fuzzy ? 'LIKE' : '='
-    } ? LIMIT ${size}`,
-    [fuzzy ? `%${publisher}%` : publisher]
-  )
+  return {
+    data: list,
+    count
+  }
 }

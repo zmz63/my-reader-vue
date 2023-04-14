@@ -14,12 +14,12 @@ import { NButton, NInput, NScrollbar } from 'naive-ui'
 import { clamp, debounce } from 'lodash'
 import { format } from 'date-fns'
 import type { PaginationRenderer, SearchResult, TocItem } from '@preload/epub'
-import type { HighlightData } from '@preload/channel/db'
+import type { BookmarkData, HighlightData } from '@preload/channel/db'
 import SVGIcon from '@/components/SVGIcon'
 import TextHover from '@/components/TextHover'
 import './index.scss'
 
-type SideBarKey = 'navigation' | 'search' | 'highlight'
+type SideBarKey = 'navigation' | 'search' | 'highlight' | 'bookmark'
 
 type SideBarItem = {
   label: string
@@ -34,6 +34,10 @@ export type HighlightDisplayData = {
   all: boolean
 }
 
+export type BookmarkDisplayData = {
+  list: BookmarkData[]
+}
+
 const sideBarProps = {
   renderer: {
     type: [Object, null] as PropType<PaginationRenderer | null>,
@@ -41,6 +45,10 @@ const sideBarProps = {
   },
   highlight: {
     type: Object as PropType<HighlightDisplayData>,
+    required: true
+  },
+  bookmark: {
+    type: Object as PropType<BookmarkDisplayData>,
     required: true
   }
 } as const
@@ -50,6 +58,9 @@ export default defineComponent({
   emits: {
     highlightChange(value: Partial<HighlightDisplayData>) {
       return typeof value === 'object'
+    },
+    removeBookmark(item: BookmarkData) {
+      return typeof item === 'object'
     }
   },
   setup(props, { emit }) {
@@ -143,7 +154,7 @@ export default defineComponent({
       key: '' as SideBarKey | ''
     })
 
-    const sideBarKeys: SideBarKey[] = ['navigation', 'search', 'highlight']
+    const sideBarKeys: SideBarKey[] = ['navigation', 'search', 'highlight', 'bookmark']
 
     const createNavigationContent = () => {
       const generateNode = (items: TocItem[], deep = 0) =>
@@ -338,6 +349,29 @@ export default defineComponent({
       )
     })
 
+    const crateBookmarkContent = () => ({
+      content: () => (
+        <NScrollbar class="bookmark-content">
+          {props.bookmark.list.map(item => (
+            <div class="bookmark-item">
+              <div class="fragment" onClick={() => props.renderer?.display(item.location)}>
+                {item.fragment}
+              </div>
+              <TextHover
+                text="删除书签"
+                placement="right-start"
+                content={() => (
+                  <NButton text focusable={false} onClick={() => emit('removeBookmark', item)}>
+                    <SVGIcon size={18} name="ic_fluent_delete_24_filled" />
+                  </NButton>
+                )}
+              />
+            </div>
+          ))}
+        </NScrollbar>
+      )
+    })
+
     const sideBarItems = reactive<Record<SideBarKey, SideBarItem>>({
       navigation: {
         label: '导航',
@@ -350,6 +384,10 @@ export default defineComponent({
       highlight: {
         label: '标记',
         ...crateHighlightContent()
+      },
+      bookmark: {
+        label: '书签',
+        ...crateBookmarkContent()
       }
     })
 

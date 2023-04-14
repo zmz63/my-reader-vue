@@ -1,6 +1,6 @@
 import { defineComponent, onBeforeMount, onUnmounted, ref } from 'vue'
 import { RouterView } from 'vue-router'
-import { NButton } from 'naive-ui'
+import { NButton, NMessageProvider, NNotificationProvider } from 'naive-ui'
 import { useBookStore } from '@/stores/book'
 import SVGIcon from '@/components/SVGIcon'
 import './index.scss'
@@ -8,6 +8,8 @@ import './index.scss'
 export default defineComponent({
   setup() {
     const bookStore = useBookStore()
+
+    const viewRef = ref<HTMLDivElement>()
 
     const isOnTop = ref(false)
     const isMaximized = ref(false)
@@ -94,9 +96,13 @@ export default defineComponent({
             </div>
           </div>
         </div>
-        <div class="layout-view">
-          <RouterView />
-        </div>
+        <NNotificationProvider max={5} to={viewRef.value} containerStyle={{ top: '40px' }}>
+          <NMessageProvider to={viewRef.value}>
+            <div ref={viewRef} class="layout-view">
+              <RouterView />
+            </div>
+          </NMessageProvider>
+        </NNotificationProvider>
       </div>
     )
   }

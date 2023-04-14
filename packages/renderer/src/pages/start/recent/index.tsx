@@ -76,9 +76,7 @@ export default defineComponent({
     const openBook = (id: number | bigint) => {
       router.push({
         name: 'READER',
-        query: {
-          id: id.toString()
-        }
+        query: { id: id.toString() }
       })
     }
 

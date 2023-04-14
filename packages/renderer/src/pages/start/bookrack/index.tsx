@@ -1,7 +1,6 @@
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, reactive } from 'vue'
 import { NButton, NPagination } from 'naive-ui'
 import type { BookData, BookMeta } from '@preload/channel/db'
-import Search from '@/components/Search'
 import BooksShowcase from '@/components/BooksShowcase'
 import './index.scss'
 
@@ -12,21 +11,24 @@ export default defineComponent({
       count: 0
     })
 
-    const isLoading = ref(true)
-
-    const pageSize = 10
+    const pageData = reactive({
+      isLoading: true,
+      pageSize: 10,
+      page: 1
+    })
 
     const updateBookList = async (page = 1) => {
       try {
-        isLoading.value = true
+        pageData.isLoading = true
+        pageData.page = page
 
-        const offset = (page - 1) * pageSize
-        const result = await dbChannel.getBookMetaList(pageSize, offset)
+        const offset = (page - 1) * pageData.pageSize
+        const result = await dbChannel.getBookMetaList(pageData.pageSize, offset)
 
         bookList.data = result.data
         bookList.count = result.count
       } finally {
-        isLoading.value = false
+        pageData.isLoading = false
       }
     }
 
@@ -81,11 +83,11 @@ export default defineComponent({
 
     return () => (
       <div class="bookrack-page">
-        <BooksShowcase list={bookList.data} loading={isLoading.value}>
+        <BooksShowcase list={bookList.data} loading={pageData.isLoading} onUpdate={updateBookList}>
           {{
             header: () => (
               <div class="bookrack-page-header">
-                <Search width={368} />
+                <div class="page-title">书架</div>
                 <NButton type="primary" onClick={importBooks}>
                   导入
                 </NButton>
@@ -93,11 +95,12 @@ export default defineComponent({
             ),
             empty: () => <div class="bookrack-page-empty">书架上还没有书, 快导入几本书试试吧~</div>,
             bottom: () =>
-              bookList.count > pageSize && (
+              bookList.count > pageData.pageSize && (
                 <div class="pagination-wrapper">
                   <NPagination
                     itemCount={bookList.count}
-                    pageSize={pageSize}
+                    pageSize={pageData.pageSize}
+                    page={pageData.page}
                     pageSlot={5}
                     onUpdatePage={updateBookList}
                   />

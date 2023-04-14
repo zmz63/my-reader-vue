@@ -35,3 +35,7 @@ export function md5(input: Buffer | string) {
     return hash.digest('hex')
   }
 }
+
+export function randomUUID() {
+  return _crypto.randomUUID()
+}

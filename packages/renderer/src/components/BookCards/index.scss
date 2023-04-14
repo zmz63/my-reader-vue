@@ -36,6 +36,10 @@
       justify-content: center;
       cursor: pointer;
 
+      :root[theme="dark"] & {
+        opacity: 0.8;
+      }
+
       .cover {
         width: 168px;
         border-radius: 4px;

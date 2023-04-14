@@ -2,6 +2,7 @@
 import Sqlite3 from 'better-sqlite3'
 import v1 from './schemas/v1'
 import v2 from './schemas/v2'
+import v3 from './schemas/v3'
 
 export type DBPayload = {
   source: string
@@ -10,7 +11,7 @@ export type DBPayload = {
 
 const DATABASE_PATH = './temp/books.db'
 
-const SCHEMAS = [v1, v2]
+const SCHEMAS = [v1, v2, v3]
 
 const SCHEMA_VERSION = SCHEMAS.length
 

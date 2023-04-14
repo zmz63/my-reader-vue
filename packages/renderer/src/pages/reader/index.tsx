@@ -10,10 +10,10 @@ import {
   watchEffect
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NPopover, NSpin } from 'naive-ui'
+import { NButton, NPopover, NSpin, useMessage } from 'naive-ui'
 import { debounce } from 'lodash'
 import type { Book, LocationData, Metadata, PaginationRenderer, TocItem, View } from '@preload/epub'
-import type { BookData, HighlightData } from '@preload/channel/db'
+import type { BookData, BookmarkData, HighlightData } from '@preload/channel/db'
 import { useLayoutStore } from '@/stores/layout'
 import { useBookStore } from '@/stores/book'
 import SVGIcon from '@/components/SVGIcon'
@@ -27,6 +27,8 @@ export default defineComponent({
     const route = useRoute()
 
     const router = useRouter()
+
+    const message = useMessage()
 
     const layoutStore = useLayoutStore()
 
@@ -136,6 +138,50 @@ export default defineComponent({
         appChannel.copyText(selection.toString())
 
         handleCancelSelect()
+      }
+    }
+
+    const bookmarkData = reactive({
+      list: [] as BookmarkData[]
+    })
+
+    const getBookmarks = async () => {
+      if (bookData.id) {
+        const result = await dbChannel.getBookmarkList(bookData.id)
+
+        bookmarkData.list = result
+      }
+    }
+
+    const addBookmark = async () => {
+      if (bookData.id && bookData.location.cfi && bookData.location.range) {
+        const data = {
+          bookId: bookData.id,
+          section: bookData.location.index,
+          fragment: bookData.location.range.startContainer.textContent || '',
+          location: `${bookData.location.cfi.split(':')[0]}:0)`,
+          createTime: Math.floor(Date.now() / 1000)
+        }
+        try {
+          const result = await dbChannel.insertBookmark(data)
+
+          bookmarkData.list.unshift({ id: result.id, ...data })
+        } catch (error) {
+          message.warning('当前位置已存在书签')
+        }
+      }
+    }
+
+    const removeBookmark = async (bookmark: BookmarkData) => {
+      if (bookData.id) {
+        await dbChannel.deleteBookmark(bookmark.id)
+
+        for (let i = 0; i < bookmarkData.list.length; i++) {
+          if (bookmarkData.list[i].id === bookmark.id) {
+            bookmarkData.list.splice(i, 1)
+            break
+          }
+        }
       }
     }
 
@@ -271,19 +317,23 @@ export default defineComponent({
           location,
           createTime: Math.floor(Date.now() / 1000)
         }
-        const result = await dbChannel.insertHighlight(data)
+        try {
+          const result = await dbChannel.insertHighlight(data)
 
-        highlightData.list.unshift({ id: result.id, ...data })
+          highlightData.list.unshift({ id: result.id, ...data })
 
-        view.mark(range, 'book-mark-highlight', [['click', handleClickHighligh]])
+          view.mark(range, 'book-mark-highlight', [['click', handleClickHighligh]])
 
-        const ranges = highlightMap.get(view.section.index)
-        if (ranges) {
-          ranges.push(range)
-          highlightIdMap.set(range, result.id)
+          const ranges = highlightMap.get(view.section.index)
+          if (ranges) {
+            ranges.push(range)
+            highlightIdMap.set(range, result.id)
+          }
+
+          handleCancelSelect()
+        } catch (error) {
+          message.warning('当前位置已存在标记')
         }
-
-        handleCancelSelect()
       }
     }
 
@@ -302,7 +352,6 @@ export default defineComponent({
     }
 
     const handleUpdateLocation = (location: LocationData) => {
-      console.log(location)
       if (bookData.id && location.cfi !== bookData.location.cfi) {
         if (location.percentage < 0) {
           dbChannel.updateBook(bookData.id, {
@@ -519,6 +568,8 @@ export default defineComponent({
           if (highlightData.all) {
             getHighlights()
           }
+
+          getBookmarks()
         } else {
           router.replace({
             name: 'START'
@@ -547,12 +598,13 @@ export default defineComponent({
 
     watchEffect(() => {
       if (bookData.renderer && layoutStore.theme.common) {
-        bookData.renderer.setStylesheetRule('*::selection', {
+        const ruleId = 'epub-reader-read-page'
+
+        bookData.renderer.setStylesheetRule(`*::selection, #${ruleId}`, {
           'background-color': `${layoutStore.theme.common.placeholderColor} !important` || ''
         })
-        bookData.renderer.setStylesheetRule('body', {
-          'background-color': layoutStore.theme.common.bodyColor || '',
-          'color': layoutStore.theme.common.textColor2 || ''
+        bookData.renderer.setStylesheetRule(`*, #${ruleId}`, {
+          color: `${layoutStore.theme.common.textColor2} !important` || ''
         })
       }
     })
@@ -585,16 +637,28 @@ export default defineComponent({
         <SideBar
           renderer={bookData.renderer}
           highlight={highlightData}
+          bookmark={bookmarkData}
           onHighlightChange={handleHighlighChange}
+          onRemoveBookmark={removeBookmark}
         />
         <div ref={containerRef} class="reader-page-container">
           <div class="top-bar">
             <div class="left">
-              {bookData.location.percentage >= 0 &&
-                `${(bookData.location.percentage * 100).toFixed(2)}%`}
+              <div class="progress">
+                {bookData.location.percentage >= 0 &&
+                  `${(bookData.location.percentage * 100).toFixed(2)}%`}
+              </div>
             </div>
             <div class="center">{bookData.chapter}</div>
             <div class="right">
+              <TextHover
+                text="添加书签"
+                content={() => (
+                  <NButton text focusable={false} onClick={addBookmark}>
+                    <SVGIcon size={24} name="ic_fluent_bookmark_24_filled" />
+                  </NButton>
+                )}
+              />
               <TextHover
                 text="返回首页"
                 content={() => (

@@ -112,7 +112,7 @@
     .highlight-item {
       display: flex;
       flex-direction: column;
-      padding: 4px 12px;
+      padding: 8px 12px;
       gap: 4px;
       transition: background-color 0.3s linear;
 
@@ -132,6 +132,30 @@
       .date {
         align-self: flex-end;
         color: var(--text-color-3);
+      }
+    }
+  }
+
+  .bookmark-content {
+    .bookmark-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      gap: 4px;
+      transition: background-color 0.3s linear;
+
+      &:hover {
+        background-color: var(--hover-color);
+      }
+
+      .fragment {
+        display: -webkit-box;
+        overflow: hidden;
+        flex-grow: 1;
+        -webkit-box-orient: vertical;
+        cursor: pointer;
+        -webkit-line-clamp: 3;
+        text-overflow: ellipsis;
       }
     }
   }
@@ -163,6 +187,10 @@
 
     &:nth-child(3) {
       top: 104px;
+    }
+
+    &:nth-child(4) {
+      top: 138px;
     }
   }
 }

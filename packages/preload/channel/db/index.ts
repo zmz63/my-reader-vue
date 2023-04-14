@@ -4,6 +4,7 @@ import type { RunResult } from 'better-sqlite3'
 
 export * from './book'
 export * from './highlight'
+export * from './bookmark'
 
 export function invokeDB(type: 'run', source: string, params?: any[]): Promise<RunResult>
 export function invokeDB<T>(type: 'get', source: string, params?: any[]): Promise<T>

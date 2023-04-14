@@ -18,6 +18,9 @@ export default defineComponent({
   emits: {
     open(id: number | bigint) {
       return typeof id === 'number' || typeof id === 'bigint'
+    },
+    delete(id: number | bigint) {
+      return typeof id === 'number' || typeof id === 'bigint'
     }
   },
   setup(props, { emit }) {
@@ -75,8 +78,10 @@ export default defineComponent({
                           icon: () => <SVGIcon size={24} name="ic_fluent_delete_24_filled" />
                         }
                       ]}
-                      onSelect={() => {
-                        // TODO
+                      onSelect={key => {
+                        if (key === 'delete') {
+                          emit('delete', item.id)
+                        }
                       }}
                     >
                       <NButton text focusable={false}>
