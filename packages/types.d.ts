@@ -33,6 +33,8 @@ module '*.vue' {
   export default module
 }
 
+declare const __DEV__: boolean
+
 type Mutable<T> = {
   -readonly [P in keyof T]: T[P]
 }

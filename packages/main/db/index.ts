@@ -3,8 +3,6 @@ import { ipcMain } from 'electron'
 import type { RunResult } from 'better-sqlite3'
 import { Client } from './client'
 import type { DBPayload } from './server'
-import Sqlite3 from 'better-sqlite3'
-new Sqlite3('./temp/books.db')
 
 const client = new Client()
 

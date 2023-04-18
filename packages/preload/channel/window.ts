@@ -1,5 +1,9 @@
 import { type IpcRendererEvent, ipcRenderer } from 'electron'
 
+ipcRenderer.once('launch:epub', (_, filePath: string) => {
+  location.hash = `#/reader?path=${filePath}`
+})
+
 export function controlWindow(type: 'always-on-top', value: boolean): void
 export function controlWindow(type: 'minimize'): void
 export function controlWindow(type: 'maximize', value: boolean): void

@@ -1,7 +1,7 @@
 import _path from 'path'
-import { BrowserWindow, app, ipcMain } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 
-export function createWindow() {
+export function createWindow(argv?: string[]) {
   const window = new BrowserWindow({
     show: false,
     frame: false,
@@ -29,14 +29,22 @@ export function createWindow() {
     window.setEnabled(true)
   })
 
-  if (app.isPackaged) {
-    window.loadFile(_path.resolve(__dirname, '../renderer/index.html'))
-  } else {
+  if (__DEV__) {
     window.loadURL('http://localhost:8080')
     webContents.openDevTools({ mode: 'undocked' })
+  } else {
+    window.loadFile(_path.resolve(__dirname, '../renderer/index.html'))
   }
 
   window.once('ready-to-show', () => {
+    if (argv) {
+      const filePath = argv[1]
+
+      if (filePath && /\.epub$/.test(filePath)) {
+        webContents.send('launch:epub', filePath)
+      }
+    }
+
     window.show()
     window.focus()
   })

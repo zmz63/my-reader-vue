@@ -62,6 +62,9 @@ export function configFactory(mode, root, outDir, plugins) {
     root,
     mode,
     plugins,
+    define: {
+      __DEV__: isDev ? 'true' : 'false'
+    },
     resolve: {
       alias
     },
@@ -74,9 +77,13 @@ export function configFactory(mode, root, outDir, plugins) {
         formats: ['cjs'],
         fileName: () => '[name].js'
       },
+      commonjsOptions: {
+        ignoreDynamicRequires: true
+      },
       rollupOptions: {
         external: [
           'electron',
+          /.node$/,
           ..._module.builtinModules,
           ...(isDev ? Object.keys(devDependencies) : [])
         ]

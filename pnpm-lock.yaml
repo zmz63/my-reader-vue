@@ -21,7 +21,6 @@ specifiers:
   fs-extra: ^11.1.0
   lodash: ^4.17.21
   magic-string: ^0.30.0
-  marks-pane: ^1.0.9
   naive-ui: ^2.34.3
   pinia: ^2.0.29
   prettier: ^2.7.1
@@ -56,7 +55,6 @@ devDependencies:
   fs-extra: 11.1.0
   lodash: 4.17.21
   magic-string: 0.30.0
-  marks-pane: 1.0.9
   naive-ui: 2.34.3_vue@3.2.45
   pinia: 2.0.29_prq2uz4lho2pwp6irk4cfkrxwu
   prettier: 2.8.1
@@ -3031,10 +3029,6 @@ packages:
   /map-obj/4.3.0:
     resolution: {integrity: sha512-hdN1wVrZbb29eBGiGjJbeP8JbKjq1urkHJ/LIP/NY48MZ1QVXUsQBV1G1zvYFHn1XE06cwjBsOI2K3Ulnj1YXQ==}
     engines: {node: '>=8'}
-    dev: true
-
-  /marks-pane/1.0.9:
-    resolution: {integrity: sha512-Ahs4oeG90tbdPWwAJkAAoHg2lRR8lAs9mZXETNPO9hYg3AkjUJBKi1NQ4aaIQZVGrig7c/3NUV1jANl8rFTeMg==}
     dev: true
 
   /matcher/3.0.0:

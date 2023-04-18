@@ -23,6 +23,8 @@ export class Client {
           defer.resolve(data)
         } else {
           defer.reject(data)
+
+          console.log('worker error', data)
         }
 
         this.map.delete(seq)
@@ -35,10 +37,11 @@ export class Client {
       }
 
       this.map.clear()
+
+      console.log('worker error', message)
     }
 
     this.worker.on('error', errorCallback)
-    this.worker.on('exit', errorCallback)
   }
 
   request<T>(type: string, data?: any) {

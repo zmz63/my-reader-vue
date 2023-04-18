@@ -34,7 +34,6 @@ port.on('message', (request: WorkerRequestPayload) => {
     }
     port.postMessage(response)
   } catch (error) {
-    console.log('worker error', error)
     response = {
       seq,
       code: 1,

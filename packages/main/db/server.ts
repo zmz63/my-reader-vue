@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import _path from 'path'
 import Sqlite3 from 'better-sqlite3'
 import v1 from './schemas/v1'
 import v2 from './schemas/v2'
@@ -9,7 +10,7 @@ export type DBPayload = {
   params?: any[]
 }
 
-const DATABASE_PATH = './temp/books.db'
+const DATABASE_PATH = __DEV__ ? './temp/reader.db' : './reader.db'
 
 const SCHEMAS = [v1, v2, v3]
 
@@ -22,9 +23,10 @@ export class Server {
 
   constructor() {
     this.db = new Sqlite3(DATABASE_PATH, {
-      verbose(message) {
-        console.log(message)
-      }
+      verbose: __DEV__ ? message => console.log(message) : undefined,
+      nativeBinding: __DEV__
+        ? './lib/better_sqlite3.node'
+        : _path.resolve(__dirname, '../lib/better_sqlite3.node')
     })
 
     this.db.pragma('journal_mode = WAL')

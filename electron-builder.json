@@ -3,28 +3,33 @@
  */
  {
   "productName": "My Epub Reader",
-  "asar": true,
+  "asar": false,
   "directories": {
     "output": "release/${version}"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "mac": {
     "artifactName": "${productName}.${ext}",
     "target": [
-      "zip"
+      // "zip"
+      "dir"
     ]
   },
   "win": {
     "artifactName": "${productName}.${ext}",
     "target": [
       {
-        "target": "zip",
+        "target": "dir",
         "arch": [
           "x64"
         ]
       }
+      // {
+      //   "target": "zip",
+      //   "arch": [
+      //     "x64"
+      //   ]
+      // }
     ]
   }
 }
