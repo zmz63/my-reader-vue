@@ -36,15 +36,15 @@ export function createWindow(argv?: string[]) {
     window.loadFile(_path.resolve(__dirname, '../renderer/index.html'))
   }
 
-  window.once('ready-to-show', () => {
-    if (argv) {
-      const filePath = argv[1]
+  if (argv) {
+    const filePath = argv[1]
 
-      if (filePath && /\.epub$/.test(filePath)) {
-        webContents.send('launch:epub', filePath)
-      }
+    if (filePath && /\.epub$/.test(filePath)) {
+      webContents.send('launch:epub', filePath)
     }
+  }
 
+  window.once('ready-to-show', () => {
     window.show()
     window.focus()
   })

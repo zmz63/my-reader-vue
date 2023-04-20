@@ -601,10 +601,16 @@ export default defineComponent({
         const ruleId = 'epub-reader-read-page'
 
         bookData.renderer.setStylesheetRule(`*::selection, #${ruleId}`, {
-          'background-color': `${layoutStore.theme.common.placeholderColor} !important` || ''
+          'background-color':
+            layoutStore.themeData.mode === 'dark'
+              ? `${layoutStore.theme.common.placeholderColor} !important`
+              : ''
         })
         bookData.renderer.setStylesheetRule(`*, #${ruleId}`, {
-          color: `${layoutStore.theme.common.textColor2} !important` || ''
+          color:
+            layoutStore.themeData.mode === 'dark'
+              ? `${layoutStore.theme.common.textColor2} !important`
+              : ''
         })
       }
     })
