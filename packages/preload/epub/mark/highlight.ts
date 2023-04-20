@@ -24,19 +24,15 @@ export class Highlight extends Mark {
     super.bind(element, container)
 
     for (const key in this.data) {
-      if (Object.prototype.hasOwnProperty.call(this.data, key)) {
-        void ((this.element as SVGElement).dataset[key] = this.data[key])
-      }
+      element.dataset[key] = this.data[key]
     }
 
     for (const key in this.attributes) {
-      if (Object.prototype.hasOwnProperty.call(this.attributes, key)) {
-        void (this.element as SVGElement).setAttribute(key, this.attributes[key])
-      }
+      element.setAttribute(key, this.attributes[key])
     }
 
     if (this.className) {
-      void (this.element as SVGElement).classList.add(this.className)
+      element.classList.add(this.className)
     }
   }
 

@@ -11,7 +11,10 @@ const env = 'development'
 process.env.NODE_ENV = env
 
 const server = await createServer(rendererConfigFactory(env))
+
 await server.listen()
+
+server.printUrls()
 
 await build(
   configFactory(env, preloadPath, distPreloadPath, [
