@@ -34,6 +34,12 @@ export default function svgLoader(path) {
 
   return {
     name: 'svg-loader',
+    configureServer(server) {
+      server.watcher.add(path)
+      server.watcher.on('add', () => {
+        server.ws.send({ type: 'full-reload' })
+      })
+    },
     transformIndexHtml(html) {
       const symbols = loadSymbols(path)
 
