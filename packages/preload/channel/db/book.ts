@@ -138,8 +138,6 @@ export async function getBookMetaListByKeyword(
   offset = 0,
   order: 'DESC' | 'ASC' = 'DESC'
 ) {
-  const { count } = await invokeDB<{ count: number }>('get', 'SELECT COUNT(id) AS count FROM books')
-
   const list = await invokeDB<BookMeta>(
     'all',
     `SELECT ${BOOK_META_KEYS.join(
@@ -150,6 +148,6 @@ export async function getBookMetaListByKeyword(
 
   return {
     data: list,
-    count
+    count: list.length
   }
 }
