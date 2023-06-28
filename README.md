@@ -1,6 +1,10 @@
 ## 技术栈
 
- typescript electron vue3 sass sqlite3
+- typescript
+- electron
+- vue3
+- sass
+- sqlite3
 
 ## 主要内容
 
@@ -10,6 +14,20 @@
 - 使用二分查找快速定位阅读位置
 - 使用svg实现非嵌套文本高亮
 - 使用Sqlite进行数据持久化存储
+
+## 运行
+
+```
+# 克隆项目
+git clone  https://github.com/zmz63/my-dictionary.git
+# 安装依赖
+pnpm i
+# 运行
+pnpm run dev
+# 打包
+pnpm run build
+pnpm run electron:build
+```
 
 ## 项目架构
 
